@@ -1,0 +1,69 @@
+.dashboard-container {
+    background-color: #1a1a1a;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 50rem;
+    text-align: center;
+    margin: 0 auto;
+  }
+  
+  .dashboard-title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #fff;
+  }
+  
+  .options-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .option-card {
+    background-color: #333;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    width: 100%;
+    max-width: 18rem;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .option-card:hover {
+    transform: translateY(-0.5rem);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+  }
+  
+  .option-icon {
+    font-size: 2.5rem;
+    color: #007bff;
+    margin-bottom: 1rem;
+  }
+  
+  .option-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #fff;
+  }
+  
+  .option-description {
+    font-size: 1rem;
+    color: #aaa;
+  }
+  
+  @media (max-width: 768px) {
+    .options-container {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .option-card {
+      max-width: 100%;
+    }
+  }

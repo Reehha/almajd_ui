@@ -1,0 +1,111 @@
+
+/* Login Container */
+.login-container {
+  background-color: #000;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 25rem; /* Set a max-width for larger screens */
+  min-height: 60vh;
+  text-align: center;
+}
+
+/* Welcome Title */
+.welcome-title {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+/* Input Group with Gradient Border */
+.input-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+  background: var(--primary-gradient-color);
+  padding: 2px; /* This creates the border effect */
+  border-radius: 0.5rem; /* Match the input border-radius */
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: none; /* Remove default border */
+  border-radius: 0.5rem; /* Match the wrapper border-radius */
+  background-color: #000; /* Inner background color */
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+}
+
+.input-group .input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 1rem;
+  z-index: 1; /* Ensure the icon is above the input */
+}
+/* Login Button */
+.login-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--primary-gradient-color);
+  border: none;
+  border-radius: 0.5rem;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 1.5rem;
+  }
+
+  .welcome-title {
+    font-size: 1.5rem;
+  }
+
+  .input-group input {
+    padding: 0.5rem 0.5rem 0.5rem 2rem;
+    font-size: 0.875rem;
+  }
+
+  .login-button {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+}
+.login-form {
+  margin-top:60px;
+}
+
+
+.btn-grad {background-image: linear-gradient(to right, #FF512F 0%, #DD2476  51%, #FF512F  100%)}
+.btn-grad {
+   margin: 10px;
+   padding: 15px 45px;
+   text-align: center;
+   text-transform: uppercase;
+   transition: 0.5s;
+   background-size: 200% auto;
+   color: white;            
+   box-shadow: 0 0 20px #eee;
+   border-radius: 10px;
+   display: block;
+ }
+
+ .btn-grad:hover {
+   background-position: right center; /* change the direction of the change here */
+   color: #fff;
+   text-decoration: none;
+ }

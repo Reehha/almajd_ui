@@ -1,0 +1,15 @@
+<div class="dashboard-container">
+  <h1 class="dashboard-title">Your Dashboard</h1>
+  <div class="options-container">
+    <a [routerLink]="'/log-attendance'" routerLinkActive="active-link" class="option-card" id="log-attendance">
+      <i class="fas fa-calendar-check option-icon"></i>
+      <h2 class="option-title">Log Attendance</h2>
+      <!-- <p class="option-description">Mark your daily attendance here.</p> -->
+    </a>
+    <a [routerLink]="'/manage'" routerLinkActive="active-link" class="option-card" id="manage-data">
+      <i class="fas fa-user-edit option-icon"></i>
+      <h2 class="option-title">Manage My Data</h2>
+      <!-- <p class="option-description">Update your personal information.</p> -->
+    </a>
+  </div>
+</div>

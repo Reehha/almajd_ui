@@ -1,0 +1,67 @@
+<div class="scanner-container">
+  <h2>QR Code Scanner</h2>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading">
+    <p>Initializing scanner...</p>
+  </div>
+
+  <!-- Environment warnings -->
+  <div *ngIf="!isLoading && (!isMediaDevicesSupported || !isSecureContext)" class="error">
+    <h3>Unsupported Environment</h3>
+    <p *ngIf="!isMediaDevicesSupported">
+      Your browser doesn't support camera access. Please use Chrome, Firefox, or Edge.
+    </p>
+    <p *ngIf="!isSecureContext">
+      Camera access requires HTTPS or localhost. Current protocol: {{ currentProtocol }}
+    </p>
+  </div>
+
+  <!-- Scanner UI -->
+  <div *ngIf="!isLoading && isMediaDevicesSupported && isSecureContext">
+    <!-- Error messages -->
+    <div *ngIf="errorMessage" class="error">
+      <p>{{ errorMessage }}</p>
+      <button *ngIf="errorMessage !== 'No cameras detected on this device.'" 
+              (click)="retryCameraSetup()">
+        Try Again
+      </button>
+    </div>
+    <!-- Scan status message -->
+    <div *ngIf="scanStatusMessage" 
+         class="scan-message" 
+         [class.success]="scanSuccessful">
+      {{ scanStatusMessage }}
+    </div>
+
+    <!-- Camera selection and controls -->
+    <div *ngIf="cameras.length > 0">
+      <!-- Video container with overlay -->
+      <div class="video-container">
+        <video #qrVideo id="qr-video" [hidden]="!scannerActive" autoplay muted></video>
+        <div class="scan-overlay"></div>
+        <div class="scan-highlight"></div>
+      </div>
+
+      <div class="controls">
+        <select [(ngModel)]="selectedDeviceId">
+          <option *ngFor="let camera of cameras; let i = index" [value]="camera.deviceId">
+            {{ camera.label || 'Camera ' + (i + 1) }}
+          </option>
+        </select>
+
+        <button (click)="scannerActive ? stopScanner() : startScanner()"
+                [disabled]="!selectedDeviceId">
+          {{ scannerActive ? 'Stop Scanner' : 'Start Scanner' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Scan results -->
+    <div *ngIf="qrResult" class="result">
+      <h3>Scan Result:</h3>
+      <p>{{ qrResult }}</p>
+      <button (click)="clearResult()">Scan Another</button>
+    </div>
+  </div>
+</div>

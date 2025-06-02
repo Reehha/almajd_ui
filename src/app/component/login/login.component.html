@@ -1,0 +1,14 @@
+<div class="login-container">
+  <h1 class="welcome-title">Welcome Back</h1>
+  <form class="login-form">
+    <div class="input-group">
+      <i class="fas fa-user input-icon"></i>
+      <input type="text" [(ngModel)]="username" placeholder="Username" required name="username">
+    </div>
+    <div class="input-group">
+      <i class="fas fa-lock input-icon"></i>
+      <input type="password" [(ngModel)]="password" placeholder="Password" required name="password">
+    </div>
+    <button type="submit" class="btn" (click)="login()">Login</button>
+  </form>
+</div>

@@ -1,0 +1,20 @@
+<table class="attendance-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Check-In</th>
+        <th>Check-Out</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let entry of data">
+        <td>{{ entry.date }}</td>
+        <td>{{ entry.checkIn }}</td>
+        <td>{{ entry.checkOut }}</td>
+        <td [ngClass]="{'present': entry.status === 'Present', 'late': entry.status === 'Late', 'absent': entry.status === 'Absent'}">
+          {{ entry.status }}
+        </td>
+      </tr>
+    </tbody>
+  </table>

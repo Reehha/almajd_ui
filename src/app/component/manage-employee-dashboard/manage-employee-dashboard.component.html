@@ -1,0 +1,41 @@
+<div class="dashboard-container">
+    <h1 class="dashboard-title">Employee Dashboard</h1>
+  
+    <!-- Date Filter -->
+  
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Table -->
+      <div class="table-container">
+        <div class="date-filter">
+          <div class="date-input-group">
+            <div class="date-input-container">
+              <label>Start Date</label>
+              <input type="date" [(ngModel)]="startDate">
+            </div>
+            <div class="date-input-container">
+              <label>End Date</label>
+              <input type="date" [(ngModel)]="endDate">
+            </div>
+          </div>
+          <button class="filter-btn" (click)="filterData()">Filter</button>
+        </div>   
+        <app-attendance-table [data]="filteredData"></app-attendance-table>
+      </div>
+  
+      <!-- Pie Chart -->
+      <div class="chart-container">
+        <app-attendance-chart [data]="filteredData"></app-attendance-chart>
+      </div>
+    </div>
+  
+    <!-- Leave Request -->
+    <div class="leave-request-container">
+      <button class="toggle-button" (click)="toggleLeaveRequest()">
+        {{ isLeaveRequestOpen ? 'Close Leave Request' : 'Request Leave' }}
+      </button>
+      <div class="leave-request-form" *ngIf="isLeaveRequestOpen">
+        <app-leave-request></app-leave-request>
+      </div>
+    </div>
+  </div>
