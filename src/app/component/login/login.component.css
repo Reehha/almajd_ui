@@ -109,3 +109,8 @@
    color: #fff;
    text-decoration: none;
  }
+
+ .error-message {
+    padding-bottom: 1rem;
+    color: red;
+}
