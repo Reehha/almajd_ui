@@ -68,6 +68,7 @@
 @media (max-width: 480px) {
   .login-container {
     padding: 1.5rem;
+    min-height: 40vh;
   }
 
   .welcome-title {
@@ -109,3 +110,8 @@
    color: #fff;
    text-decoration: none;
  }
+
+ .error-message {
+    padding-bottom: 1rem;
+    color: red;
+}

@@ -1,0 +1,130 @@
+.sidebar {
+  width: 113px;
+  /* height: calc(100vh - 80px); */
+  position: fixed;
+  left: 0;
+  margin-top: 100px;
+  background: #000;
+  padding: 20px 0;
+  margin-left: 10px;
+  border-radius: 20px;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  cursor: pointer;
+  color: #b0b0b0;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border-radius: 10px;
+  margin: 0 8px;
+}
+
+.nav-item:hover {
+  color: #000;
+  background-color: #fff;
+}
+
+.nav-item.active {
+  color: white;
+  background-color: #3498db;
+}
+
+.nav-icon {
+  margin-bottom: 6px;
+}
+
+.nav-icon i {
+  font-size: 24px;
+}
+
+.nav-label {
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 90px;
+  }
+  .nav-icon i {
+    font-size: 22px;
+  }
+  .nav-label {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+    height: auto;
+    bottom: 10px;
+    top: auto;
+    margin-top: 0;
+    padding: 10px 0;
+  }
+  .nav-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .nav-item {
+    padding: 8px 0;
+    width: 60px;
+    margin: 4px;
+  }
+  .nav-icon i {
+    font-size: 20px;
+  }
+  .nav-label {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 576px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    border-radius: 20px 20px 0 0;
+    margin-left: 0;
+    padding: 10px 5px;
+  }
+  .nav-list {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  .nav-item {
+    width: auto;
+    min-width: 50px;
+    padding: 6px 0;
+    margin: 0 2px;
+  }
+  .nav-icon i {
+    font-size: 18px;
+  }
+  .nav-label {
+    font-size: 10px;
+  }
+}

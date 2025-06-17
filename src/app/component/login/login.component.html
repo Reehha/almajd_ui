@@ -1,14 +1,58 @@
 <div class="login-container">
   <h1 class="welcome-title">Welcome Back</h1>
-  <form class="login-form">
+
+  <form class="login-form" #form="ngForm" (ngSubmit)="login(form)">
+    
+    <!-- Employee ID Field -->
     <div class="input-group">
       <i class="fas fa-user input-icon"></i>
-      <input type="text" [(ngModel)]="username" placeholder="Username" required name="username">
+      <input
+        type="text"
+        name="empid"
+        (keypress)="allowOnlyNumbers($event)"
+        [(ngModel)]="empid"
+        placeholder="Employee number"
+        #empidRef="ngModel"
+        required
+        pattern="^[0-9]+$"
+      />
     </div>
-    <div class="input-group">
-      <i class="fas fa-lock input-icon"></i>
-      <input type="password" [(ngModel)]="password" placeholder="Password" required name="password">
+    <div class="error-message" *ngIf="empidRef.invalid && empidRef.touched">
+      <div *ngIf="empidRef.errors?.['required']">Employee number is required</div>
+      <div *ngIf="empidRef.errors?.['pattern']">Employee number must be numeric</div>
     </div>
-    <button type="submit" class="btn" (click)="login()">Login</button>
+
+    <!-- Password Field -->
+<div class="input-group" style="position: relative;">
+  <i class="fas fa-lock input-icon"></i>
+  <input
+    [type]="showPassword ? 'text' : 'password'"
+    name="password"
+    [(ngModel)]="password"
+    placeholder="Password"
+    #passwordRef="ngModel"
+    required
+    minlength="6"
+  />
+  <i
+    class="fas"
+    [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+    (click)="showPassword = !showPassword"
+    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"
+  ></i>
+</div>
+
+<div class="error-message" *ngIf="passwordRef.invalid && passwordRef.touched">
+  <div *ngIf="passwordRef.errors?.['required']">Password is required</div>
+  <div *ngIf="passwordRef.errors?.['minlength']">
+    Password must be at least 6 characters
+  </div>
+</div>
+
+
+    <!-- Error from backend -->
+    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+    <button type="submit" class="btn" [disabled]="form.invalid">Login</button>
   </form>
 </div>
