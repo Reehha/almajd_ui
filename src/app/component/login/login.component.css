@@ -68,6 +68,7 @@
 @media (max-width: 480px) {
   .login-container {
     padding: 1.5rem;
+    min-height: 40vh;
   }
 
   .welcome-title {

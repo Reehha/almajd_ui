@@ -2,7 +2,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LoginService } from '../services/login.service';
+import { LoginService } from '../../services/login.service';
 
 interface NavItem {
   icon: string;
@@ -31,14 +31,14 @@ export class SidebarComponent {
   }
 
   navItems: NavItem[] = [
-    { icon: 'users', label: 'Employee', link: '/employee-dashboard', visible: () => this.loginService.hasAnyRole(['employee']) },
+    { icon: 'user', label: 'Profile', link: '/profile', visible: () => this.loginService.hasAnyRole(['employee','admin']) },
+    { icon: 'users', label: 'Employee', link: '/register', visible: () => this.loginService.hasAnyRole(['admin']) },
+    { icon: 'bell', label: 'notifications', link: '/requests', visible: () => this.loginService.hasAnyRole(['admin']) },
     { icon: 'building', label: 'Department', link: '/department-dashboard', visible: () => this.loginService.hasAnyRole(['admin']) },
-    { icon: 'calendar-minus', label: 'Leave', link: '/leave', visible: () => this.loginService.hasAnyRole(['admin', 'employee'])},
-    { icon: 'calendar-check', label: 'Attendance', link: '/attendance', visible: () => this.loginService.hasAnyRole(['admin', 'employee']) },
+    { icon: 'calendar-minus', label: 'Leave', link: '/leave', visible: () => this.loginService.hasAnyRole(['employee'])},
+    { icon: 'calendar-check', label: 'Attendance', link: '/attendance', visible: () => this.loginService.hasAnyRole(['employee']) },
     { icon: 'calendar-alt', label: 'Calendar', link: '/calendar', visible: () => this.loginService.hasAnyRole(['admin', 'employee']) },
-    {
-      icon: 'user-plus', label: 'Register', link: '/register', visible: () => this.loginService.hasAnyRole(['admin'])
-    },
+    // { icon: 'user-plus', label: 'Register', link: '/register', visible: () => this.loginService.hasAnyRole(['admin']) },
     { icon: 'sign-out-alt', label: 'Logout', action: () => this.logout(), visible: () => true }
   ];
 
@@ -47,7 +47,7 @@ export class SidebarComponent {
   }
 
   private logout(): void {
-    this.loginService.logout();
+    this.loginService.logout().subscribe();
     this.router.navigate(['/login']).then(() => {
       this.cd.markForCheck();
     });

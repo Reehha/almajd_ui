@@ -303,25 +303,7 @@ getDepartments() {
   constructor(private http: HttpClient, private router: Router) {}
 
 
-  loadManagers() {
-    // Uncomment this when your backend is ready
-    // this.http.get<any[]>('http://localhost:8081/auth/managers').subscribe({
-    //   next: (data) => this.managers = data,
-    //   error: (err) => console.error('Error loading managers', err)
-    // });
-
-    // Mock data for testing
-    // this.managers = [
-    //   { empid: '000001', firstName: 'John', lastName: 'Doe' },
-    //   { empid: '000002', firstName: 'Jane', lastName: 'Smith' },
-    // ];
-  }
-
-  // formatDate(dateString: string): string {
-  //   if (!dateString) return '';
-  //   const date = new Date(dateString);
-  //   return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-  // }
+ 
   formatDateForBackend(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -345,9 +327,28 @@ getDepartments() {
       visaExpiry: this.formatDateForBackend(this.employee.visaExpiry)
     };
   
-    console.log('Sending to backend:', formattedData);
-    this.http.post('http://localhost:8081/auth/register', formattedData)
-      .subscribe(/*...*/);
+    this.http.post<any>('http://localhost:8081/auth/register', formattedData).subscribe({
+      next: (response) => {
+        if (response.status === 200 && response.data) {
+          const employeeId = response.data.employeeId;
+          const password = response.data.password;
+  
+          alert(
+            `✅ Registration Successful!\n\n` +
+            `🆔 Username (Employee ID): ${employeeId}\n` +
+            `🔐 Password: ${password}\n\n` +
+            `⚠️ Please save these credentials securely. You won't be able to view them again.`
+          );
+        } else {
+          alert("Registration succeeded but unexpected response format.");
+        }
+      },
+      error: (error) => {
+        console.error('Registration failed:', error);
+        alert("❌ Registration failed. Please try again.");
+      }
+    });
   }
+  
   
 }
