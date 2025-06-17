@@ -6,27 +6,42 @@ import { LogAttendanceComponent } from './component/log-attendance/log-attendanc
 import { AdminDashboardComponent } from './component/admin-dashboard/admin-dashboard.component';
 import { QrScannerComponent } from './component/qr-scanner/qr-scanner.component';
 import { RegisterComponent } from './component/register/register.component';
+import { AuthGuard } from './guards/auth.guard';
+import { RoleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
+  /* ---------- Public routes (no authentication) ---------- */
+  { path: 'login',    component: LoginComponent },
+  { path: 'scan-qr',  component: QrScannerComponent },
+
+  /* ---------- Auth‑protected routes ---------- */
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+
   {
-    path: 'login',
-    component: LoginComponent // No sidebar/header
+    path: 'manage',
+    component: EmployeeDashboardComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['employee', 'manager'] }
   },
-{ path: '', redirectTo: '/register', pathMatch: 'full' },
-{ path: 'login', component: LoginComponent },
-{ path: 'manage', component: EmployeeDashboardComponent },
-{ path: 'log-attendance', component: LogAttendanceComponent },
-{ path: 'admin-dashboard', component: AdminDashboardComponent },
-{ path: 'scan-qr', component: QrScannerComponent },
-{ path: 'register', component: RegisterComponent },
-  // {
-  //   path: 't',
-  //   component: MainLayoutComponent, // Wrap with sidebar/header
-  //   children: [
-  //     { path: 'dashboard', component: EmployeeDashboardComponent },
-  //     { path: 'attendance', component: LogAttendanceComponent },
-  //     // add more authenticated routes here
-  //   ]
-  // },
-  { path: '**', redirectTo: '' }
+  {
+    path: 'log-attendance',
+    component: LogAttendanceComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['employee'] }
+  },
+  {
+    path: 'admin-dashboard',
+    component: AdminDashboardComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['admin'] }
+  },
+
+  /* ---------- Fallback ---------- */
+  { path: '**', redirectTo: '/login' }
 ];
