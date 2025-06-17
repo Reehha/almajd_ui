@@ -37,6 +37,10 @@ export class LoginService {
   private currentUserSubject =
     new BehaviorSubject<LoginResponse | null>(this.readStored());
 
+  /** emits after every login / logout so components can refresh UI */
+  private authChangedSubject = new BehaviorSubject<void>(undefined);
+  public readonly authChanged = this.authChangedSubject.asObservable();
+
   /** observable for components/guards */
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
@@ -93,6 +97,7 @@ export class LoginService {
   private store(u: LoginResponse) {
     this.storage?.setItem(this.STORAGE_KEY, JSON.stringify(u));
     this.currentUserSubject.next(u);
+    this.authChangedSubject.next();
   }
 
   /** Read from storage (or null) */
@@ -101,10 +106,11 @@ export class LoginService {
     return raw ? JSON.parse(raw) as LoginResponse : null;
   }
 
-  /** Remove token & notify */
+  /** Remove ALL tokens & notify */
   private clear() {
-    this.storage?.removeItem(this.STORAGE_KEY);
+    this.storage?.clear();
     this.currentUserSubject.next(null);
+    this.authChangedSubject.next();
   }
 
   /** convenience */

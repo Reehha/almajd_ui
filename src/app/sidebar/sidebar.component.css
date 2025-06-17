@@ -1,6 +1,6 @@
 .sidebar {
   width: 113px;
-  height: 80vh;
+  height: calc(100vh - 80px); /* fills viewport under the 80‑px header */
   position: fixed;
   left: 0;
   top: 80px;
@@ -10,7 +10,6 @@
   border-radius: 20px;
   z-index: 100;
   transition: all 0.3s ease;
-  overflow-y: auto;
 }
 
 .nav-list {

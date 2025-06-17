@@ -1,13 +1,31 @@
-<nav class="sidebar">
+<!-- <nav class="sidebar">
   <ul class="nav-list">
     <li class="nav-item" 
         *ngFor="let item of navItems" 
         [routerLink]="item.link" 
-        routerLinkActive="active">
+        routerLinkActive="active" (click)="item.action && item.action()" *ngIf="item.visible && !item.visible()">
       <div class="nav-icon">
         <i [class]="'fas fa-' + item.icon"></i>
       </div>
       <span class="nav-label">{{item.label}}</span>
     </li>
+  </ul>
+</nav> -->
+
+<nav class="sidebar">
+  <ul class="nav-list">
+    <ng-container *ngFor="let item of navItems">
+      <li
+        *ngIf="item.visible && item.visible()"
+        class="nav-item"
+        [routerLink]="item.link"
+        routerLinkActive="active"
+        (click)="item.action?.()">
+        <div class="nav-icon">
+          <i [class]="'fas fa-' + item.icon"></i>
+        </div>
+        <span class="nav-label">{{ item.label }}</span>
+      </li>
+    </ng-container>
   </ul>
 </nav>
