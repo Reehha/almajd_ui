@@ -66,7 +66,19 @@ export class LoginService {
       `${this.BASE_URL}/auth/login`, req
     )
       .pipe(
-        tap(res => this.store(res)),
+        tap(res => {
+          this.store(res);
+          const user = res?.data?.data;
+          if (user?.firstName && user?.lastName) {
+            const defaultPassword = `${user.firstName}.${user.lastName}`;
+            if (req.password === defaultPassword) {
+              this.storage?.setItem('mustResetPassword', 'true');
+              this.router.navigate(['/reset-password']);
+            } else {
+              this.storage?.removeItem('mustResetPassword');
+            }
+          }
+        }),
         catchError(err => {
           return of(err.error ?? { message: 'Login failed' });
         })

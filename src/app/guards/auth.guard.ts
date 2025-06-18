@@ -36,14 +36,22 @@ export class AuthGuard implements CanActivate {
         queryParams: { returnUrl: state.url },
       });
     }
-
+  
+    /* 🛑 Block access to all pages if password must be reset */
+    const mustReset = localStorage.getItem('mustResetPassword') === 'true';
+    const isResetPage = state.url.includes('/reset-password');
+    if (mustReset && !isResetPage) {
+      return this.router.createUrlTree(['/reset-password']);
+    }
+  
     /* 2 — role check (optional) */
     const required: string[] | undefined = route.data['roles'];
     if (required?.length && !this.login.hasAnyRole(required)) {
       return this.router.parseUrl('/unauthorized');
     }
-
+  
     /* ✅ access granted */
     return true;
   }
+  
 }

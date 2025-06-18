@@ -128,3 +128,9 @@
       background-color: #2f081b;
     }
   }
+
+  .flex-gap{
+    display: flex;
+    gap: 7px;
+  }
+

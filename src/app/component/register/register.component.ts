@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
@@ -15,6 +15,7 @@ export class RegisterComponent {
   submitted = false;
   reportingManagers: any[] = [];
   departments: any[] = [];
+  
 
 
 ngOnInit() {
@@ -316,7 +317,7 @@ getDepartments() {
     return `${day}/${month}/${year}`;
   }
 
-  onRegister() {
+  onRegister( registerForm: NgForm) {
     this.submitted = true;
     const { contactNumber, ...backendData } = this.employee;
   
@@ -332,13 +333,14 @@ getDepartments() {
         if (response.status === 200 && response.data) {
           const employeeId = response.data.employeeId;
           const password = response.data.password;
-  
+          registerForm.resetForm();
           alert(
             `✅ Registration Successful!\n\n` +
             `🆔 Username (Employee ID): ${employeeId}\n` +
             `🔐 Password: ${password}\n\n` +
             `⚠️ Please save these credentials securely. You won't be able to view them again.`
           );
+
         } else {
           alert("Registration succeeded but unexpected response format.");
         }
@@ -349,6 +351,11 @@ getDepartments() {
       }
     });
   }
+
+  //hardcorded values, to be deleted upon api creation 
+subsidiaries: string[] = ['Company A', 'Company B', 'Company C'];
+availableRoles: string[] = ['employee', 'admin', 'supervisor'];
+
   
   
 }
