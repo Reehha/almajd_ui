@@ -8,6 +8,7 @@ import { QrScannerComponent } from './component/qr-scanner/qr-scanner.component'
 import { RegisterComponent } from './component/register/register.component';
 import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
+import { ProfileComponent } from './component/profile/profile.component';
 
 export const routes: Routes = [
   /* ---------- Public routes (no authentication) ---------- */
@@ -20,26 +21,32 @@ export const routes: Routes = [
   {
     path: 'manage',
     component: EmployeeDashboardComponent,
-    canActivate: [AuthGuard, RoleGuard],
+    canActivate: [AuthGuard],
     data: { roles: ['employee', 'manager'] }
   },
   {
     path: 'log-attendance',
     component: LogAttendanceComponent,
-    canActivate: [AuthGuard, RoleGuard],
+    canActivate: [AuthGuard],
     data: { roles: ['employee'] }
   },
   {
     path: 'admin-dashboard',
     component: AdminDashboardComponent,
-    canActivate: [AuthGuard, RoleGuard],
+    canActivate: [AuthGuard],
     data: { roles: ['admin'] }
   },
   {
     path: 'register',
     component: RegisterComponent,
-    canActivate: [AuthGuard, RoleGuard],
+    canActivate: [AuthGuard],
     data: { roles: ['admin'] }
+  },
+  {
+    path: 'profile',
+    component: ProfileComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['employee'] }
   },
 
   /* ---------- Fallback ---------- */

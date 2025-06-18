@@ -160,5 +160,16 @@ export class LoginService {
     }
   }
 
+  public getEmployeeId(): string | null {
+    const token = this.getToken();
+    if (!token) { return null; }
+
+    try {
+      const { preferred_username } = jwtDecode<{ preferred_username: string }>(token);
+      return preferred_username ?? null;
+    } catch {
+      return null;
+    }
+  }
 
 }

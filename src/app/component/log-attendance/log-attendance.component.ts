@@ -1,35 +1,38 @@
 import { Component } from '@angular/core';
-import * as QRCode from 'qrcode';
+import { QrService } from '../../services/qr.service';
+import { LoginService } from '../../services/login.service';
+
 
 @Component({
   selector: 'app-log-attendance',
-  standalone:true,
+  standalone: true,
   templateUrl: './log-attendance.component.html',
   styleUrls: ['./log-attendance.component.css'],
 })
 export class LogAttendanceComponent {
-  qrCodeDataUrl: string = '';
+  qrCodeDataUrl = '';
 
-  constructor() {
-    this.generateQRCode();
+  constructor(
+    private qr: QrService,
+    private login: LoginService
+  ) { }
+
+  async ngOnInit(): Promise<void> {
+    await this.loadQr(false);
   }
 
-  generateQRCode() {
-    const data = {
-      userId: '12345', // Replace with actual user ID
-      timestamp: new Date().toISOString(), // Add a timestamp
-    };
-
-    // Convert data to JSON string
-    const jsonData = JSON.stringify(data);
-
-    // Generate QR code
-    QRCode.toDataURL(jsonData, (err: any, url: string) => {
-      if (err) {
-        console.error('Error generating QR code:', err);
-        return;
-      }
-      this.qrCodeDataUrl = url;
-    });
+  /** (click)="refreshQr()" */
+  async refreshQr(): Promise<void> {
+    await this.loadQr(true);
   }
+
+  /* -------------------------------------------------- */
+  private async loadQr(forceRefresh: boolean): Promise<void> {
+    const empId = this.login.getEmployeeId();
+    if (!empId) { return; }
+
+    this.qrCodeDataUrl = await this.qr.generateQRCode(empId, forceRefresh);
+  }
+
+
 }
