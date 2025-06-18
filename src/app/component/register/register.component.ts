@@ -15,95 +15,95 @@ export class RegisterComponent {
   submitted = false;
   reportingManagers: any[] = [];
   departments: any[] = [];
-  
 
 
-ngOnInit() {
-  this.getReportingManagers();
-  this.getDepartments()
-}
 
-onEmiratesIdInput(): void {
-  let digits = this.employee.emiratesId.replace(/\D/g, '').slice(0, 15); // Only digits, max 15
-
-  const parts = [];
-  if (digits.length > 0) parts.push(digits.substring(0, 3));
-  if (digits.length > 3) parts.push(digits.substring(3, 7));
-  if (digits.length > 7) parts.push(digits.substring(7, 14));
-  if (digits.length > 14) parts.push(digits.substring(14));
-
-  this.employee.emiratesId = parts.join(' ');
-}
-
-onPhoneInput(control: any): void {
-  let digits = this.employee.phone.replace(/\D/g, '');
-
-  // Force to start with '971'
-  if (!digits.startsWith('971')) {
-    digits = '971' + digits;
+  ngOnInit() {
+    this.getReportingManagers();
+    this.getDepartments()
   }
 
-  // Max length = 12 digits (971 + 2 digits + 7 digits)
-  digits = digits.slice(0, 12);
+  onEmiratesIdInput(): void {
+    let digits = this.employee.emiratesId.replace(/\D/g, '').slice(0, 15); // Only digits, max 15
 
-  // Format with spaces: 971 55 1234567
-  let formatted = '';
-  if (digits.length >= 3) {
-    formatted = digits.substring(0, 3); // 971
-  }
-  if (digits.length >= 5) {
-    formatted += ' ' + digits.substring(3, 5); // 55
-  }
-  if (digits.length > 5) {
-    formatted += ' ' + digits.substring(5); // 1234567
+    const parts = [];
+    if (digits.length > 0) parts.push(digits.substring(0, 3));
+    if (digits.length > 3) parts.push(digits.substring(3, 7));
+    if (digits.length > 7) parts.push(digits.substring(7, 14));
+    if (digits.length > 14) parts.push(digits.substring(14));
+
+    this.employee.emiratesId = parts.join(' ');
   }
 
-  this.employee.phone = formatted;
+  onPhoneInput(control: any): void {
+    let digits = this.employee.phone.replace(/\D/g, '');
 
-  // Revalidate
-  const isValid = /^\s*971\s\d{2}\s\d{7}\s*$/.test(this.employee.phone);
-  if (!isValid) {
-    control.control.setErrors({ invalidPhone: true });
-  } else {
-    control.control.setErrors(null); // ✅ Clear error
+    // Force to start with '971'
+    if (!digits.startsWith('971')) {
+      digits = '971' + digits;
+    }
+
+    // Max length = 12 digits (971 + 2 digits + 7 digits)
+    digits = digits.slice(0, 12);
+
+    // Format with spaces: 971 55 1234567
+    let formatted = '';
+    if (digits.length >= 3) {
+      formatted = digits.substring(0, 3); // 971
+    }
+    if (digits.length >= 5) {
+      formatted += ' ' + digits.substring(3, 5); // 55
+    }
+    if (digits.length > 5) {
+      formatted += ' ' + digits.substring(5); // 1234567
+    }
+
+    this.employee.phone = formatted;
+
+    // Revalidate
+    const isValid = /^\s*971\s\d{2}\s\d{7}\s*$/.test(this.employee.phone);
+    if (!isValid) {
+      control.control.setErrors({ invalidPhone: true });
+    } else {
+      control.control.setErrors(null); // ✅ Clear error
+    }
   }
-}
 
 
 
-allowOnlyNumbers(event: KeyboardEvent): void {
-  const isDigit = /\d/.test(event.key);
-  if (!isDigit) {
-    event.preventDefault();
+  allowOnlyNumbers(event: KeyboardEvent): void {
+    const isDigit = /\d/.test(event.key);
+    if (!isDigit) {
+      event.preventDefault();
+    }
   }
-}
 
 
-getReportingManagers() {
-  this.http.get<any>('http://localhost:8081/auth/employee/managers')
-    .subscribe({
-      next: (response) => {
-        this.reportingManagers = response.data.map((manager: any) => ({
-          id: manager.employeeId,
-          name: `${manager.firstName} ${manager.lastName}`
-        }));
-      },
-      error: (err) => console.error('Failed to load managers', err)
-    });
-}
+  getReportingManagers() {
+    this.http.get<any>('http://localhost:8081/auth/employee/managers')
+      .subscribe({
+        next: (response) => {
+          this.reportingManagers = response.data.map((manager: any) => ({
+            id: manager.employeeId,
+            name: `${manager.firstName} ${manager.lastName}`
+          }));
+        },
+        error: (err) => console.error('Failed to load managers', err)
+      });
+  }
 
-getDepartments() {
-  this.http.get<any>('http://localhost:8081/dept/all')
-    .subscribe({
-      next: (response) => {
-        this.departments = response.data.map((dept: any) => ({
-          id: dept.departmentId,
-          name: dept.name
-        }));
-      },
-      error: (err) => console.error('Failed to load departments', err)
-    });
-} 
+  getDepartments() {
+    this.http.get<any>('http://localhost:8081/dept/all')
+      .subscribe({
+        next: (response) => {
+          this.departments = response.data.map((dept: any) => ({
+            id: dept.departmentId,
+            name: dept.name
+          }));
+        },
+        error: (err) => console.error('Failed to load departments', err)
+      });
+  }
 
 
   countries: string[] = [
@@ -301,33 +301,47 @@ getDepartments() {
     'Zimbabwe',
   ];
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) { }
 
 
- 
+
   formatDateForBackend(dateString: string): string {
-    if (!dateString) return '';
+    if (!dateString) {
+      return '';
+    }
+
     const date = new Date(dateString);
-    
-    // Format as DD/MM/YYYY with leading zeros
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    
-    return `${day}/${month}/${year}`;
+    if (isNaN(date.getTime())) {        // invalid date guard
+      return '';
+    }
+
+    // Expected browser `<input type="date">` value => "YYYY-MM-DD"
+    const parts = dateString.split('-');
+    if (parts.length !== 3) {
+      return ''; // invalid format
+    }
+
+    const [year, month, day] = parts;
+    if (!year || !month || !day) {
+      return '';
+    }
+    // Always return plain DD/MM/YYYY, no timezone involved
+    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
   }
 
-  onRegister( registerForm: NgForm) {
+  onRegister(registerForm: NgForm) {
     this.submitted = true;
     const { contactNumber, ...backendData } = this.employee;
-  
+
     const formattedData = {
       ...backendData,
       dob: this.formatDateForBackend(this.employee.dob),
       joiningDate: this.formatDateForBackend(this.employee.joiningDate),
-      visaExpiry: this.formatDateForBackend(this.employee.visaExpiry)
+      visaExpiry: this.formatDateForBackend(this.employee.visaExpiry),
+      emiratesIdExpiry: this.formatDateForBackend(this.employee.emiratesIdExpiry),
+      passportExpiry: this.formatDateForBackend(this.employee.passportExpiry)
     };
-  
+
     this.http.post<any>('http://localhost:8081/auth/register', formattedData).subscribe({
       next: (response) => {
         if (response.status === 200 && response.data) {
@@ -353,9 +367,9 @@ getDepartments() {
   }
 
   //hardcorded values, to be deleted upon api creation 
-subsidiaries: string[] = ['Company A', 'Company B', 'Company C'];
-availableRoles: string[] = ['employee', 'admin', 'supervisor'];
+  organizations: string[] = ['Company A', 'Company B', 'Company C'];
+  designations: string[] = ['employee', 'admin', 'supervisor'];
 
-  
-  
+
+
 }
