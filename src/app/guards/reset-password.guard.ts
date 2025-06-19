@@ -1,20 +1,27 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CanActivate, Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ResetPasswordGuard implements CanActivate {
-  constructor(private router: Router) {}
+  private storage: Storage | null;
+
+  constructor(
+    @Inject(PLATFORM_ID) platformId: Object,
+    private router: Router
+  ) {
+    this.storage = isPlatformBrowser(platformId) ? window.localStorage : null;
+  }
 
   canActivate(): boolean {
-    const mustReset = localStorage.getItem('mustResetPassword') === 'true';
+    const mustReset = this.storage?.getItem('mustResetPassword') === 'true';
 
     if (!mustReset) {
       this.router.navigate(['/login']);
       return false;
     }
-
     return true;
   }
 }

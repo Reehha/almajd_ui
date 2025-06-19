@@ -47,8 +47,9 @@ export class ResetPasswordComponent {
   
     this.passwordService.changePassword(this.newPassword).subscribe({
       next: () => {
-        localStorage.removeItem('mustResetPassword');
-        // localStorage.removeItem('accessToken');
+        this.clear();
+        
+        window.alert('🔒 Password reset successfully! 🎉\nYou will be redirected to the login page.');
         this.router.navigate(['/login']);
       },
       error: (err) => {

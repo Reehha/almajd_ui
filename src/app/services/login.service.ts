@@ -70,7 +70,7 @@ export class LoginService {
           this.store(res);
           const user = res?.data?.data;
           if (user?.firstName && user?.lastName) {
-            const defaultPassword = `${user.firstName}.${user.lastName}`;
+            const defaultPassword = `${user.firstName.toLowerCase()}.${user.lastName.toLowerCase()}`;
             if (req.password === defaultPassword) {
               this.storage?.setItem('mustResetPassword', 'true');
               this.router.navigate(['/reset-password']);

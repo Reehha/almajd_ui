@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { LeaveRequestComponent } from '../leave-request/leave-request.component';
 import { AttendanceChartComponent } from '../attendance-chart/attendance-chart.component';
 import { AttendanceTableComponent } from '../attendance-table/attendance-table.component';
@@ -12,10 +12,11 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./manage-employee-dashboard.component.css'],
 })
 
-export class EmployeeDashboardComponent {
+export class EmployeeDashboardComponent implements OnInit{
   startDate: string = '';
   endDate: string = '';
   isLeaveRequestOpen: boolean = false;
+  firstName: string | null;
 
   // Sample data
   attendanceData = [
@@ -23,6 +24,14 @@ export class EmployeeDashboardComponent {
     { date: '2023-10-02', checkIn: '09:15', checkOut: '18:00', status: 'Late' },
     { date: '2023-10-03', checkIn: '', checkOut: '', status: 'Absent' },
   ];
+
+  constructor() { 
+    this.firstName = localStorage.getItem('firstName');
+  }
+
+  ngOnInit(): void {
+    this.firstName = localStorage.getItem('firstName');
+  }
 
   filteredData = this.attendanceData;
 
