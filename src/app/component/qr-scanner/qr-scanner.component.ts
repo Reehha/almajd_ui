@@ -1,4 +1,3 @@
-
 import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -19,10 +18,12 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   private activeStream: MediaStream | null = null;
   private decodeTimeout: any = null;
   private beepSound: Howl | null = null;
+  deviceInfoError: string | null = null;
+
+
   scanStatusMessage: string = '';
-scanSuccessful: boolean = false;
-  
-  // Scanner state
+  scanSuccessful: boolean = false;
+
   qrResult: string | null = null;
   cameras: MediaDeviceInfo[] = [];
   selectedDeviceId: string = '';
@@ -30,19 +31,33 @@ scanSuccessful: boolean = false;
   errorMessage: string | null = null;
   isLoading = true;
 
+  // Device info modal
+  showDeviceInfoPopup = false;
+  deviceInfoInput: string = '';
+
   constructor(@Inject(DOCUMENT) private document: Document) {
     this.checkEnvironmentSupport();
     this.initializeBeepSound();
   }
 
   async ngOnInit(): Promise<void> {
+    if (typeof window !== 'undefined') {
+      const storedDeviceInfo = localStorage.getItem('deviceInfo');
+      if (!storedDeviceInfo) {
+        this.showDeviceInfoPopup = true;
+        return;
+      }
+    }
+  
     if (!this.isMediaDevicesSupported || !this.isSecureContext) {
       this.isLoading = false;
       return;
     }
+  
     await this.initializeCamera();
     this.isLoading = false;
   }
+  
 
   ngOnDestroy(): void {
     this.stopScanner();
@@ -131,12 +146,12 @@ scanSuccessful: boolean = false;
         if (!this.videoElement || !this.scannerActive) {
           return;
         }
-      
+
         this.codeReader.decodeFromVideoElement(
           this.videoElement,
           (result, error) => {
             if (!this.scannerActive) return;
-      
+
             if (result) {
               // QR code detected; process result without stopping the feed
               this.qrResult = result.getText();
@@ -168,18 +183,18 @@ scanSuccessful: boolean = false;
     this.qrResult = result;
     this.scanSuccessful = true;
     this.scanStatusMessage = 'Scan successful! ✓';
-  
+
     if (this.beepSound) {
       this.beepSound.play();
     }
-  
+
     // Instead of stopping the scanner, we simply restart the scanning loop after a brief delay.
     this.restartScannerAfterDelay(2000); // Adjust delay as needed.
   }
 
   private restartScannerAfterDelay(delay: number = 1000) {
     if (!this.scannerActive) return;
-    
+
     clearTimeout(this.decodeTimeout);
     this.decodeTimeout = setTimeout(() => {
       this.startScanner();
@@ -195,19 +210,19 @@ scanSuccessful: boolean = false;
 
   stopScanner(): void {
     this.scannerActive = false;
-    
+
     // Clear any pending decode
     if (this.decodeTimeout) {
       clearTimeout(this.decodeTimeout);
       this.decodeTimeout = null;
     }
-    
+
     // Stop the video stream
     if (this.activeStream) {
       this.activeStream.getTracks().forEach(track => track.stop());
       this.activeStream = null;
     }
-    
+
     // Clear video element
     if (this.videoElement) {
       this.videoElement.srcObject = null;
@@ -224,4 +239,20 @@ scanSuccessful: boolean = false;
   clearResult(): void {
     this.qrResult = null;
   }
+
+  saveDeviceInfo(): void {
+    if (!this.deviceInfoInput || !this.deviceInfoInput.trim()) {
+      return; // Let HTML validation handle it
+    }
+  
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('deviceInfo', this.deviceInfoInput.trim());
+      alert('✅ Device information saved successfully!');
+    }
+  
+    this.showDeviceInfoPopup = false;
+    this.ngOnInit(); // Restart initialization
+  }
+  
+  
 }

@@ -66,3 +66,61 @@ button, select {
   background-color: #f0f0f0;
   border-radius: 8px;
 }
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #000;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.modal input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  color: #f0f0f0;
+  background-color: #000; 
+}
+
+.modal-buttons button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-buttons button:hover {
+  background-color: #0056b3;
+}
+
+.input-group {
+  position: relative;
+  margin: 1rem;
+  background: var(--primary-gradient-color);
+  padding: 2px; /* This creates the border effect */
+  border-radius: 0.5rem; /* Match the input border-radius */
+}
+
+.error-message{
+  color: #ff0000;
+  padding: 12px;
+}

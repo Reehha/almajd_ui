@@ -65,3 +65,33 @@
     </div>
   </div>
 </div>
+
+<!-- Device Info Modal -->
+<div *ngIf="showDeviceInfoPopup" class="modal-backdrop">
+  <div class="modal">
+    <h3>Enter Device Information</h3>
+
+    <form #deviceForm="ngForm" (ngSubmit)="saveDeviceInfo()">
+      <div class="input-group">
+        <input type="text"
+               name="deviceInfo"
+               [(ngModel)]="deviceInfoInput"
+               #deviceInfoRef="ngModel"
+               required
+               placeholder="Enter device name"
+               [ngClass]="{ 'input-error': deviceInfoRef.invalid && deviceInfoRef.touched }" />
+      </div>
+
+      <!-- Error shown only if touched and invalid -->
+      <div class="error-message" *ngIf="deviceInfoRef.invalid && deviceInfoRef.touched">
+        Device information is required.
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
