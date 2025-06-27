@@ -1,0 +1,52 @@
+<div class="dashboard-container">
+    <div class="dashboard-header">
+      <h2>Employee Details</h2>
+      <button *ngIf="!isEditMode" class="scan-btn" (click)="toggleEdit()">Edit</button>
+    </div>
+  
+    <div class="filter-panel">
+      <div class="filter-group">
+        <div class="filter-item">
+          <label>First Name</label>
+          <input [(ngModel)]="employee.firstName" [readonly]="!isEditMode" />
+        </div>
+  
+        <div class="filter-item">
+          <label>Last Name</label>
+          <input [(ngModel)]="employee.lastName" [readonly]="!isEditMode" />
+        </div>
+  
+        <div class="filter-item">
+          <label>Email</label>
+          <input [(ngModel)]="employee.email" [readonly]="!isEditMode" />
+        </div>
+  
+        <div class="filter-item">
+          <label>Phone</label>
+          <input [(ngModel)]="employee.phone" [readonly]="!isEditMode" />
+        </div>
+  
+        <div class="filter-item">
+          <label>Department</label>
+          <input [(ngModel)]="employee.department" [readonly]="!isEditMode" />
+        </div>
+  
+        <div class="filter-item">
+          <label>Nationality</label>
+          <input [(ngModel)]="employee.nationality" [readonly]="!isEditMode" />
+        </div>
+  
+        <!-- Add more fields as needed -->
+      </div>
+  
+      <div *ngIf="isEditMode" class="filter-group" style="margin-top: 1.5rem;">
+        <div class="filter-item align-end">
+          <button (click)="save()">Save</button>
+        </div>
+        <div class="filter-item align-end">
+          <button (click)="cancel()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
