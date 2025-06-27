@@ -206,6 +206,9 @@
 
   .attendance-table {
     display: block;
+    tr{
+      border-bottom: 2px solid #fff;
+    }
   }
 
   .attendance-table thead {

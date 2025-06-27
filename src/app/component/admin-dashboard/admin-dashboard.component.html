@@ -93,13 +93,21 @@
         </table>
         <div class="pagination">
           <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
-          <button *ngFor="let page of [].constructor(totalPages); let i = index"
-                  [class.active]="i + 1 === currentPage"
-                  (click)="goToPage(i + 1)">
-            {{ i + 1 }}
-          </button>
+        
+          <ng-container *ngFor="let item of paginationRange">
+            <button 
+              *ngIf="isNumber(item)"
+              (click)="goToPage(item)"
+              [class.active]="item === currentPage">
+              {{ item }}
+            </button>
+        
+            <span *ngIf="!isNumber(item)">...</span>
+          </ng-container>
+        
           <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
         </div>
+        
         
       </div>
   </div>
