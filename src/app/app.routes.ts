@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './component/login/login.component';
-// import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
-import { EmployeeDashboardComponent } from './component/manage-employee-dashboard/manage-employee-dashboard.component';
+import { MainEmployeeDashboardComponent } from './component/employee-dashboard/employee-dashboard.component';
+import { ManageEmployeeDashboardComponent } from './component/manage-employee-dashboard/manage-employee-dashboard.component';
 import { LogAttendanceComponent } from './component/log-attendance/log-attendance.component';
 import { QrScannerComponent } from './component/qr-scanner/qr-scanner.component';
 import { RegisterComponent } from './component/register/register.component';
@@ -11,6 +11,8 @@ import { ProfileComponent } from './component/profile/profile.component';
 import { ResetPasswordComponent } from './component/reset-password/reset-password.component';
 import { ResetPasswordGuard } from './guards/reset-password.guard';
 import { AdminDashboardComponent } from './component/admin-dashboard/admin-dashboard.component';
+import { EmployeeViewComponent } from './component/employee-view/employee-view.component';
+import { UnderConstructionComponent } from './component/under-construction/under-construction.component';
 
 export const routes: Routes = [
   /* ---------- Public routes (no authentication) ---------- */
@@ -22,9 +24,15 @@ export const routes: Routes = [
 
   {
     path: 'manage',
-    component: EmployeeDashboardComponent,
+    component: ManageEmployeeDashboardComponent,
     canActivate: [AuthGuard],
-    data: { roles: ['employee', 'manager'] }
+    data: { roles: [ 'admin'] }
+  },
+  {
+    path: 'employee-dashboard',
+    component: MainEmployeeDashboardComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['employee'] }
   },
   {
     path: 'log-attendance',
@@ -55,6 +63,19 @@ export const routes: Routes = [
     component: ResetPasswordComponent,
     canActivate: [ResetPasswordGuard]
   },
+  {
+    path: 'employee-view/:employeeId',
+    component: EmployeeViewComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'under-construction',
+    component: UnderConstructionComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['admin','employee'] }
+  },
+  
 
   /* ---------- Fallback ---------- */
   { path: '**', redirectTo: '/login' }

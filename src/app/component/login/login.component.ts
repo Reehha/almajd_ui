@@ -67,7 +67,7 @@ export class LoginComponent {
             this.router.navigateByUrl('/admin-dashboard');
           } else if (roles.some((r: string) => ['employee', 'office-staff', 'site-worker', 'factory-worker'].includes(r))) {
             this.service.setSession(accessToken, roles);
-            this.router.navigateByUrl('/manage');
+            this.router.navigateByUrl('/employee-dashboard');
           } else {
             this.errorMessage = 'Unknown role';
         }

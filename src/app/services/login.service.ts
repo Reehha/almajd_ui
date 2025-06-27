@@ -101,6 +101,7 @@ export class LoginService {
         // whether it returns 204 or 409, we clear the local state
         catchError(() => of(null)),
         tap(() => this.clear()),
+        tap(() => alert('Logged out successfully')), // ✅ show alert
         tap(() => this.router.navigateByUrl('/login'))
       );
   }

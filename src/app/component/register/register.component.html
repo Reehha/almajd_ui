@@ -187,6 +187,7 @@
   
       <!-- Department & Role in one row -->
       <div class="form-row">
+        <div>
         <div class="input-group">
           <label for="department" class="top-label">Department</label>
           <select
@@ -200,11 +201,13 @@
               {{ dept.name }}
             </option>
           </select>
-          <div *ngIf="departmentRef.invalid && departmentRef.touched" class="error-msg">
-            Department is required.
-          </div>
+        </div>
+        <div *ngIf="departmentRef.invalid && departmentRef.touched" class="error-msg">
+          Department is required.
+        </div>
         </div>
   
+        <div>
         <div class="input-group">
           <label class="top-label">Designation</label>
           <select
@@ -216,11 +219,12 @@
             <option value="" disabled selected>Select designation</option>
             <option *ngFor="let r of designations" [value]="r">{{ r }}</option>
           </select>
-          <div *ngIf="designation.invalid && designation.touched" class="error-msg">
-            Designation is required.
-          </div>
+        </div>
+        <div *ngIf="designation.invalid && designation.touched" class="error-msg">
+          Designation is required.
         </div>
       </div>
+    </div>
   
       <!-- Organization & Nationality in one row -->
       <div class="form-row">

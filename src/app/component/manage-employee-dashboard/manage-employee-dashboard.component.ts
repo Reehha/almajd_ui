@@ -1,50 +1,50 @@
+// manage-employee-dashboard.component.ts
 import { Component, OnInit } from '@angular/core';
-import { LeaveRequestComponent } from '../leave-request/leave-request.component';
-import { AttendanceChartComponent } from '../attendance-chart/attendance-chart.component';
-import { AttendanceTableComponent } from '../attendance-table/attendance-table.component';
-import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { EmployeeService } from '../../services/employee.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-manage-employee-dashboard',
+  imports:[CommonModule],
   templateUrl: './manage-employee-dashboard.component.html',
-  imports:[LeaveRequestComponent,AttendanceChartComponent,AttendanceTableComponent,FormsModule,CommonModule],
-  styleUrls: ['./manage-employee-dashboard.component.css'],
+  styleUrls: ['./manage-employee-dashboard.component.css']
 })
+export class ManageEmployeeDashboardComponent implements OnInit {
+  employees: any[] = [];
+  paginatedEmployees: any[] = [];
+  currentPage = 1;
+  pageSize = 5;
 
-export class EmployeeDashboardComponent implements OnInit{
-  startDate: string = '';
-  endDate: string = '';
-  isLeaveRequestOpen: boolean = false;
-  firstName: string | null;
-
-  // Sample data
-  attendanceData = [
-    { date: '2023-10-01', checkIn: '09:00', checkOut: '18:00', status: 'Present' },
-    { date: '2023-10-02', checkIn: '09:15', checkOut: '18:00', status: 'Late' },
-    { date: '2023-10-03', checkIn: '', checkOut: '', status: 'Absent' },
-  ];
-
-  constructor() { 
-    this.firstName = localStorage.getItem('firstName');
-  }
+  constructor(private employeeService: EmployeeService, private router: Router) {}
 
   ngOnInit(): void {
-    this.firstName = localStorage.getItem('firstName');
-  }
-
-  filteredData = this.attendanceData;
-
-  filterData() {
-    this.filteredData = this.attendanceData.filter((entry) => {
-      const date = new Date(entry.date);
-      const start = new Date(this.startDate);
-      const end = new Date(this.endDate);
-      return date >= start && date <= end;
+    this.employeeService.getAllEmployees().subscribe((res) => {
+      this.employees = res.data;
+      this.updatePaginatedData();
     });
   }
 
-  toggleLeaveRequest() {
-    this.isLeaveRequestOpen = !this.isLeaveRequestOpen;
+  updatePaginatedData(): void {
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.paginatedEmployees = this.employees.slice(start, start + this.pageSize);
+  }
+
+  nextPage(): void {
+    if ((this.currentPage * this.pageSize) < this.employees.length) {
+      this.currentPage++;
+      this.updatePaginatedData();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedData();
+    }
+  }
+
+  viewEmployee(employeeId: string): void {
+    this.router.navigate(['/employee-view', employeeId]);
   }
 }
