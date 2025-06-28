@@ -23,6 +23,7 @@ html, body {
 /* === HEADER === */
 .dashboard-header {
   display: flex;
+  width: fit-content;
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.5rem;
@@ -284,6 +285,10 @@ html, body {
 .pagination button.active {
   background-color: #2196f3;
 }
+
+.table-scroll {
+  width: -webkit-fill-available;
+  }
 
 /* === RESPONSIVE STYLES === */
 

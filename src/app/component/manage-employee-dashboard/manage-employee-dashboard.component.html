@@ -3,6 +3,24 @@
     <h2>Manage Employees</h2>
   </div>
 
+  <div class="filter-panel">
+    <div class="filter-group">
+      <input [(ngModel)]="filters.name" placeholder="Search by Name" />
+      <input [(ngModel)]="filters.employeeId" placeholder="Employee ID" />
+      <select [(ngModel)]="filters.department">
+        <option value="">All Departments</option>
+        <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+      </select>
+      <select [(ngModel)]="filters.designation">
+        <option value="">All Roles</option>
+        <option value="manager">Manager</option>
+        <option value="employee">Employee</option>
+      </select>
+      <div class="filter-apply"></div>
+      <button (click)="applyFilters()">Apply</button>
+    </div>
+  </div>
+
   <div class="table-container">
     <table class="attendance-table">
       <thead>
@@ -10,8 +28,8 @@
           <th>Employee ID</th>
           <th>Name</th>
           <th>Department</th>
-          <th>Role</th>
-          <th>View</th>
+          <th>Designation</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -21,9 +39,7 @@
           <td data-label="Department">{{ emp.department }}</td>
           <td data-label="Role">{{ emp.manager ? 'Manager' : 'Employee' }}</td>
           <td data-label="View">
-            <button class="scan-btn" (click)="viewEmployee(emp.employeeId)">
-              View
-            </button>
+            <button class="scan-btn" (click)="viewEmployee(emp.employeeId)">View/Edit</button>
           </td>
         </tr>
       </tbody>
@@ -31,16 +47,16 @@
   </div>
 
   <div class="pagination-container">
-    <button class="pagination-button" (click)="prevPage()" [disabled]="currentPage === 1">
-      Previous
-    </button>
-    <span class="pagination-button active"> {{ currentPage }}</span>
-    <button
-      class="pagination-button"
-      (click)="nextPage()"
-      [disabled]="currentPage * pageSize >= employees.length"
-    >
-      Next
-    </button>
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+    
+    <ng-container *ngFor="let p of paginationRange">
+      <button 
+        *ngIf="isNumber(p)" 
+        (click)="goToPage(p)" 
+        [class.active]="p === currentPage">{{ p }}</button>
+      <span *ngIf="!isNumber(p)">...</span>
+    </ng-container>
+
+    <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
   </div>
 </div>
