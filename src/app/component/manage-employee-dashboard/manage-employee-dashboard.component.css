@@ -7,6 +7,7 @@ html, body {
   font-family: sans-serif;
   background-color: #1a1a1a;
   color: white;
+  height: 100%; /* ensure full height */
 }
 
 /* === CONTAINER === */
@@ -14,10 +15,11 @@ html, body {
   padding: 1rem;
   background-color: #1a1a1a;
   border-radius: 10px;
-  max-width: 1200px;
-  margin: 1rem auto;
-  box-sizing: border-box;
   width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0 auto;
+  min-height: 100vh;
 }
 
 /* === HEADER === */
@@ -54,20 +56,15 @@ html, body {
   flex: 1 1 200px;
 }
 
-.filter-group button {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #6e8efb, #a777e3);
-  border: none;
-  color: white;
-  font-weight: bold;
-  text-transform: uppercase;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  flex: 1 1 200px;
+.filter-apply {
+  flex: 0 0 auto;
+  align-self: flex-end;
 }
 
-.filter-group button:hover {
-  background-position: right center;
+.filter-apply button {
+  padding: 0.6rem 1.2rem;
+  white-space: nowrap;
+  min-width: auto;
 }
 
 /* === TABLE === */
@@ -76,8 +73,8 @@ html, body {
   padding: 1rem;
   border-radius: 1rem;
   overflow-x: auto;
+  width: 100%;
 }
-
 
 .attendance-table {
   width: 100%;
@@ -86,6 +83,7 @@ html, body {
   border-radius: 10px;
   overflow: hidden;
   color: white;
+  table-layout: auto;
 }
 
 .attendance-table th,
@@ -171,6 +169,13 @@ html, body {
     flex-direction: column;
   }
 
+  .filter-group input,
+  .filter-group select,
+  .filter-apply button {
+    width: 100%;
+    flex: none;
+  }
+
   .attendance-table {
     display: block;
     width: 100%;
@@ -205,22 +210,4 @@ html, body {
   .attendance-table td:last-child {
     border-bottom: none;
   }
-
-  .filter-group input,
-  .filter-group select,
-  .filter-group button {
-    width: 100%;
-    flex: none;
-  }
 }
-.filter-apply {
-  flex: 0 0 auto;
-  align-self: flex-end;
-}
-
-.filter-apply button {
-  padding: 0.6rem 1.2rem;
-  white-space: nowrap;
-  min-width: auto;
-}
-
