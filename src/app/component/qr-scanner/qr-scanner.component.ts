@@ -106,6 +106,8 @@ export class QrScannerComponent implements OnInit, OnDestroy {
       }
       
       this.selectedDeviceId = this.cameras[0].deviceId;
+
+      setTimeout(() => this.startScanner(), 0);
     } catch (error) {
       this.handleCameraError(error);
     }
