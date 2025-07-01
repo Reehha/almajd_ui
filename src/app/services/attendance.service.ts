@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { PunchRequest, PunchResponse } from '../models/types';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
@@ -82,5 +84,13 @@ export class AttendanceService {
   private formatDateDDMMYYYY(input: string): string {
     const [year, month, day] = input.split('-');
     return `${day}/${month}/${year}`;
+  }
+
+  punch(req: PunchRequest): Observable<PunchResponse> {
+    return this.http.post<PunchResponse>(`${this.BASE_URL}/punch`, req).pipe(
+      tap(res => {
+      }),
+      catchError(err => throwError(() => err))
+    );
   }
 }

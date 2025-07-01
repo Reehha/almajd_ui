@@ -4,6 +4,10 @@ import { BrowserMultiFormatReader } from '@zxing/browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Howl } from 'howler';  // Import Howler
+import { PunchRequest, PunchResponse } from '../../models/types';
+import { firstValueFrom, map, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { AttendanceService } from '../../services/attendance.service';
 
 @Component({
   selector: 'app-qr-scanner',
@@ -12,13 +16,21 @@ import { Howl } from 'howler';  // Import Howler
   templateUrl: './qr-scanner.component.html',
   styleUrls: ['./qr-scanner.component.css']
 })
+
 export class QrScannerComponent implements OnInit, OnDestroy {
+
   private codeReader = new BrowserMultiFormatReader();
   private videoElement: HTMLVideoElement | null = null;
   private activeStream: MediaStream | null = null;
   private decodeTimeout: any = null;
   private beepSound: Howl | null = null;
   deviceInfoError: string | null = null;
+  punchRequest!: PunchRequest;
+  latitude: number | null = null;
+  longitude: number | null = null;
+  ip: string | null = null;
+
+  private endpoint = 'https://api.ipify.org?format=json';
 
 
   scanStatusMessage: string = '';
@@ -35,7 +47,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   showDeviceInfoPopup = false;
   deviceInfoInput: string = '';
 
-  constructor(@Inject(DOCUMENT) private document: Document) {
+  constructor(@Inject(DOCUMENT) private document: Document, private http: HttpClient, private service: AttendanceService) {
     this.checkEnvironmentSupport();
     this.initializeBeepSound();
   }
@@ -48,16 +60,19 @@ export class QrScannerComponent implements OnInit, OnDestroy {
         return;
       }
     }
-  
+
     if (!this.isMediaDevicesSupported || !this.isSecureContext) {
       this.isLoading = false;
       return;
     }
-  
+
     await this.initializeCamera();
     this.isLoading = false;
+
+    this.ip = await this.getPublicIp();
+    this.getLocation();
   }
-  
+
 
   ngOnDestroy(): void {
     this.stopScanner();
@@ -99,12 +114,12 @@ export class QrScannerComponent implements OnInit, OnDestroy {
     try {
       await this.requestCameraPermission();
       this.cameras = await BrowserMultiFormatReader.listVideoInputDevices();
-      
+
       if (this.cameras.length === 0) {
         this.errorMessage = 'No cameras detected on this device.';
         return;
       }
-      
+
       this.selectedDeviceId = this.cameras[0].deviceId;
 
       setTimeout(() => this.startScanner(), 0);
@@ -124,12 +139,13 @@ export class QrScannerComponent implements OnInit, OnDestroy {
 
   private handleCameraError(error: unknown): void {
     console.error('Camera initialization error:', error);
-    this.errorMessage = error instanceof Error 
-      ? error.message 
+    this.errorMessage = error instanceof Error
+      ? error.message
       : 'Failed to access camera';
   }
 
   async startScanner(): Promise<void> {
+    this.clearResult();
     clearTimeout(this.decodeTimeout);
     if (!this.selectedDeviceId || this.scannerActive) return;
 
@@ -137,7 +153,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
       this.errorMessage = null;
       this.scannerActive = true;
       this.videoElement = this.document.getElementById('qr-video') as HTMLVideoElement;
-      
+
       // Get the media stream
       this.activeStream = await navigator.mediaDevices.getUserMedia({
         video: { deviceId: this.selectedDeviceId }
@@ -158,7 +174,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
               // QR code detected; process result without stopping the feed
               this.qrResult = result.getText();
               this.handleScanSuccess(this.qrResult);
-              
+
             } else if (error && this.scannerActive) {
               // Filter out the "No MultiFormat Readers" error:
               if (
@@ -182,23 +198,35 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   }
 
   private handleScanSuccess(result: string) {
-    this.qrResult = result;
-    this.scanSuccessful = true;
-    this.scanStatusMessage = 'Scan successful! ✓';
+    const deviceId = localStorage.getItem('deviceInfo');
+    if (result && deviceId) {
 
-    if (this.beepSound) {
-      this.beepSound.play();
+      this.punchRequest = {
+        employeeId: JSON.parse(result)?.employeeId,
+        deviceId: deviceId,
+        latitude: this.latitude,
+        longitude: this.longitude,
+        ipAddress: this.ip
+      }
+
+      this.service.punch(this.punchRequest).subscribe((res: PunchResponse) => {
+        this.qrResult = res.data.message;
+        this.scanSuccessful = true;
+        this.scanStatusMessage = 'Scan successful! ✓';
+
+        if (this.beepSound) {
+          this.beepSound.play();
+        }
+        // Instead of stopping the scanner, we simply restart the scanning loop after a brief delay.
+        this.restartScannerAfterDelay(); // Adjust delay as needed.
+      });
     }
-
-    // Instead of stopping the scanner, we simply restart the scanning loop after a brief delay.
-    this.restartScannerAfterDelay(2000); // Adjust delay as needed.
   }
 
-  private restartScannerAfterDelay(delay: number = 1000) {
+  private restartScannerAfterDelay(delay: number = 3000) {
     if (!this.scannerActive) return;
 
-    clearTimeout(this.decodeTimeout);
-    this.decodeTimeout = setTimeout(() => {
+    setTimeout(() => {
       this.startScanner();
     }, delay);
   }
@@ -239,6 +267,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   }
 
   clearResult(): void {
+    this.scanStatusMessage = '';
     this.qrResult = null;
   }
 
@@ -246,15 +275,54 @@ export class QrScannerComponent implements OnInit, OnDestroy {
     if (!this.deviceInfoInput || !this.deviceInfoInput.trim()) {
       return; // Let HTML validation handle it
     }
-  
+
     if (typeof window !== 'undefined') {
       localStorage.setItem('deviceInfo', this.deviceInfoInput.trim());
       alert('✅ Device information saved successfully!');
     }
-  
+
     this.showDeviceInfoPopup = false;
     this.ngOnInit(); // Restart initialization
   }
-  
-  
+
+  getLocation(): void {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.latitude = position.coords.latitude;
+          this.longitude = position.coords.longitude;
+          this.errorMessage = null; // Clear any previous error
+        },
+        (error) => {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              this.errorMessage = 'User denied the request for Geolocation.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              this.errorMessage = 'Location information is unavailable.';
+              break;
+            case error.TIMEOUT:
+              this.errorMessage = 'The request to get user location timed out.';
+              break;
+            default:
+              this.errorMessage = 'An unknown error occurred.';
+              break;
+          }
+          this.latitude = null; // Clear coordinates on error
+          this.longitude = null;
+        }
+      );
+    } else {
+      this.errorMessage = 'Geolocation is not supported by this browser.';
+    }
+  }
+
+  async getPublicIp(): Promise<string> {
+    const { ip } = await firstValueFrom(
+      this.http.get<{ ip: string }>(this.endpoint)
+    );
+    return ip;
+  }
+
+
 }
