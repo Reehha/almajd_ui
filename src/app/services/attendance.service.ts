@@ -20,12 +20,25 @@ export class AttendanceService {
     );
   }
 
-  getAttendanceForDate(punchDate: string) {
+  getEmployeeAttendance(startDate: string, endDate: string): Observable<any[]> {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  
+    // return this.http.get<any[]>(`${this.BASE_URL}/employee-attendance?startDate=${startDate}&endDate=${endDate}`, { headers });
+    return this.http.get<any[]>('https://mocki.io/v1/ac24849c-0d34-45a7-a98f-718f21c39a71');
+  }  
 
-    return this.http.get<any>(`${this.BASE_URL}?punchDate=${punchDate}`, { headers });
+  getScheduleInfo(): Observable<{ scheduleStart: string, scheduleEnd: string, location: string }> {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  
+    // return this.http.get<{ scheduleStart: string, scheduleEnd: string, location: string }>(
+    //   `${this.BASE_URL}/schedule-info`,
+    //   { headers }
+    // );
+    return this.http.get<{ scheduleStart: string, scheduleEnd: string, location: string }>('https://mocki.io/v1/031f0b72-a740-428c-aa1a-7f211279a29e');
   }
+  
 
   private transformAttendance(data: any[], startDate: string, endDate: string, empIdFilter?: string) {
     const grouped: { [key: string]: any } = {};

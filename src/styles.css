@@ -24,6 +24,7 @@
   /* Login Button */
 .btn {
     width: 14rem;
+    height: 3rem;
     padding: 0.75rem;
     background: var(--primary-gradient-color);
     border: none;
@@ -38,3 +39,8 @@
     background-color: #0056b3;
   }
   
+  @media(max-width: 762px) {
+    body{
+      padding: 0;
+    }
+  }
