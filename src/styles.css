@@ -15,6 +15,7 @@
     /* align-items: center; */
     min-height: 100vh; /* Ensure it takes up the full screen height */
     padding: 1rem; /* Add some padding for smaller screens */
+    margin: 2rem;
   }
 
   :root{
@@ -38,9 +39,13 @@
   .btn:hover {
     background-color: #0056b3;
   }
-  
+
   @media(max-width: 762px) {
     body{
       padding: 0;
+      margin: unset;
     }
   }
+  .error-message {
+    color: red;
+}

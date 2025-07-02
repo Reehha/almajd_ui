@@ -17,14 +17,17 @@ import { AttendanceData } from '../../models/types';
 export class MainEmployeeDashboardComponent implements OnInit {
   employeeId: string | null;
   attendanceData: AttendanceData[] = [];
-  filteredData: any[] = [];
+  filteredData: AttendanceData[] = [];
 
   startDate!: string;
   endDate!: string;
   currentPage = 1;
-  pageSize = 20;
+  pageSize = 10;
+  maxVisiblePages = 4;
   chart: any;
   today: string = '';
+  dateError: string = '';
+
   userInfo = {
     firstName: '',
     lastName: '',
@@ -37,6 +40,23 @@ export class MainEmployeeDashboardComponent implements OnInit {
 
   constructor(private attendanceService: AttendanceService) {
     this.employeeId = localStorage.getItem('employeeId');
+  }
+
+  ngOnInit() {
+    this.userInfo.firstName = localStorage.getItem('firstName') || '';
+    this.userInfo.lastName = localStorage.getItem('lastName') || '';
+
+    this.attendanceService.getScheduleInfo().subscribe(schedule => {
+      this.todaySchedule.time = `${schedule?.data.startTime} - ${schedule.data.endTime}`;
+      this.todaySchedule.location = schedule.data.site;
+    });
+
+    const today = new Date();
+    this.today = today.toISOString().split('T')[0];
+    this.startDate = this.today;
+    this.endDate = this.today;
+
+    this.fetchData();
   }
 
   exportPDF() {
@@ -57,24 +77,27 @@ export class MainEmployeeDashboardComponent implements OnInit {
     doc.save('attendance.pdf');
   }
 
-  ngOnInit() {
-    this.userInfo.firstName = localStorage.getItem('firstName') || '';
-    this.userInfo.lastName = localStorage.getItem('lastName') || '';
+  hasDateError(): boolean {
+    if (!this.startDate || !this.endDate) {
+      this.dateError = 'Both start and end dates are required.';
+      return true;
+    }
 
-    this.attendanceService.getScheduleInfo().subscribe(schedule => { 
-      this.todaySchedule.time = `${schedule?.data.startTime} - ${schedule.data.endTime}`;
-      this.todaySchedule.location = schedule.data.site;
-    });
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
 
-    const today = new Date();
-    this.today = today.toISOString().split('T')[0];
-    this.startDate = this.today;
-    this.endDate = this.today;
+    if (start > end) {
+      this.dateError = 'Start date cannot be after end date.';
+      return true;
+    }
 
-    this.fetchData();
+    this.dateError = '';
+    return false;
   }
 
   fetchData() {
+    if (this.hasDateError()) return;
+
     this.attendanceService
       .getMyAttendanceForDate(this.startDate, this.endDate)
       .subscribe((res: any) => {
@@ -82,9 +105,8 @@ export class MainEmployeeDashboardComponent implements OnInit {
           ? res
           : res?.data ?? [];
 
-        // reset then populate
         this.attendanceData = [...rows];
-
+        this.currentPage = 1;
         this.applyPagination();
         this.buildChart();
       });
@@ -96,20 +118,49 @@ export class MainEmployeeDashboardComponent implements OnInit {
     this.filteredData = this.attendanceData.slice(start, end);
   }
 
-  onPageChange(page: number) {
-    this.currentPage = page;
-    this.applyPagination();
+  get totalPages(): number {
+    return Math.ceil(this.attendanceData.length / this.pageSize);
   }
 
-  getColor(status: string):{color:string} {
-    if (status == 'On Time') {
-      return {color:'#4caf50'};
-    } else if (status == 'Over Time') {
-      return {color:'#e53935'};
-    } else {
-      return {color:'#ffb300'};
+  onPageChange(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.applyPagination();
     }
   }
+
+  get paginationRange(): (number | string)[] {
+    const totalPages = this.totalPages;
+    const current = this.currentPage;
+    const delta = 1;
+    const range: (number | string)[] = [];
+
+    const left = Math.max(2, current - delta);
+    const right = Math.min(totalPages - 1, current + delta);
+
+    range.push(1);
+    if (left > 2) range.push('...');
+    for (let i = left; i <= right; i++) range.push(i);
+    if (right < totalPages - 1) range.push('...');
+    if (totalPages > 1) range.push(totalPages);
+
+    return range;
+  }
+
+  isNumber(value: any): value is number {
+    return typeof value === 'number';
+  }
+
+  getColor(status: string): { color: string } {
+    if (status == 'On Time') {
+      return { color: '#4caf50' };
+    } else if (status == 'Over Time') {
+      return { color: '#e53935' };
+    } else {
+      return { color: '#ffb300' };
+    }
+  }
+
   buildChart() {
     const counts: Record<string, { count: number; color: string }> = {
       'On Time': { count: 0, color: '#4caf50' },
@@ -148,7 +199,7 @@ export class MainEmployeeDashboardComponent implements OnInit {
           {
             data,
             backgroundColor: colors,
-            borderWidth: 0, // ✅ removes white outline
+            borderWidth: 0,
           },
         ],
       },
@@ -160,7 +211,7 @@ export class MainEmployeeDashboardComponent implements OnInit {
             position: 'bottom',
             align: 'center',
             labels: {
-              color: '#ccc', // ✅ label color for dark background
+              color: '#ccc',
               boxWidth: 16,
               padding: 15,
             },
