@@ -32,7 +32,7 @@ export class MainEmployeeDashboardComponent implements OnInit {
 
   todaySchedule = {
     time: '',
-    location: '',
+    location: ''
   };
 
   constructor(private attendanceService: AttendanceService) {
@@ -61,10 +61,9 @@ export class MainEmployeeDashboardComponent implements OnInit {
     this.userInfo.firstName = localStorage.getItem('firstName') || '';
     this.userInfo.lastName = localStorage.getItem('lastName') || '';
 
-    // Assuming you already have the employeeId from auth token/user info:
-    this.attendanceService.getScheduleInfo().subscribe((schedule) => {
-      this.todaySchedule.time = `${schedule.scheduleStart} - ${schedule.scheduleEnd}`;
-      this.todaySchedule.location = schedule.location;
+    this.attendanceService.getScheduleInfo().subscribe(schedule => { 
+      this.todaySchedule.time = `${schedule?.data.startTime} - ${schedule.data.endTime}`;
+      this.todaySchedule.location = schedule.data.site;
     });
 
     const today = new Date();

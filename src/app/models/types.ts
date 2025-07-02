@@ -25,3 +25,12 @@ export interface AttendanceData {
     punchOut: string
     status: string
 }
+
+export interface ScheduleInfo {
+    data: {
+        employeeId: string,
+        site: string,
+        startTime: string,
+        endTime: string
+    }
+}

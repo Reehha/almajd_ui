@@ -3,12 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { PunchRequest, PunchResponse } from '../models/types';
+import { PunchRequest, PunchResponse, ScheduleInfo } from '../models/types';
 import { CommonService } from './common.service';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
   private readonly BASE_URL = `${environment.api}/attendance`;
+  private readonly SCHEDULE_API_BASE_URL = `${environment.api}/schedule`;
 
   constructor(private http: HttpClient, private commonService: CommonService) {}
 
@@ -31,15 +32,14 @@ export class AttendanceService {
     return this.http.get<any[]>(`${this.BASE_URL}?start=${startDate}&end=${endDate}`, { headers });
   }  
 
-  getScheduleInfo(): Observable<{ scheduleStart: string, scheduleEnd: string, location: string }> {
+  getScheduleInfo(): Observable<ScheduleInfo> {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
   
-    // return this.http.get<{ scheduleStart: string, scheduleEnd: string, location: string }>(
-    //   `${this.BASE_URL}/schedule-info`,
-    //   { headers }
-    // );
-    return this.http.get<{ scheduleStart: string, scheduleEnd: string, location: string }>('https://mocki.io/v1/031f0b72-a740-428c-aa1a-7f211279a29e');
+     return this.http.get<ScheduleInfo>(
+       `${this.SCHEDULE_API_BASE_URL}`,
+       { headers }
+    );
   }
 
   getAttendanceForDate(employeeId: any, punchDate: string) {
