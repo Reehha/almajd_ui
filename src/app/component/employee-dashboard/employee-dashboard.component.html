@@ -28,12 +28,7 @@
     <div class="overview-chart">
       <!-- <h3>Attendance Chart</h3> -->
       <canvas id="attendanceChart"></canvas>
-    </div>
-      
-    <!-- </div> -->
-  </div>
-
-  <!-- Filter Panel -->
+       <!-- Filter Panel -->
   <div class="filter-panel">
     <div class="filter-group">
       <div class="filter-item">
@@ -50,6 +45,11 @@
       </div>
     </div>
   </div>
+    </div>
+      
+    <!-- </div> -->
+  </div>
+
   <!-- Attendance Table -->
   <div class="table-container">
     <div class="table-scroll">
@@ -67,7 +67,7 @@
             <td data-label="Date">{{ row.date }}</td>
             <td data-label="Punch In">{{ row.punchIn || '-' }}</td>
             <td data-label="Punch Out">{{ row.punchOut || '-' }}</td>
-            <td data-label="Status" [ngClass]="row.status.toLowerCase()">{{ row.status }}</td>
+            <td data-label="Status" [ngStyle]="getColor(row.status)"><strong>{{ row.status }}</strong></td>
           </tr>
         </tbody>
       </table>

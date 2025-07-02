@@ -12,7 +12,7 @@ import { AttendanceData } from '../../models/types';
   selector: 'app-employee-dashboard',
   imports: [CommonModule, FormsModule],
   templateUrl: './employee-dashboard.component.html',
-  styleUrls: ['./employee-dashboard.component.css']
+  styleUrls: ['./employee-dashboard.component.css'],
 })
 export class MainEmployeeDashboardComponent implements OnInit {
   employeeId: string | null;
@@ -27,13 +27,12 @@ export class MainEmployeeDashboardComponent implements OnInit {
   today: string = '';
   userInfo = {
     firstName: '',
-    lastName: ''
+    lastName: '',
   };
 
-
   todaySchedule = {
-    time: '09:00 AM - 05:00 PM',
-    location: 'Head Office'
+    time: '',
+    location: '',
   };
 
   constructor(private attendanceService: AttendanceService) {
@@ -42,11 +41,11 @@ export class MainEmployeeDashboardComponent implements OnInit {
 
   exportPDF() {
     const doc = new jsPDF();
-    const tableData = this.attendanceData.map(row => [
+    const tableData = this.attendanceData.map((row) => [
       row.date,
       row.punchIn || '-',
       row.punchOut || '-',
-      row.status
+      row.status,
     ]);
 
     autoTable(doc, {
@@ -63,11 +62,10 @@ export class MainEmployeeDashboardComponent implements OnInit {
     this.userInfo.lastName = localStorage.getItem('lastName') || '';
 
     // Assuming you already have the employeeId from auth token/user info:
-    this.attendanceService.getScheduleInfo().subscribe(schedule => {
+    this.attendanceService.getScheduleInfo().subscribe((schedule) => {
       this.todaySchedule.time = `${schedule.scheduleStart} - ${schedule.scheduleEnd}`;
       this.todaySchedule.location = schedule.location;
     });
-
 
     const today = new Date();
     this.today = today.toISOString().split('T')[0];
@@ -81,7 +79,9 @@ export class MainEmployeeDashboardComponent implements OnInit {
     this.attendanceService
       .getMyAttendanceForDate(this.startDate, this.endDate)
       .subscribe((res: any) => {
-        const rows: AttendanceData[] = Array.isArray(res) ? res : (res?.data ?? []);
+        const rows: AttendanceData[] = Array.isArray(res)
+          ? res
+          : res?.data ?? [];
 
         // reset then populate
         this.attendanceData = [...rows];
@@ -102,14 +102,23 @@ export class MainEmployeeDashboardComponent implements OnInit {
     this.applyPagination();
   }
 
+  getColor(status: string):{color:string} {
+    if (status == 'On Time') {
+      return {color:'#4caf50'};
+    } else if (status == 'Over Time') {
+      return {color:'#e53935'};
+    } else {
+      return {color:'#ffb300'};
+    }
+  }
   buildChart() {
-    const counts: Record<string, { count: number, color: string }> = {
+    const counts: Record<string, { count: number; color: string }> = {
       'On Time': { count: 0, color: '#4caf50' },
-      'Late': { count: 0, color: '#ffb300' },
-      'Over Time': { count: 0, color: '#e53935' }
+      Late: { count: 0, color: '#ffb300' },
+      'Over Time': { count: 0, color: '#e53935' },
     };
 
-    this.attendanceData.forEach(entry => {
+    this.attendanceData.forEach((entry) => {
       const status = entry.status;
       if (!counts[status]) {
         counts[status] = { count: 1, color: '#6c757d' };
@@ -118,13 +127,17 @@ export class MainEmployeeDashboardComponent implements OnInit {
       }
     });
 
-    const labels = Object.keys(counts).filter(status => counts[status].count > 0);
-    const data = labels.map(label => counts[label].count);
-    const colors = labels.map(label => counts[label].color);
+    const labels = Object.keys(counts).filter(
+      (status) => counts[status].count > 0
+    );
+    const data = labels.map((label) => counts[label].count);
+    const colors = labels.map((label) => counts[label].color);
 
     if (this.chart) this.chart.destroy();
 
-    const canvas = document.getElementById('attendanceChart') as HTMLCanvasElement;
+    const canvas = document.getElementById(
+      'attendanceChart'
+    ) as HTMLCanvasElement;
     const ctx = canvas?.getContext('2d');
     if (!ctx) return;
 
@@ -132,32 +145,34 @@ export class MainEmployeeDashboardComponent implements OnInit {
       type: 'doughnut',
       data: {
         labels,
-        datasets: [{
-          data,
-          backgroundColor: colors,
-          borderWidth: 0 // ✅ removes white outline
-        }]
+        datasets: [
+          {
+            data,
+            backgroundColor: colors,
+            borderWidth: 0, // ✅ removes white outline
+          },
+        ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'right',
-            align: 'start',
+            position: 'bottom',
+            align: 'center',
             labels: {
               color: '#ccc', // ✅ label color for dark background
               boxWidth: 16,
-              padding: 15
-            }
+              padding: 15,
+            },
           },
           tooltip: {
             backgroundColor: '#333',
             titleColor: '#fff',
-            bodyColor: '#eee'
-          }
-        }
-      }
+            bodyColor: '#eee',
+          },
+        },
+      },
     });
   }
 }
