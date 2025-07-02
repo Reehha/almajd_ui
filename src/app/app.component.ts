@@ -16,6 +16,17 @@ import { CommonModule } from '@angular/common';
 export class AppComponent {
   title = 'attendance-tracker';
   showSidebar = true;
+  isCenterPage = false;
+
+  ngOnInit() {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        const excludedPaths = ['/login', '/scan-qr', '/reset-password','/register'];
+        const currentUrl = event.urlAfterRedirects;
+        this.isCenterPage = excludedPaths.some(path => currentUrl.startsWith(path));
+      }
+    });
+  }
 
   constructor(private router: Router) {
     this.router.events.subscribe(event => {

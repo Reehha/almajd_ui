@@ -365,6 +365,9 @@ html, body {
     flex-direction: column;
     padding: 0.5rem;
   }
+  .dashboard-container{
+    border-radius: unset;
+  }
 }
 
 /* Tablets */

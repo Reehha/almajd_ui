@@ -48,11 +48,11 @@ export class SidebarComponent {
 
     {
       icon: 'users',
-      label: 'Users',
+      label: 'Employee',
       visible: () => this.loginService.hasAnyRole(['admin']) && !this.isfirstTimeLogIn,
       subItems: [
-        { label: 'Add new user', link: '/register' },
-        { label: 'Manage users', link: '/manage' },
+        { label: 'Add new employee', link: '/register' },
+        { label: 'Manage employees', link: '/manage' },
         { label: 'Manage leave requests', link: '/under-construction' },
       ]
     },

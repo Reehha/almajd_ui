@@ -9,6 +9,7 @@
   max-width: 25rem; /* Set a max-width for larger screens */
   min-height: 60vh;
   text-align: center;
+  margin-top: 4rem;
 }
 
 /* Welcome Title */
@@ -114,4 +115,7 @@
  .error-message {
     padding-bottom: 1rem;
     color: red;
+}
+.content{
+  margin-left: unset;
 }

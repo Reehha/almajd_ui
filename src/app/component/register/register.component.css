@@ -134,3 +134,9 @@
     gap: 7px;
   }
 
+  @media (max-width:480px) {
+    .register-container{
+      border-radius: unset;
+    }
+    
+  }

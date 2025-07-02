@@ -1,13 +1,25 @@
 .content {
     margin-top: 100px;
-    margin-left: 113px; /* 113px sidebar + 10px margin-left of sidebar */
     padding: 1rem;
   }
+
+  .left-margin {
+    margin-left: 113px;
+  }
+  
+  .center {
+    margin: 0 auto;
+    max-width: 1000px;
+  }
+  
   
   @media (max-width: 992px) {
     .content{
     margin-top: 0px;
-    margin-left: 0px; 
     padding: 0rem;
+    margin-bottom: 4rem;
+  }
+  .left-margin {
+    margin-left: 0px;
   }
 }

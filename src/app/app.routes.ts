@@ -17,7 +17,6 @@ import { UnderConstructionComponent } from './component/under-construction/under
 export const routes: Routes = [
   /* ---------- Public routes (no authentication) ---------- */
   { path: 'login',    component: LoginComponent },
-  { path: 'scan-qr',  component: QrScannerComponent },
 
   /* ---------- Auth‑protected routes ---------- */
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -27,6 +26,12 @@ export const routes: Routes = [
     component: ManageEmployeeDashboardComponent,
     canActivate: [AuthGuard],
     data: { roles: [ 'admin'] }
+  },
+  {
+    path: 'scan-qr',
+    component: QrScannerComponent,
+    canActivate: [AuthGuard],
+    data: { roles: [ 'qrScanner'] }
   },
   {
     path: 'employee-dashboard',

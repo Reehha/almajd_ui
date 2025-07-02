@@ -3,7 +3,10 @@
     <ng-container *ngFor="let item of visibleNavItems">
       <li
         class="nav-item"
-        [ngClass]="{ 'has-submenu': item.subItems?.length }"
+        [ngClass]="{
+          'has-submenu': item.subItems?.length,
+          'scan-qr-style': item.label === 'Scan QR'
+        }"
         (click)="item.link && !item.subItems?.length ? navigateTo(item.link) : item.action?.()"
       >
         <div class="nav-icon">

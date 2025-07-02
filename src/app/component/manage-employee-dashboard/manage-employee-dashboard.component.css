@@ -159,6 +159,12 @@ html, body {
 
 /* === RESPONSIVE === */
 @media (max-width: 767px) {
+  body{
+    display: block;
+  }
+  .dashboard-container{
+    border-radius: unset;
+  }
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
@@ -177,7 +183,6 @@ html, body {
   }
 
   .attendance-table {
-    display: block;
     width: 100%;
     overflow-x: auto;
   }

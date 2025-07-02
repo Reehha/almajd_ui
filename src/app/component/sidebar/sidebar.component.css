@@ -139,6 +139,10 @@
 }
 
 @media (max-width: 576px) {
+  .scan-qr-style{
+    background-color: #fff;
+    color: #000;
+  }
   .sidebar {
     width: 100%;
     height: auto;
