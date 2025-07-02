@@ -48,6 +48,7 @@ export class LoginComponent {
         const roles = userData.roles;
         const firstName = userData.firstName;
         const lastName = userData.lastName;
+        const employeeId = userData.employeeId;
 
 
         if (!roles) {
@@ -60,6 +61,8 @@ export class LoginComponent {
         localStorage.setItem('roles', roles);
         localStorage.setItem('firstName', firstName);
         localStorage.setItem('lastName', lastName);
+        localStorage.setItem('employeeId', employeeId);
+
 
         // route by role
           if (roles.includes('admin')) {

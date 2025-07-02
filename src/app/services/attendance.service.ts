@@ -4,12 +4,13 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { PunchRequest, PunchResponse } from '../models/types';
+import { CommonService } from './common.service';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
   private readonly BASE_URL = `${environment.api}/attendance`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private commonService: CommonService) {}
 
   getAttendanceData(startDate: string, endDate: string, employeeId?: string) {
     const token = localStorage.getItem('accessToken');
@@ -20,12 +21,14 @@ export class AttendanceService {
     );
   }
 
-  getEmployeeAttendance(startDate: string, endDate: string): Observable<any[]> {
+  getMyAttendanceForDate(startDate: string, endDate: string) {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    startDate = this.commonService.formatDateForBackend(startDate);
+    endDate = this.commonService.formatDateForBackend(endDate);
   
-    // return this.http.get<any[]>(`${this.BASE_URL}/employee-attendance?startDate=${startDate}&endDate=${endDate}`, { headers });
-    return this.http.get<any[]>('https://mocki.io/v1/ac24849c-0d34-45a7-a98f-718f21c39a71');
+    return this.http.get<any[]>(`${this.BASE_URL}?start=${startDate}&end=${endDate}`, { headers });
   }  
 
   getScheduleInfo(): Observable<{ scheduleStart: string, scheduleEnd: string, location: string }> {
@@ -37,6 +40,15 @@ export class AttendanceService {
     //   { headers }
     // );
     return this.http.get<{ scheduleStart: string, scheduleEnd: string, location: string }>('https://mocki.io/v1/031f0b72-a740-428c-aa1a-7f211279a29e');
+  }
+
+  getAttendanceForDate(employeeId: any, punchDate: string) {
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    punchDate = this.commonService.formatDateForBackend(punchDate);
+
+    return this.http.get<any>(`${this.BASE_URL}/emp?punchDate=${punchDate}&employeeId=${employeeId}`, { headers });
   }
   
 

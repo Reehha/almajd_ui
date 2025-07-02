@@ -6,15 +6,17 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { AttendanceData } from '../../models/types';
 
 @Component({
   selector: 'app-employee-dashboard',
-  imports:[CommonModule,FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './employee-dashboard.component.html',
   styleUrls: ['./employee-dashboard.component.css']
 })
 export class MainEmployeeDashboardComponent implements OnInit {
-  attendanceData: any[] = [];
+  employeeId: string | null;
+  attendanceData: AttendanceData[] = [];
   filteredData: any[] = [];
 
   startDate!: string;
@@ -27,14 +29,16 @@ export class MainEmployeeDashboardComponent implements OnInit {
     firstName: '',
     lastName: ''
   };
-  
+
 
   todaySchedule = {
     time: '09:00 AM - 05:00 PM',
     location: 'Head Office'
   };
 
-  constructor(private attendanceService: AttendanceService) {}
+  constructor(private attendanceService: AttendanceService) {
+    this.employeeId = localStorage.getItem('employeeId');
+  }
 
   exportPDF() {
     const doc = new jsPDF();
@@ -44,25 +48,25 @@ export class MainEmployeeDashboardComponent implements OnInit {
       row.punchOut || '-',
       row.status
     ]);
-  
+
     autoTable(doc, {
       head: [['Date', 'Punch In', 'Punch Out', 'Status']],
       body: tableData,
       startY: 20,
     });
-  
+
     doc.save('attendance.pdf');
   }
 
   ngOnInit() {
-  this.userInfo.firstName = localStorage.getItem('firstName') || '';
-  this.userInfo.lastName = localStorage.getItem('lastName') || '';
+    this.userInfo.firstName = localStorage.getItem('firstName') || '';
+    this.userInfo.lastName = localStorage.getItem('lastName') || '';
 
-  // Assuming you already have the employeeId from auth token/user info:
-this.attendanceService.getScheduleInfo().subscribe(schedule => {
-  this.todaySchedule.time = `${schedule.scheduleStart} - ${schedule.scheduleEnd}`;
-  this.todaySchedule.location = schedule.location;
-});
+    // Assuming you already have the employeeId from auth token/user info:
+    this.attendanceService.getScheduleInfo().subscribe(schedule => {
+      this.todaySchedule.time = `${schedule.scheduleStart} - ${schedule.scheduleEnd}`;
+      this.todaySchedule.location = schedule.location;
+    });
 
 
     const today = new Date();
@@ -74,12 +78,18 @@ this.attendanceService.getScheduleInfo().subscribe(schedule => {
   }
 
   fetchData() {
-    this.attendanceService.getEmployeeAttendance(this.startDate, this.endDate).subscribe(data => {
-      this.attendanceData = data;
-      this.applyPagination();
-      this.buildChart();
-    });
-  }  
+    this.attendanceService
+      .getMyAttendanceForDate(this.startDate, this.endDate)
+      .subscribe((res: any) => {
+        const rows: AttendanceData[] = Array.isArray(res) ? res : (res?.data ?? []);
+
+        // reset then populate
+        this.attendanceData = [...rows];
+
+        this.applyPagination();
+        this.buildChart();
+      });
+  }
 
   applyPagination() {
     const start = (this.currentPage - 1) * this.pageSize;
@@ -96,9 +106,9 @@ this.attendanceService.getScheduleInfo().subscribe(schedule => {
     const counts: Record<string, { count: number, color: string }> = {
       'On Time': { count: 0, color: '#4caf50' },
       'Late': { count: 0, color: '#ffb300' },
-      'Absent': { count: 0, color: '#e53935' }
+      'Over Time': { count: 0, color: '#e53935' }
     };
-  
+
     this.attendanceData.forEach(entry => {
       const status = entry.status;
       if (!counts[status]) {
@@ -107,17 +117,17 @@ this.attendanceService.getScheduleInfo().subscribe(schedule => {
         counts[status].count++;
       }
     });
-  
+
     const labels = Object.keys(counts).filter(status => counts[status].count > 0);
     const data = labels.map(label => counts[label].count);
     const colors = labels.map(label => counts[label].color);
-  
+
     if (this.chart) this.chart.destroy();
-  
+
     const canvas = document.getElementById('attendanceChart') as HTMLCanvasElement;
     const ctx = canvas?.getContext('2d');
     if (!ctx) return;
-  
+
     this.chart = new Chart(ctx, {
       type: 'doughnut',
       data: {
@@ -150,7 +160,4 @@ this.attendanceService.getScheduleInfo().subscribe(schedule => {
       }
     });
   }
-  
-  
-
 }

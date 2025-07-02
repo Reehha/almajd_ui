@@ -17,3 +17,11 @@ export interface PunchResponse {
     success: string,
     message: string
 }
+
+export interface AttendanceData {
+    date: string,
+    empId: string,
+    punchIn: string,
+    punchOut: string
+    status: string
+}
