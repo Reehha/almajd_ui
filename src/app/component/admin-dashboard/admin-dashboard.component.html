@@ -77,14 +77,14 @@
           <tbody>
             <tr *ngFor="let entry of paginatedData">
               <td data-label="Date">{{entry.date}}</td>
-              <td data-label="ID">{{entry.empId}}</td>
-              <td data-label="Name">{{entry.name}}</td>
-              <td data-label="In">{{entry.checkIn || '-'}}</td>
-              <td data-label="Out">{{entry.checkOut || '-'}}</td>
+              <td data-label="ID">{{entry.employeeId}}</td>
+              <td data-label="Name">{{entry.firstName}}, {{entry.lastName}}</td>
+              <td data-label="In">{{entry.punchIn || '-'}}</td>
+              <td data-label="Out">{{entry.punchOut || '-'}}</td>
               <td data-label="Status" [ngClass]="{
-                  'present': entry.status === 'Present',
+                  'present': entry.status === 'On Time',
                   'late': entry.status === 'Late',
-                  'absent': entry.status === 'Absent'
+                  'absent': entry.status === 'Over Time'
                 }">
                 {{entry.status}}
               </td>

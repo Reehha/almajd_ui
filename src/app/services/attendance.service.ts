@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { PunchRequest, PunchResponse, ScheduleInfo } from '../models/types';
+import { AdminAttendanceData, PunchRequest, PunchResponse, ScheduleInfo } from '../models/types';
 import { CommonService } from './common.service';
 
 @Injectable({ providedIn: 'root' })
@@ -13,13 +13,14 @@ export class AttendanceService {
 
   constructor(private http: HttpClient, private commonService: CommonService) {}
 
-  getAttendanceData(startDate: string, endDate: string, employeeId?: string) {
+  getAttendanceData(startDate: string, endDate: string) {
     const token = localStorage.getItem('accessToken');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-    return this.http.get<any>(`${this.BASE_URL}/all`, { headers }).pipe(
-      map(res => this.transformAttendance(res.data, startDate, endDate, employeeId))
-    );
+    startDate = this.commonService.formatDateForBackend(startDate);
+    endDate = this.commonService.formatDateForBackend(endDate);
+  
+    return this.http.get<AdminAttendanceData[]>(`${this.BASE_URL}/all?start=${startDate}&end=${endDate}`, { headers });
   }
 
   getMyAttendanceForDate(startDate: string, endDate: string) {

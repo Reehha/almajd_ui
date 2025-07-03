@@ -106,24 +106,26 @@ export class AdminDashboardComponent {
 
   loadInitialData() {
     this.attendanceService
-      .getAttendanceData(this.startDate, this.startDate, '') // today only, no empId filter
-      .subscribe((data) => {
-        this.filteredData = data;
-        this.initialCounts = this.calculateCounts(data);
+      .getAttendanceData(this.startDate, this.endDate) // today only, no empId filter
+      .subscribe((resp) => {
+        // service may wrap the array inside a `data` property; fall back to resp itself
+        const dataArray = (resp as any)?.data ?? resp;
+        this.filteredData = dataArray;
+        this.initialCounts = this.calculateCounts(dataArray);
       });
   }
 
   filterData() {
     this.attendanceService
-      .getAttendanceData(this.startDate, this.endDate, this.employeeId)
-      .subscribe((data) => {
-        this.filteredData = data.filter((entry: any) => {
+      .getAttendanceData(this.startDate, this.endDate)
+      .subscribe((resp) => {
+        const full = (resp as any)?.data ?? resp;
+        this.filteredData = full.filter((entry: any) => {
           return (
             (!this.department || entry.department === this.department) &&
             (!this.subsidiary || entry.subsidiary === this.subsidiary)
           );
         });
-        // Keep showing initialCounts without updating here
       });
   }
 

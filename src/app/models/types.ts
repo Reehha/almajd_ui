@@ -34,3 +34,18 @@ export interface ScheduleInfo {
         endTime: string
     }
 }
+
+export interface AdminAttendanceData {
+    data: {
+        employeeId: string,
+        firstName: string,
+        lastName: string,
+        department: string,
+        designation: string,
+        organization: string,
+        date: string,
+        punchIn: string,
+        punchOut: string,
+        status: string
+    }
+}
