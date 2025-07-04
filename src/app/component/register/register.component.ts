@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RegistrationService } from '../../services/registration.service'
 
 @Component({
   selector: 'app-register',
@@ -15,13 +16,63 @@ export class RegisterComponent {
   submitted = false;
   reportingManagers: any[] = [];
   departments: any[] = [];
+  organizationsData: any[] = []; // Full org-dept-role tree
+  organizations: string[] = [];  // Just names to show in dropdown
+  designations: string[] = [];  
 
 
 
   ngOnInit() {
-    this.getReportingManagers();
-    this.getDepartments()
+    this.registrationService.getReportingManagers().subscribe({
+      next: (response: { data: any[] }) => {
+        this.reportingManagers = response.data.map((manager: any) => ({
+          id: manager.employeeId,
+          name: `${manager.firstName} ${manager.lastName}`,
+        }));
+      },
+      error: (err) => console.error('Failed to load managers', err),
+    });
+  
+    this.registrationService.getOrganizations().subscribe({
+      next: (response: { data: any[] }) => {
+        this.organizationsData = response.data;
+        this.organizations = response.data.map(org => org.name);
+      },
+      error: (err) => console.error('Failed to load organizations', err),
+    });    
+  }  
+
+  onOrganizationChange(): void {
+    const selectedOrg = this.organizationsData.find(
+      org => org.name === this.employee.organization
+    );
+  
+    if (selectedOrg) {
+      this.departments = Object.keys(selectedOrg.departments);
+    } else {
+      this.departments = [];
+    }
+  
+    // Reset dependent fields
+    this.employee.department = '';
+    this.employee.designation = '';
+    this.designations = [];
   }
+  
+  onDepartmentChange(): void {
+    const selectedOrg = this.organizationsData.find(
+      org => org.name === this.employee.organization
+    );
+  
+    if (selectedOrg && selectedOrg.departments[this.employee.department]) {
+      this.designations = selectedOrg.departments[this.employee.department];
+    } else {
+      this.designations = [];
+    }
+  
+    this.employee.designation = '';
+  }
+  
 
   onEmiratesIdInput(): void {
     let digits = this.employee.emiratesId.replace(/\D/g, '').slice(0, 15); // Only digits, max 15
@@ -77,34 +128,6 @@ export class RegisterComponent {
       event.preventDefault();
     }
   }
-
-
-  getReportingManagers() {
-    this.http.get<any>('http://localhost:8081/auth/employee/managers')
-      .subscribe({
-        next: (response) => {
-          this.reportingManagers = response.data.map((manager: any) => ({
-            id: manager.employeeId,
-            name: `${manager.firstName} ${manager.lastName}`
-          }));
-        },
-        error: (err) => console.error('Failed to load managers', err)
-      });
-  }
-
-  getDepartments() {
-    this.http.get<any>('http://localhost:8081/dept/all')
-      .subscribe({
-        next: (response) => {
-          this.departments = response.data.map((dept: any) => ({
-            id: dept.departmentId,
-            name: dept.name
-          }));
-        },
-        error: (err) => console.error('Failed to load departments', err)
-      });
-  }
-
 
   countries: string[] = [
     'Afghanistan',
@@ -301,7 +324,7 @@ export class RegisterComponent {
     'Zimbabwe',
   ];
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router, private registrationService: RegistrationService) { }
 
 
 
@@ -342,11 +365,10 @@ export class RegisterComponent {
       passportExpiry: this.formatDateForBackend(this.employee.passportExpiry)
     };
 
-    this.http.post<any>('http://localhost:8081/auth/register', formattedData).subscribe({
+    this.registrationService.registerEmployee(formattedData).subscribe({
       next: (response) => {
         if (response.status === 200 && response.data) {
-          const employeeId = response.data.employeeId;
-          const password = response.data.password;
+          const { employeeId, password } = response.data;
           registerForm.resetForm();
           alert(
             `✅ Registration Successful!\n\n` +
@@ -354,22 +376,21 @@ export class RegisterComponent {
             `🔐 Password: ${password}\n\n` +
             `⚠️ Please save these credentials securely. You won't be able to view them again.`
           );
-
         } else {
-          alert("Registration succeeded but unexpected response format.");
+          alert('Registration succeeded but unexpected response format.');
         }
       },
       error: (error) => {
-        console.error('Registration failed:', error);
-        alert("❌ Registration failed. Please try again.");
+        if (error.status == 409 ){
+          console.error('Registration failed:', error);
+          alert('❌ Registration failed. Employee with provided e-mail already exists.');
+        }
+        else{
+        console.error('Registration failed:', error.message);
+        alert('❌ Registration failed. Please try again.');
+        }
       }
     });
   }
-
-  //hardcorded values, to be deleted upon api creation 
-  organizations: string[] = ['Company A', 'Company B', 'Company C'];
-  designations: string[] = ['employee', 'admin', 'supervisor'];
-
-
 
 }
