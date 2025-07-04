@@ -51,7 +51,17 @@ export class AttendanceService {
 
     return this.http.get<any>(`${this.BASE_URL}/emp?punchDate=${punchDate}&employeeId=${employeeId}`, { headers });
   }
-  
+
+  // Inside attendance.service.ts or employee.service.ts
+
+getAllEmployeeIds(): Observable<string[]> {
+  const token = localStorage.getItem('accessToken');
+  const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+  return this.http.get<any>(`${environment.api}/employee/names`, { headers }).pipe(
+    map(response => (response.data || []).map((emp: any) => emp.employeeId))
+  );
+}
 
   private transformAttendance(data: any[], startDate: string, endDate: string, empIdFilter?: string) {
     const grouped: { [key: string]: any } = {};

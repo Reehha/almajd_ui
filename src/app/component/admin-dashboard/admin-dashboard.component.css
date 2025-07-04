@@ -290,6 +290,23 @@ html, body {
   width: -webkit-fill-available;
   }
 
+  td {
+    text-transform: capitalize;
+}
+.no-records {
+  padding: 16px;
+  font-style: italic;
+  color: #f00;
+}
+td.no-records {
+  text-align: center;
+
+}
+
+.btn{
+  margin-top: 1rem;
+}
+
 /* === RESPONSIVE STYLES === */
 
 /* Mobile: Max 767px */

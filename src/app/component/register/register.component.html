@@ -217,7 +217,7 @@
             required
           >
             <option value="" disabled selected>Select designation</option>
-            <option *ngFor="let r of designations" [value]="r">{{ r }}</option>
+            <option *ngFor="let role of designations" [value]="role">{{ role }}</option>
           </select>
         </div>
         <div *ngIf="designation.invalid && designation.touched" class="error-msg">

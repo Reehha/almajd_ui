@@ -8,16 +8,20 @@
     <div class="dashboard-overview">
       <!-- Chart on the left -->
       <div class="overview-chart">
-        <app-attendance-chart [attendanceData]="filteredData"></app-attendance-chart>
+        <app-attendance-chart
+  [attendanceData]="filteredData"
+  [totalEmployees]="totalEmployees"
+></app-attendance-chart>
+
       </div>
     
        <!-- Summary blocks on the right -->
     
        <div class="box-container">
-        <div class="summary-box present"> {{ initialCounts.Present }} <br>Present</div>
-        <div class="summary-box late">{{ initialCounts.Late }}<br>Late</div>
-        <div class="summary-box absent">{{ initialCounts.Absent }}<br>Absent</div>
-        <div class="summary-box total">{{ initialCounts.Total }}<br>Total Employees </div>
+        <div class="summary-box present"> {{ initialCounts.onTime }} <br>On Time</div>
+        <div class="summary-box late">{{ initialCounts.late }}<br>Late</div>
+        <div class="summary-box absent">{{ initialCounts.overTime }}<br>Over Time</div>
+        <div class="summary-box total">{{ initialCounts.absent }}<br>Absent</div>
       </div>
     
       
@@ -31,23 +35,23 @@
 <div class="filter-panel">
   <div class="filter-group">
     <div class="filter-item">
-      <label for="employeeId">Employee ID</label>
-      <input id="employeeId" type="text" [(ngModel)]="employeeId" placeholder="e.g. 000001">
+      <label for="employeeName">Employee Name</label>
+      <input id="employeeName" type="text" [(ngModel)]="employeeName" (input)="applyFilters()" placeholder="e.g. John Smith">
     </div>
 
     <div class="filter-item">
       <label for="department">Department</label>
-      <select id="department" [(ngModel)]="department">
+      <select id="department" [(ngModel)]="department" (change)="applyFilters()">
         <option value="">All</option>
         <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
       </select>
     </div>
 
     <div class="filter-item">
-      <label for="subsidiary">Subsidiary</label>
-      <select id="subsidiary" [(ngModel)]="subsidiary">
+      <label for="organization">Organization</label>
+      <select id="organization" [(ngModel)]="organization" (change)="applyFilters()">
         <option value="">All</option>
-        <option *ngFor="let sub of subsidiaries" [value]="sub">{{ sub }}</option>
+        <option *ngFor="let org of organizations" [value]="org">{{ org }}</option>
       </select>
     </div>
 
@@ -61,7 +65,7 @@
       <input type="date" [(ngModel)]="endDate">
     </div>
 
-      <button (click)="filterData()" class="btn">Apply Filters</button>
+      <button (click)="onDateFilter()" class="btn">Apply date filter</button>
       <div class="table-scroll">
         <table class="attendance-table">
           <thead>
@@ -75,10 +79,13 @@
             </tr>
           </thead>
           <tbody>
+            <tr *ngIf="paginatedData.length === 0">
+              <td colspan="6" class="no-records">No records found</td>
+            </tr>
             <tr *ngFor="let entry of paginatedData">
               <td data-label="Date">{{entry.date}}</td>
               <td data-label="ID">{{entry.employeeId}}</td>
-              <td data-label="Name">{{entry.firstName}}, {{entry.lastName}}</td>
+              <td data-label="Name">{{entry.firstName}} {{entry.lastName}}</td>
               <td data-label="In">{{entry.punchIn || '-'}}</td>
               <td data-label="Out">{{entry.punchOut || '-'}}</td>
               <td data-label="Status" [ngClass]="{
@@ -113,40 +120,4 @@
   </div>
 </div>
 
-
-    
-    
-    <!-- Attendance Table -->
-    <!-- <div class="table-container"> -->
-      <!-- <div class="table-scroll">
-        <table class="attendance-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>EMPLOYEE ID</th>
-              <th>EMPLOYEE Name</th>
-              <th>Punch In</th>
-              <th>Punch Out</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let entry of filteredData">
-              <td data-label="Date">{{entry.date}}</td>
-              <td data-label="ID">{{entry.empId}}</td>
-              <td data-label="Name">{{entry.name}}</td>
-              <td data-label="In">{{entry.checkIn || '-'}}</td>
-              <td data-label="Out">{{entry.checkOut || '-'}}</td>
-              <td data-label="Status" [ngClass]="{
-                  'present': entry.status === 'Present',
-                  'late': entry.status === 'Late',
-                  'absent': entry.status === 'Absent'
-                }">
-                {{entry.status}}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div> -->
-    <!-- </div> -->
   </div>
