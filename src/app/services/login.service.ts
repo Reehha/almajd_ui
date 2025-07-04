@@ -121,7 +121,18 @@ export class LoginService {
 
   /** Remove ALL tokens & notify */
   private clear() {
-    this.storage?.clear();
+    // List of keys to remove
+    const keysToRemove = [
+      'accessToken',
+      'almajd-token',
+      'employeeId',
+      'firstName',
+      'lastName',
+      'roles',
+    ];
+    keysToRemove.forEach((key) => {
+      this.storage?.removeItem(key);
+    });
     this.currentUserSubject.next(null);
     this.authChangedSubject.next();
   }
