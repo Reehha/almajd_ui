@@ -5,6 +5,7 @@ import { RegistrationService } from '../../services/registration.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceChartComponent } from '../attendance-chart/attendance-chart.component';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -41,6 +42,23 @@ export class AdminDashboardComponent implements OnInit {
     this.onDateFilter();
   }
 
+  exportToExcel(): void {
+    const exportData = this.filteredData.map(entry => ({
+      Date: entry.date,
+      'Employee ID': entry.employeeId,
+      Name: `${entry.firstName} ${entry.lastName}`,
+      Department: entry.department,
+      Organization: entry.organization,
+      'Punch In': entry.punchIn || '-',
+      'Punch Out': entry.punchOut || '-',
+      Status: entry.status
+    }));
+  
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook: XLSX.WorkBook = { Sheets: { 'Attendance': worksheet }, SheetNames: ['Attendance'] };
+    XLSX.writeFile(workbook, 'attendance_report.xlsx');
+  }
+  
   onDateFilter() {
     this.attendanceService.getAttendanceData(this.startDate, this.endDate).subscribe({
       next: (resp) => {

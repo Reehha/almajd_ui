@@ -164,8 +164,8 @@ export class MainEmployeeDashboardComponent implements OnInit {
   buildChart() {
     const counts: Record<string, { count: number; color: string }> = {
       'On Time': { count: 0, color: '#4caf50' },
-      Late: { count: 0, color: '#ffb300' },
-      'Over Time': { count: 0, color: '#e53935' },
+      Late: { count: 0, color: '#e53935' },
+      'Over Time': { count: 0, color: '#ffb300' },
     };
 
     this.attendanceData.forEach((entry) => {

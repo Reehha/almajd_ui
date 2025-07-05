@@ -18,10 +18,10 @@
        <!-- Summary blocks on the right -->
     
        <div class="box-container">
-        <div class="summary-box present"> {{ initialCounts.onTime }} <br>On Time</div>
-        <div class="summary-box late">{{ initialCounts.late }}<br>Late</div>
-        <div class="summary-box absent">{{ initialCounts.overTime }}<br>Over Time</div>
-        <div class="summary-box total">{{ initialCounts.absent }}<br>Absent</div>
+        <div class="summary-box present"> {{ initialCounts.onTime }} <br><div>On Time</div></div>
+        <div class="summary-box late">{{ initialCounts.late }}<br><div>Late</div></div>
+        <div class="summary-box absent">{{ initialCounts.overTime }}<br><div>Over Time</div></div>
+        <div class="summary-box total">{{ initialCounts.absent }}<br><div>Absent</div></div>
       </div>
     
       
@@ -35,22 +35,20 @@
 <div class="filter-panel">
   <div class="filter-group">
     <div class="filter-item">
-      <label for="employeeName">Employee Name</label>
-      <input id="employeeName" type="text" [(ngModel)]="employeeName" (input)="applyFilters()" placeholder="e.g. John Smith">
+      <!-- <label for="employeeName">Employee Name</label> -->
+      <input id="employeeName" type="text" [(ngModel)]="employeeName" (input)="applyFilters()" placeholder="Search by name">
     </div>
 
     <div class="filter-item">
-      <label for="department">Department</label>
       <select id="department" [(ngModel)]="department" (change)="applyFilters()">
-        <option value="">All</option>
+        <option value="">All Departments</option>
         <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
       </select>
     </div>
 
     <div class="filter-item">
-      <label for="organization">Organization</label>
       <select id="organization" [(ngModel)]="organization" (change)="applyFilters()">
-        <option value="">All</option>
+        <option value="">All Organizations</option>
         <option *ngFor="let org of organizations" [value]="org">{{ org }}</option>
       </select>
     </div>
@@ -64,8 +62,10 @@
       <label>End Date</label>
       <input type="date" [(ngModel)]="endDate">
     </div>
-
-      <button (click)="onDateFilter()" class="btn">Apply date filter</button>
+      <div class="filter-apply">
+        <button (click)="onDateFilter()" class="btn">Apply</button>
+        <button (click)="exportToExcel()" class="btn export-btn">Export Excel</button>
+      </div>
       <div class="table-scroll">
         <table class="attendance-table">
           <thead>

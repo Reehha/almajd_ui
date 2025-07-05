@@ -32,39 +32,59 @@ html, body {
 
 /* === FILTER PANEL === */
 .filter-panel {
-  background-color: #000;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-  margin-bottom: 1.5rem;
+  background-color: #1c1c1e;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
 }
 
 .filter-group {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  width: 100%;
+  align-items: center;
 }
 
 .filter-group input,
 .filter-group select {
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  background-color: #222;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #2a2a2c;
+  color: #fff;
+  font-size: 0.9rem;
+  min-width: 180px;
+}
+
+.filter-group input::placeholder {
+  color: #aaa;
+}
+
+.btn {
+  background: linear-gradient(to right, #4e9af1, #3f51b5);
   color: white;
-  border: 1px solid #333;
-  font-size: 1rem;
-  flex: 1 1 200px;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
 }
 
-.filter-apply {
-  flex: 0 0 auto;
-  align-self: flex-end;
+.btn:hover {
+  opacity: 0.9;
 }
 
-.filter-apply button {
-  padding: 0.6rem 1.2rem;
-  white-space: nowrap;
-  min-width: auto;
+.export-btn {
+  background: linear-gradient(to right, #2ecc71, #27ae60);
+}
+
+.filter-apply{
+  display: contents;
 }
 
 /* === TABLE === */
@@ -122,6 +142,10 @@ html, body {
 
 .scan-btn:hover {
   transform: translateY(-2px);
+}
+
+td {
+  text-transform: capitalize;
 }
 
 /* === PAGINATION === */

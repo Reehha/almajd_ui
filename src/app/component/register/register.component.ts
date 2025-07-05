@@ -88,19 +88,19 @@ export class RegisterComponent {
 
   onPhoneInput(control: any): void {
     let digits = this.employee.phone.replace(/\D/g, '');
-
+  
     // Force to start with '971'
     if (!digits.startsWith('971')) {
       digits = '971' + digits;
     }
-
+  
     // Max length = 12 digits (971 + 2 digits + 7 digits)
     digits = digits.slice(0, 12);
-
-    // Format with spaces: 971 55 1234567
-    let formatted = '';
+  
+    // Format with + and spaces: +971 55 1234567
+    let formatted = '+';
     if (digits.length >= 3) {
-      formatted = digits.substring(0, 3); // 971
+      formatted += digits.substring(0, 3); // +971
     }
     if (digits.length >= 5) {
       formatted += ' ' + digits.substring(3, 5); // 55
@@ -108,17 +108,18 @@ export class RegisterComponent {
     if (digits.length > 5) {
       formatted += ' ' + digits.substring(5); // 1234567
     }
-
+  
     this.employee.phone = formatted;
-
-    // Revalidate
-    const isValid = /^\s*971\s\d{2}\s\d{7}\s*$/.test(this.employee.phone);
+  
+    // Revalidate — now expects +971 format
+    const isValid = /^\+971\s\d{2}\s\d{7}$/.test(this.employee.phone);
     if (!isValid) {
       control.control.setErrors({ invalidPhone: true });
     } else {
-      control.control.setErrors(null); // ✅ Clear error
+      control.control.setErrors(null); // ✅ Valid
     }
   }
+  
 
 
 

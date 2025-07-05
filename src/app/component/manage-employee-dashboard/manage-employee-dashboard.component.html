@@ -1,7 +1,7 @@
 <div class="dashboard-container">
-  <div class="dashboard-header">
+  <!-- <div class="dashboard-header">
     <h2>Manage Employees</h2>
-  </div>
+  </div> -->
 
   <div class="filter-panel">
     <div class="filter-group">
@@ -16,8 +16,10 @@
         <option value="manager">Manager</option>
         <option value="employee">Employee</option>
       </select>
-      <div class="filter-apply"></div>
+      <div class="filter-apply">
       <button (click)="applyFilters()" class="btn">Apply</button>
+      <button (click)="exportToExcel()" class="btn export-btn">Export Excel</button>
+    </div>
     </div>
   </div>
 
