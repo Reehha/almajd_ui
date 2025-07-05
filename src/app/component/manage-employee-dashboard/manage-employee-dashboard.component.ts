@@ -21,6 +21,7 @@ export class ManageEmployeeDashboardComponent implements OnInit {
   pageSize = 10;
 
   departments: any[] = [];
+  roles: any[] = [];
   filters = {
     name: '',
     employeeId: '',
@@ -34,6 +35,7 @@ export class ManageEmployeeDashboardComponent implements OnInit {
     this.employeeService.getAllEmployees().subscribe((res) => {
       this.employees = res.data;
       this.filterDepartment();
+      this.filterRoles();
       this.filteredEmployees = [...this.employees];
       this.updatePaginatedData();
     });
@@ -43,12 +45,16 @@ export class ManageEmployeeDashboardComponent implements OnInit {
     this.departments = [...new Set(this.employees.map(emp => emp.department).filter(Boolean))];
   }
 
+  filterRoles(){
+    this.roles = [...new Set(this.employees.map(emp => emp.designation).filter(Boolean))];
+  }
+
   exportToExcel(): void {
     const exportData = this.filteredEmployees.map(emp => ({
       'Employee ID': emp.employeeId,
       'Name': `${emp.firstName} ${emp.lastName}`,
       'Department': emp.department,
-      'Designation': emp.manager ? 'Manager' : 'Employee'
+      'Designation': emp.designation
     }));
   
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
@@ -58,10 +64,9 @@ export class ManageEmployeeDashboardComponent implements OnInit {
 
   applyFilters(): void {
     this.currentPage = 1;
-    this.filterDepartment();
     this.filteredEmployees = this.employees.filter(emp => {
       const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
-      const role = emp.manager ? 'manager' : 'employee';
+      const role = emp.designation;
 
       return (
         (!this.filters.name || fullName.includes(this.filters.name.toLowerCase())) &&
@@ -71,6 +76,8 @@ export class ManageEmployeeDashboardComponent implements OnInit {
       );
     });
     this.updatePaginatedData();
+    this.filterDepartment();
+    this.filterRoles();
   }
 
   updatePaginatedData(): void {
@@ -122,6 +129,7 @@ export class ManageEmployeeDashboardComponent implements OnInit {
 
   // ✅ FIX: This method is missing
   viewEmployee(employeeId: string): void {
-    this.router.navigate(['/employee-view', employeeId]);
+    this.router.navigate(['/under-construction']);
+    // this.router.navigate(['/employee-view', employeeId]);
   }
 }

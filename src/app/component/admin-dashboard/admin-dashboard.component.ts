@@ -30,7 +30,7 @@ export class AdminDashboardComponent implements OnInit {
 
   initialCounts = { onTime: 0, late: 0, overTime: 0, absent: 0 };
   currentPage = 1;
-  itemsPerPage = 5;
+  itemsPerPage = 10;
 
   constructor(
     private router: Router,

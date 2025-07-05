@@ -198,10 +198,6 @@ html, body {
 .export-btn {
   background: linear-gradient(to right, #2ecc71, #27ae60);
 }
-.filter-apply{
-  display: flex;
-  gap: 1rem;
-}
 
 /* === SUMMARY BOXES === */
 .box-container {
@@ -317,6 +313,12 @@ td.no-records {
 
 /* === RESPONSIVE STYLES === */
 
+@media (min-width: 767px) {
+.filter-apply{
+  display: flex;
+  gap: 1rem;
+}
+}
 /* Mobile: Max 767px */
 @media (max-width: 767px) {
   .dashboard-header,

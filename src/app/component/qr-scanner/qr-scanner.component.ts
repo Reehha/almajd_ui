@@ -223,7 +223,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private restartScannerAfterDelay(delay: number = 3000) {
+  private restartScannerAfterDelay(delay: number = 10000) {
     if (!this.scannerActive) return;
 
     setTimeout(() => {

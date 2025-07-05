@@ -73,6 +73,13 @@
             <td data-label="Status" [ngStyle]="getColor(row.status)"><strong>{{ row.status }}</strong></td>
           </tr>
         </tbody>
+        <ng-template #noRecords>
+          <tbody>
+            <tr>
+              <td colspan="4" class="no-records">No attendance records found</td>
+            </tr>
+          </tbody>
+        </ng-template>
       </table>
     </div>
 

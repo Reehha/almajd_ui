@@ -13,8 +13,7 @@
       </select>
       <select [(ngModel)]="filters.designation">
         <option value="">All Roles</option>
-        <option value="manager">Manager</option>
-        <option value="employee">Employee</option>
+        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
       </select>
       <div class="filter-apply">
       <button (click)="applyFilters()" class="btn">Apply</button>
@@ -39,7 +38,7 @@
           <td data-label="Employee ID">{{ emp.employeeId }}</td>
           <td data-label="Name">{{ emp.firstName }} {{ emp.lastName }}</td>
           <td data-label="Department">{{ emp.department }}</td>
-          <td data-label="Role">{{ emp.manager ? 'Manager' : 'Employee' }}</td>
+          <td data-label="Role">{{ emp.designation }}</td>
           <td data-label="View">
             <button class="scan-btn" (click)="viewEmployee(emp.employeeId)">View/Edit</button>
           </td>
