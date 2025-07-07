@@ -5,18 +5,17 @@
 
   <div class="filter-panel">
     <div class="filter-group">
-      <input [(ngModel)]="filters.name" placeholder="Search by Name" />
-      <input [(ngModel)]="filters.employeeId" placeholder="Employee ID" />
-      <select [(ngModel)]="filters.department">
+      <input [(ngModel)]="filters.name" (ngModelChange)="applyFilters()" placeholder="Search by Name" />
+      <input [(ngModel)]="filters.employeeId" (ngModelChange)="applyFilters()" placeholder="Employee ID" />
+      <select [(ngModel)]="filters.department" (ngModelChange)="applyFilters()">
         <option value="">All Departments</option>
         <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
       </select>
-      <select [(ngModel)]="filters.designation">
+      <select [(ngModel)]="filters.designation" (ngModelChange)="applyFilters()">
         <option value="">All Roles</option>
         <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
       </select>
       <div class="filter-apply">
-      <button (click)="applyFilters()" class="btn">Apply</button>
       <button (click)="exportToExcel()" class="btn export-btn">Export Excel</button>
     </div>
     </div>

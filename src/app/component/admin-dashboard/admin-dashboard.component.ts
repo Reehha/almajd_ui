@@ -153,6 +153,12 @@ export class AdminDashboardComponent implements OnInit {
     return typeof value === 'number';
   }
 
+  formatDate(date: string): string {
+    if (!date) return '';
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
+  }  
+
   get paginationRange(): (number | string)[] {
     const totalPages = this.totalPages;
     const current = this.currentPage;

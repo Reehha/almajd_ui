@@ -1,51 +1,69 @@
 /* General Reset */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  /* Body Styling */
-  body {
-    background: var(--primary-gradient-color);
-    color: #fff;
-    font-family: 'Arial', sans-serif;
-    display: flex;
-    justify-content: center;
-    /* align-items: center; */
-    min-height: 100vh; /* Ensure it takes up the full screen height */
-    padding: 1rem; /* Add some padding for smaller screens */
-    margin: 2rem;
-  }
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  :root{
-    --primary-gradient-color : linear-gradient(to right, #FF512F 0%, #DD2476  51%, #FF512F  100%);
-  }
+/* Body Styling */
+body {
+  background: var(--primary-gradient-color);
+  color: #fff;
+  font-family: "Arial", sans-serif;
+  display: flex;
+  justify-content: center;
+  /* align-items: center; */
+  min-height: 100vh; /* Ensure it takes up the full screen height */
+  padding: 1rem; /* Add some padding for smaller screens */
+  margin: 2rem;
+}
 
-  /* Login Button */
+:root {
+  --primary-gradient-color: linear-gradient(
+    to right,
+    #ff512f 0%,
+    #dd2476 51%,
+    #ff512f 100%
+  );
+}
+
+/* Login Button */
 .btn {
-    width: 14rem;
-    height: 3rem;
-    padding: 0.75rem;
-    background: var(--primary-gradient-color);
-    border: none;
-    border-radius: 0.5rem;
-    color: #fff;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn:hover {
-    background-color: #0056b3;
-  }
+  width: 14rem;
+  height: 3rem;
+  padding: 0.75rem;
+  background: var(--primary-gradient-color);
+  border: none;
+  border-radius: 0.5rem;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-  @media(max-width: 762px) {
-    body{
-      padding: 0;
-      margin: unset;
-    }
+.btn:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 992px) {
+  body {
+    padding: 0;
+    margin: unset;
+    background: #000;
   }
-  .error-message {
-    color: red;
+}
+.error-message {
+  color: #ff4d4d;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+.no-records {
+  padding: 16px;
+  font-style: italic;
+  color: #f00;
+}
+.warning-message {
+  color: #e8a317;
+  font-size: 0.85rem;
+  margin-top: 4px;
 }

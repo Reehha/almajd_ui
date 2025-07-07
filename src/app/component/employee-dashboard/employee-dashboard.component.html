@@ -66,8 +66,11 @@
           </tr>
         </thead>
         <tbody>
+          <tr *ngIf="filteredData.length === 0">
+            <td colspan="4" class="no-records">No records found</td>
+          </tr>
           <tr *ngFor="let row of filteredData">
-            <td data-label="Date">{{ row.date }}</td>
+            <td data-label="Date">{{ formatDate(row.date) }}</td>
             <td data-label="Punch In">{{ row.punchIn || '-' }}</td>
             <td data-label="Punch Out">{{ row.punchOut || '-' }}</td>
             <td data-label="Status" [ngStyle]="getColor(row.status)"><strong>{{ row.status }}</strong></td>

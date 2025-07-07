@@ -297,11 +297,7 @@ html, body {
   td {
     text-transform: capitalize;
 }
-.no-records {
-  padding: 16px;
-  font-style: italic;
-  color: #f00;
-}
+
 td.no-records {
   text-align: center;
 

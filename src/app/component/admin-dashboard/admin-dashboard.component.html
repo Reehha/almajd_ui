@@ -83,7 +83,7 @@
               <td colspan="6" class="no-records">No records found</td>
             </tr>
             <tr *ngFor="let entry of paginatedData">
-              <td data-label="Date">{{entry.date}}</td>
+              <td data-label="Date">{{formatDate(entry.date)}}</td>
               <td data-label="ID">{{entry.employeeId}}</td>
               <td data-label="Name">{{entry.firstName}} {{entry.lastName}}</td>
               <td data-label="In">{{entry.punchIn || '-'}}</td>

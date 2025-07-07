@@ -18,7 +18,7 @@
           placeholder="First Name"
         />
       </div>
-      <div *ngIf="firstName.invalid && firstName.touched" class="error-msg">
+      <div *ngIf="firstName.invalid && firstName.touched" class="error-message">
         First name is required.
       </div>
   
@@ -33,7 +33,7 @@
           placeholder="Last Name"
         />
       </div>
-      <div *ngIf="lastName.invalid && lastName.touched" class="error-msg">
+      <div *ngIf="lastName.invalid && lastName.touched" class="error-message">
         Last name is required.
       </div>
   
@@ -49,7 +49,7 @@
           placeholder="Email Address"
         />
       </div>
-      <div *ngIf="email.invalid && email.touched" class="error-msg">
+      <div *ngIf="email.invalid && email.touched" class="error-message">
         <span *ngIf="email.errors?.['required']">Email is required.</span>
         <span *ngIf="email.errors?.['email']">Enter a valid email.</span>
       </div>
@@ -68,8 +68,11 @@
               placeholder="yyyy-mm-dd"
             />
           </div>
-          <div *ngIf="dob.invalid && dob.touched" class="error-msg">
+          <div *ngIf="dob.invalid && dob.touched" class="error-message">
             DOB is required.
+          </div>
+          <div *ngIf="dob.valid && isUnder18(employee.dob)" class="error-message">
+            Must be at least 18 years old.
           </div>
         </div>
   
@@ -85,7 +88,7 @@
               placeholder="yyyy-mm-dd"
             />
           </div>
-          <div *ngIf="joiningDate.invalid && joiningDate.touched" class="error-msg">
+          <div *ngIf="joiningDate.invalid && joiningDate.touched" class="error-message">
             Joining Date is required.
           </div>
         </div>
@@ -102,9 +105,13 @@
               placeholder="yyyy-mm-dd"
             />
           </div>
-          <div *ngIf="visaExpiry.invalid && visaExpiry.touched" class="error-msg">
+          <div *ngIf="visaExpiry.invalid && visaExpiry.touched" class="error-message">
             Visa expiry date is required.
           </div>
+          <!-- Expiry warning (non-blocking) -->
+          <div *ngIf="isDateExpired(employee.visaExpiry)" class="warning-message">
+            ⚠️ Visa has expired!
+          </div>          
         </div>
       </div>
   
@@ -122,9 +129,13 @@
               placeholder="yyyy-mm-dd"
             />
           </div>
-          <div *ngIf="passportExpiry.invalid && passportExpiry.touched" class="error-msg">
+          <div *ngIf="passportExpiry.invalid && passportExpiry.touched" class="error-message">
             Passport expiry date is required.
           </div>
+          <div *ngIf="isDateExpired(employee.passportExpiry)" class="warning-message">
+            ⚠️ Passport has expired!
+          </div>
+          
         </div>
   
         <div>
@@ -139,9 +150,13 @@
               placeholder="yyyy-mm-dd"
             />
           </div>
-          <div *ngIf="emiratesIdExpiry.invalid && emiratesIdExpiry.touched" class="error-msg">
+          <div *ngIf="emiratesIdExpiry.invalid && emiratesIdExpiry.touched" class="error-message">
             Emirates ID expiry date is required.
           </div>
+          <div *ngIf="isDateExpired(employee.emiratesIdExpiry)" class="warning-message">
+            ⚠️ Emirates ID has expired!
+          </div>
+          
         </div>
       </div>
   
@@ -158,7 +173,7 @@
               placeholder="Passport number"
             />
           </div>
-          <div *ngIf="passportNumber.invalid && passportNumber.touched" class="error-msg">
+          <div *ngIf="passportNumber.invalid && passportNumber.touched" class="error-message">
             Passport number is required.
           </div>
         </div>
@@ -179,7 +194,7 @@
               autocomplete="off"
             />
           </div>
-          <div *ngIf="emiratesId.invalid && emiratesId.touched" class="error-msg">
+          <div *ngIf="emiratesId.invalid && emiratesId.touched" class="error-message">
             Emirates ID is required.
           </div>
         </div>
@@ -196,7 +211,7 @@
               <option *ngFor="let company of organizations" [value]="company">{{ company }}</option>
             </select>
           </div>
-          <div *ngIf="organization.invalid && organization.touched" class="error-msg">
+          <div *ngIf="organization.invalid && organization.touched" class="error-message">
             Organization is required.
           </div>
         </div>
@@ -216,7 +231,7 @@
               </option>
             </select>
           </div>
-          <div *ngIf="nationality.invalid && nationality.touched" class="error-msg">
+          <div *ngIf="nationality.invalid && nationality.touched" class="error-message">
             Nationality is required.
           </div>
         </div>
@@ -233,7 +248,7 @@
             <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
           </select>
         </div>
-        <div *ngIf="departmentRef.invalid && departmentRef.touched" class="error-msg">
+        <div *ngIf="departmentRef.invalid && departmentRef.touched" class="error-message">
           Department is required.
         </div>
         </div>
@@ -246,7 +261,7 @@
             <option *ngFor="let role of designations" [value]="role">{{ role }}</option>
           </select>
         </div>
-        <div *ngIf="designation.invalid && designation.touched" class="error-msg">
+        <div *ngIf="designation.invalid && designation.touched" class="error-message">
           Designation is required.
         </div>
       </div>
@@ -269,7 +284,7 @@
           autocomplete="off"
         />
       </div>
-      <div *ngIf="contactNumber.invalid && contactNumber.touched" class="error-msg">
+      <div *ngIf="contactNumber.invalid && contactNumber.touched" class="error-message">
         <span *ngIf="contactNumber.errors?.['required']">Contact Number is required.</span>
         <span *ngIf="contactNumber.errors?.['invalidPhone']">Phone must start with 971 and follow format: 971 55 1234567</span>
       </div>
@@ -303,7 +318,7 @@
             </option>
           </select>
         </div>
-        <div *ngIf="reportingManagerRef.invalid && reportingManagerRef.touched" class="error-msg">
+        <div *ngIf="reportingManagerRef.invalid && reportingManagerRef.touched" class="error-message">
           Reporting Manager is required.
         </div>
       </div>

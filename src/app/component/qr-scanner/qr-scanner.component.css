@@ -124,7 +124,6 @@ button, select {
   border-radius: 0.5rem; /* Match the input border-radius */
 }
 
-.error-message{
-  color: #ff0000;
-  padding: 12px;
+.modal-buttons{
+  margin-top: 1rem;
 }

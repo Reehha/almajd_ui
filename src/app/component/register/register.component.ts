@@ -19,6 +19,8 @@ export class RegisterComponent {
   organizationsData: any[] = []; // Full org-dept-role tree
   organizations: string[] = [];  // Just names to show in dropdown
   designations: string[] = [];  
+  today: string = new Date().toISOString().split('T')[0]; // 'yyyy-mm-dd' format
+
 
 
 
@@ -41,6 +43,17 @@ export class RegisterComponent {
       error: (err) => console.error('Failed to load organizations', err),
     });    
   }  
+
+
+isDateExpired(date: string): boolean {
+  return !!date && new Date(date) < new Date(this.today);
+}
+
+isUnder18(dob: string): boolean {
+  if (!dob) return false;
+  return new Date().getFullYear() - new Date(dob).getFullYear() < 18 ;
+}
+
 
   onOrganizationChange(): void {
     const selectedOrg = this.organizationsData.find(

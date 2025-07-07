@@ -95,6 +95,12 @@ export class MainEmployeeDashboardComponent implements OnInit {
     return false;
   }
 
+  formatDate(date: string): string {
+    if (!date) return '';
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
+  }
+
   fetchData() {
     if (this.hasDateError()) return;
 

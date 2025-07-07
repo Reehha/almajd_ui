@@ -74,13 +74,6 @@ html, body {
   height: 3rem;
 }
 
-.no-records {
-  text-align: center;
-  color: #aaa;
-  font-size: 16px;
-  padding: 20px;
-}
-
 /* === DASHBOARD OVERVIEW === */
 .dashboard-overview {
   display: flex;

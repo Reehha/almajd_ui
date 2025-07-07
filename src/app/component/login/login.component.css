@@ -112,10 +112,10 @@
    text-decoration: none;
  }
 
- .error-message {
+ /* .error-message {
     padding-bottom: 1rem;
     color: red;
-}
+} */
 .content{
   margin-left: unset;
 }
