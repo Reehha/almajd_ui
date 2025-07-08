@@ -33,6 +33,9 @@
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="paginatedEmployees.length === 0">
+          <td colspan="6" class="no-records">No records found</td>
+        </tr>
         <tr *ngFor="let emp of paginatedEmployees">
           <td data-label="Employee ID">{{ emp.employeeId }}</td>
           <td data-label="Name">{{ emp.firstName }} {{ emp.lastName }}</td>

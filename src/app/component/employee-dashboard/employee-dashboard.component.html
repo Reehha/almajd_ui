@@ -27,9 +27,15 @@
       </div>
     <div class="overview-chart">
       <!-- <h3>Attendance Chart</h3> -->
-      <canvas id="attendanceChart"></canvas>
+        <div *ngIf="!noData; else noDataTemplate " style="padding: 0 5rem;">
+          <canvas id="attendanceChart"></canvas>
+        </div>
+      
+        <ng-template #noDataTemplate>
+          <div class="no-chart-data">No records to display chart</div>
+        </ng-template>
+      
        <!-- Filter Panel -->
-  <div class="filter-panel">
     <div class="filter-group">
       <div class="filter-item">
         <label for="startDate">Start date:</label>
@@ -47,7 +53,6 @@
         <button (click)="exportPDF()" class="export-btn">Export PDF</button>
       </div>
     </div>
-  </div>
     </div>
       
     <!-- </div> -->

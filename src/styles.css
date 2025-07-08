@@ -67,3 +67,10 @@ body {
   font-size: 0.85rem;
   margin-top: 4px;
 }
+.no-chart-data {
+  text-align: center;
+  color: #ff4d4d;
+  font-size: 1.2rem;
+  padding: 40px 0;
+  font-style: italic;
+}

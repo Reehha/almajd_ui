@@ -314,6 +314,9 @@ td.no-records {
   display: flex;
   gap: 1rem;
 }
+.filter-item{
+  width: 10rem;
+}
 }
 /* Mobile: Max 767px */
 @media (max-width: 767px) {

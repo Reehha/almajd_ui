@@ -8,12 +8,18 @@
     <div class="dashboard-overview">
       <!-- Chart on the left -->
       <div class="overview-chart">
-        <app-attendance-chart
-  [attendanceData]="filteredData"
-  [totalEmployees]="totalEmployees"
-></app-attendance-chart>
-
+        <ng-container *ngIf="filteredData.length > 0 && totalEmployees > 0; else noData">
+          <app-attendance-chart
+            [attendanceData]="filteredData"
+            [totalEmployees]="totalEmployees"
+          ></app-attendance-chart>
+        </ng-container>
+      
+        <ng-template #noData>
+          <div class="no-chart-data">No records to display chart</div>
+        </ng-template>
       </div>
+      
     
        <!-- Summary blocks on the right -->
     

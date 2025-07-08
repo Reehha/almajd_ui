@@ -35,11 +35,10 @@ html, body {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  width: 100%;
+  flex-direction: column;
 }
 
 .filter-item {
-  flex: 1 1 200px;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -90,12 +89,13 @@ html, body {
   padding: 1rem;
   border-radius: 1rem;
   width: 100%;
+  justify-content: space-between;
   box-sizing: border-box;
 }
 
 .overview-chart canvas {
-  width: 75% !important;
-  height: 250px !important;
+  /* width: 75% !important; */
+  /* height: 250px !important; */
   display: block;
 }
 
@@ -270,7 +270,7 @@ html, body {
 
   }
   .overview-chart canvas {
-    width: 50% !important;
+    /* width: 50% !important; */
     /* height: 150px !important; */
     display: block;
   }
@@ -303,17 +303,10 @@ html, body {
     padding: 1rem;
   }
 
-  .filter-group {
-    flex-direction: column;
-  }
-
   .filter-item {
     width: 100%;
   }
 
-  .attendance-table {
-    /* display: block; */
-  }
 
   .attendance-table thead {
     display: none;

@@ -1,14 +1,8 @@
 /* === GLOBAL RESET === */
-html, body {
-  margin: 0;
-  padding: 0;
-  max-width: 100vw;
-  overflow-x: hidden;
-  font-family: sans-serif;
-  background-color: #1a1a1a;
-  color: white;
-  height: 100%; /* ensure full height */
-}
+
+ body{
+  flex-direction: column !important;
+ }
 
 /* === CONTAINER === */
 .dashboard-container {

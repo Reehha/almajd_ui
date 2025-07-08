@@ -18,6 +18,7 @@ export class MainEmployeeDashboardComponent implements OnInit {
   employeeId: string | null;
   attendanceData: AttendanceData[] = [];
   filteredData: AttendanceData[] = [];
+  noData: boolean = false;
 
   startDate!: string;
   endDate!: string;
@@ -191,6 +192,13 @@ export class MainEmployeeDashboardComponent implements OnInit {
 
     if (this.chart) this.chart.destroy();
 
+    if (data.length === 0) {
+      this.noData = true;
+      return;
+    }
+  
+    this.noData = false;
+    
     const canvas = document.getElementById(
       'attendanceChart'
     ) as HTMLCanvasElement;
