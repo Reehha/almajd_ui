@@ -5,9 +5,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Howl } from 'howler';  // Import Howler
 import { PunchRequest, PunchResponse } from '../../models/types';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { AttendanceService } from '../../services/attendance.service';
+import { Router, NavigationStart } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-qr-scanner',
@@ -16,14 +18,17 @@ import { AttendanceService } from '../../services/attendance.service';
   templateUrl: './qr-scanner.component.html',
   styleUrls: ['./qr-scanner.component.css']
 })
-
 export class QrScannerComponent implements OnInit, OnDestroy {
 
   private codeReader = new BrowserMultiFormatReader();
   private videoElement: HTMLVideoElement | null = null;
   private activeStream: MediaStream | null = null;
   private decodeTimeout: any = null;
+  private restartTimeout: any = null;
   private beepSound: Howl | null = null;
+  private navigationSubscription: Subscription | null = null;
+  private static hasReloaded = false;
+
   deviceInfoError: string | null = null;
   punchRequest!: PunchRequest;
   latitude: number | null = null;
@@ -32,10 +37,8 @@ export class QrScannerComponent implements OnInit, OnDestroy {
 
   private endpoint = 'https://api.ipify.org?format=json';
 
-
   scanStatusMessage: string = '';
   scanSuccessful: boolean = false;
-
   qrResult: string | null = null;
   cameras: MediaDeviceInfo[] = [];
   selectedDeviceId: string = '';
@@ -43,16 +46,16 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   errorMessage: string | null = null;
   isLoading = true;
 
-  // Device info modal
   showDeviceInfoPopup = false;
   deviceInfoInput: string = '';
 
-  constructor(@Inject(DOCUMENT) private document: Document, private http: HttpClient, private service: AttendanceService) {
+  constructor(@Inject(DOCUMENT) private document: Document, private http: HttpClient, private service: AttendanceService, private router: Router) {
     this.checkEnvironmentSupport();
     this.initializeBeepSound();
   }
 
   async ngOnInit(): Promise<void> {
+   
     if (typeof window !== 'undefined') {
       const storedDeviceInfo = localStorage.getItem('deviceInfo');
       if (!storedDeviceInfo) {
@@ -73,9 +76,16 @@ export class QrScannerComponent implements OnInit, OnDestroy {
     this.getLocation();
   }
 
-
   ngOnDestroy(): void {
     this.stopScanner();
+  }
+
+  canDeactivate(): boolean {
+    const confirmLeave = window.confirm('Are you sure you want to leave this page? Scanning will stop.');
+    if (confirmLeave) {
+      this.stopScanner();  // Ensure camera is stopped
+    }
+    return confirmLeave;
   }
 
   get isMediaDevicesSupported(): boolean {
@@ -103,7 +113,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
       this.beepSound = new Howl({
         src: ['assets/audio/beep-04.mp3'],
         preload: true,
-        volume: 10  // Adjust volume as needed
+        volume: 10
       });
     } catch (e) {
       console.warn('Could not initialize beep sound:', e);
@@ -139,9 +149,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
 
   private handleCameraError(error: unknown): void {
     console.error('Camera initialization error:', error);
-    this.errorMessage = error instanceof Error
-      ? error.message
-      : 'Failed to access camera';
+    this.errorMessage = error instanceof Error ? error.message : 'Failed to access camera';
   }
 
   async startScanner(): Promise<void> {
@@ -154,7 +162,6 @@ export class QrScannerComponent implements OnInit, OnDestroy {
       this.scannerActive = true;
       this.videoElement = this.document.getElementById('qr-video') as HTMLVideoElement;
 
-      // Get the media stream
       this.activeStream = await navigator.mediaDevices.getUserMedia({
         video: { deviceId: this.selectedDeviceId }
       });
@@ -171,27 +178,22 @@ export class QrScannerComponent implements OnInit, OnDestroy {
             if (!this.scannerActive) return;
 
             if (result) {
-              // QR code detected; process result without stopping the feed
               this.qrResult = result.getText();
               this.handleScanSuccess(this.qrResult);
-
             } else if (error && this.scannerActive) {
-              // Filter out the "No MultiFormat Readers" error:
               if (
                 error.message &&
                 error.message.includes('No MultiFormat Readers were able to detect the code')
               ) {
-                // This error means no code was found; just restart scanning after a delay.
                 this.restartScannerAfterDelay();
               } else {
-                // Handle other errors normally.
                 this.handleScanError(error);
                 this.restartScannerAfterDelay();
               }
             }
           }
         );
-      }, 1500); // Small delay to ensure video is ready
+      }, 1500);
     } catch (error) {
       this.handleScanError(error);
     }
@@ -200,7 +202,6 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   private handleScanSuccess(result: string) {
     const deviceId = localStorage.getItem('deviceInfo');
     if (result && deviceId) {
-
       this.punchRequest = {
         employeeId: JSON.parse(result)?.employeeId,
         deviceId: deviceId,
@@ -217,8 +218,8 @@ export class QrScannerComponent implements OnInit, OnDestroy {
         if (this.beepSound) {
           this.beepSound.play();
         }
-        // Instead of stopping the scanner, we simply restart the scanning loop after a brief delay.
-        this.restartScannerAfterDelay(); // Adjust delay as needed.
+
+        this.restartScannerAfterDelay();
       });
     }
   }
@@ -226,37 +227,45 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   private restartScannerAfterDelay(delay: number = 10000) {
     if (!this.scannerActive) return;
 
-    setTimeout(() => {
-      this.startScanner();
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout);
+    }
+
+    this.restartTimeout = setTimeout(() => {
+      if (this.scannerActive) {
+        this.startScanner();
+      }
     }, delay);
   }
 
   private handleScanError(error: unknown): void {
     this.scannerActive = false;
-    this.errorMessage = error instanceof Error
-      ? error.message
-      : 'Scanning failed';
+    this.errorMessage = error instanceof Error ? error.message : 'Scanning failed';
   }
 
   stopScanner(): void {
     this.scannerActive = false;
 
-    // Clear any pending decode
     if (this.decodeTimeout) {
       clearTimeout(this.decodeTimeout);
       this.decodeTimeout = null;
     }
 
-    // Stop the video stream
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout);
+      this.restartTimeout = null;
+    }
+
     if (this.activeStream) {
       this.activeStream.getTracks().forEach(track => track.stop());
       this.activeStream = null;
     }
 
-    // Clear video element
     if (this.videoElement) {
       this.videoElement.srcObject = null;
     }
+
+    console.log('Scanner stopped.');
   }
 
   async retryCameraSetup(): Promise<void> {
@@ -273,7 +282,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
 
   saveDeviceInfo(): void {
     if (!this.deviceInfoInput || !this.deviceInfoInput.trim()) {
-      return; // Let HTML validation handle it
+      return;
     }
 
     if (typeof window !== 'undefined') {
@@ -282,7 +291,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
     }
 
     this.showDeviceInfoPopup = false;
-    this.ngOnInit(); // Restart initialization
+    this.ngOnInit();
   }
 
   getLocation(): void {
@@ -291,7 +300,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
         (position) => {
           this.latitude = position.coords.latitude;
           this.longitude = position.coords.longitude;
-          this.errorMessage = null; // Clear any previous error
+          this.errorMessage = null;
         },
         (error) => {
           switch (error.code) {
@@ -308,7 +317,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
               this.errorMessage = 'An unknown error occurred.';
               break;
           }
-          this.latitude = null; // Clear coordinates on error
+          this.latitude = null;
           this.longitude = null;
         }
       );
@@ -323,6 +332,5 @@ export class QrScannerComponent implements OnInit, OnDestroy {
     );
     return ip;
   }
-
 
 }

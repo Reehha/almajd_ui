@@ -31,7 +31,7 @@ export class AppComponent {
   constructor(private router: Router) {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.showSidebar = !(this.router.url.includes('/login') || this.router.url.includes('/scan-qr'));
+        this.showSidebar = !(this.router.url.includes('/login'));
       }
     });
   }

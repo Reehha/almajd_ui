@@ -13,6 +13,7 @@ import { ResetPasswordGuard } from './guards/reset-password.guard';
 import { AdminDashboardComponent } from './component/admin-dashboard/admin-dashboard.component';
 import { EmployeeViewComponent } from './component/employee-view/employee-view.component';
 import { UnderConstructionComponent } from './component/under-construction/under-construction.component';
+import { QrScannerExitGuard } from './guards/qr-scanner-exit.guard';
 
 export const routes: Routes = [
   /* ---------- Public routes (no authentication) ---------- */
@@ -31,6 +32,7 @@ export const routes: Routes = [
     path: 'scan-qr',
     component: QrScannerComponent,
     canActivate: [AuthGuard],
+    canDeactivate: [QrScannerExitGuard],
     data: { roles: [ 'qrScanner'] }
   },
   {

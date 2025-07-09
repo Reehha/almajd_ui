@@ -115,3 +115,6 @@
 .content{
   margin-left: unset;
 }
+.password input{
+  padding-right: 2.1rem;
+}

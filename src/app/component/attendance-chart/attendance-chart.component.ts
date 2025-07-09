@@ -30,6 +30,11 @@ export class AttendanceChartComponent implements AfterViewInit, OnChanges {
       this.renderChart();
     }
   }
+  formatDate(date: string): string {
+    if (!date) return '';
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
+  } 
 
   renderChart() {
     if (this.chart) this.chart.destroy();
@@ -73,7 +78,12 @@ export class AttendanceChartComponent implements AfterViewInit, OnChanges {
           title: { display: true, text: 'Attendance Overview', color: '#fff' }
         },
         scales: {
-          x: { ticks: { color: '#fff' } },
+          x: { ticks: { color: '#fff',
+            callback: (value, index) => {
+              const label = labels[index];
+              return this.formatDate(label);
+            }
+           } },
           y: {
             min: 0,
             max: this.totalEmployees,
