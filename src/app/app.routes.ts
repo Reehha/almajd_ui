@@ -71,12 +71,6 @@ export const routes: Routes = [
     canActivate: [ResetPasswordGuard]
   },
   {
-    path: 'employee-view/:employeeId',
-    component: EmployeeViewComponent,
-    canActivate: [AuthGuard],
-    data: { roles: ['admin'] }
-  },
-  {
     path: 'under-construction',
     component: UnderConstructionComponent,
     canActivate: [AuthGuard],
