@@ -55,7 +55,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-   
+
     if (typeof window !== 'undefined') {
       const storedDeviceInfo = localStorage.getItem('deviceInfo');
       if (!storedDeviceInfo) {
@@ -214,14 +214,16 @@ export class QrScannerComponent implements OnInit, OnDestroy {
         this.qrResult = res.data.message;
         this.scanSuccessful = true;
         this.scanStatusMessage = 'Scan successful! ✓';
-
-        if (this.beepSound) {
-          this.beepSound.play();
-        }
-
+        this.speak(res.data.audioBytes);
         this.restartScannerAfterDelay();
       });
     }
+  }
+
+  speak(audioBytes: any) {
+    const audioSrc = `data:audio/mpeg;base64,${audioBytes}`;
+    const audio = new Audio(audioSrc);
+    audio.play();
   }
 
   private restartScannerAfterDelay(delay: number = 10000) {

@@ -11,7 +11,8 @@ export interface PunchResponse {
     data: {
         timestamp: string,
         success: string,
-        message: string
+        message: string,
+        audioBytes: string
     }
     timestamp: string,
     success: string,
