@@ -394,6 +394,12 @@ td.no-records {
   .dashboard-container{
     border-radius: unset;
   }
+  .filter-group{
+    align-items: normal;
+    }
+    .btn{
+      width: 100%;
+    }
 }
 
 /* Tablets */

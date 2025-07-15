@@ -50,16 +50,76 @@ export class ManageEmployeeDashboardComponent implements OnInit {
   }
 
   exportToExcel(): void {
-    const exportData = this.filteredEmployees.map(emp => ({
-      'Employee ID': emp.employeeId,
-      'Name': `${emp.firstName} ${emp.lastName}`,
-      'Department': emp.department,
-      'Designation': emp.designation
-    }));
+    const today = new Date();
+    
+    const exportData = this.filteredEmployees.map((entry: any) => {
+      const warnings: string[] = [];
+  
+      const checkExpiry = (label: string, dateStr: string) => {
+        if (!dateStr) return;
+        const parts = dateStr.split('/');
+        if (parts.length !== 3) return;
+  
+        const [day, month, year] = parts;
+        const expiryDate = new Date(`${year}-${month}-${day}`);
+        const diff = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  
+        if (diff < 0) {
+          warnings.push(`${label} expired ${Math.abs(diff)} day(s) ago.`);
+        } else if (diff <= 90) {
+          warnings.push(`${label} expires in ${diff} day(s).`);
+        }
+      };
+  
+      checkExpiry('Passport', entry.passportExpiry);
+      checkExpiry('Visa', entry.visaExpiry);
+      checkExpiry('Emirates ID', entry.emiratesIdExpiry);
+  
+      return {
+        'Employee ID': entry.employeeId,
+        'First Name': entry.firstName,
+        'Last Name': entry.lastName,
+        'Email': entry.email,
+        'Joining Date': entry.joiningDate,
+        'DOB': entry.dob,
+        'Phone': entry.phone,
+        'Department': entry.department,
+        'Designation': entry.designation,
+        'Organization': entry.organization,
+        'Nationality': entry.nationality,
+        'Passport Number': entry.passportNumber,
+        'Passport Expiry': entry.passportExpiry,
+        'Emirates ID': entry.emiratesId,
+        'Emirates ID Expiry': entry.emiratesIdExpiry,
+        'Visa Expiry': entry.visaExpiry,
+        'Reporting Manager': entry.reportingManager,
+        'Manager': entry.manager ? 'Yes' : 'No',
+        'Expiring Soon/Expired': warnings.join('\n')
+      };
+    });
   
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook: XLSX.WorkBook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
-    XLSX.writeFile(workbook, 'employees.xlsx');
+  
+    // Auto-fit columns based on longest text in each column
+    const autoFitColumns = (data: any[]): XLSX.ColInfo[] => {
+      const keys = Object.keys(data[0] || {});
+      return keys.map(key => {
+        const maxLength = Math.max(
+          key.length,
+          ...data.map(row => String(row[key] ?? '').length)
+        );
+        return { wch: maxLength + 2 }; // +2 for padding
+      });
+    };
+  
+    worksheet['!cols'] = autoFitColumns(exportData);
+  
+    const workbook: XLSX.WorkBook = {
+      Sheets: { 'Employees': worksheet },
+      SheetNames: ['Employees']
+    };
+  
+    XLSX.writeFile(workbook, `filtered_employees_${today.toISOString().split('T')[0]}.xlsx`);
   }
 
   applyFilters(): void {
