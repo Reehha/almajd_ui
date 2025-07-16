@@ -74,3 +74,21 @@ body {
   padding: 40px 0;
   font-style: italic;
 }
+@media (max-width:767px) {
+  td[data-label] {
+  padding-left: 50% !important;
+  position: relative;
+  text-align: right; /* Align the value (content) to the right */
+  box-sizing: border-box;
+}
+
+td[data-label]::before {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font-weight: bold;
+  content: attr(data-label);
+  text-align: left;
+  white-space: nowrap;
+}
+}

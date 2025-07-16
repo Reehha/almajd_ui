@@ -153,9 +153,14 @@ export class AdminDashboardComponent implements OnInit {
     return typeof value === 'number';
   }
 
-  formatDate(date: string): string {
-    if (!date) return '';
-    const [year, month, day] = date.split('-');
+  formatDate(date: string | Date): string {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+  
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = d.getFullYear();
+  
     return `${day}/${month}/${year}`;
   }  
 

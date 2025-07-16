@@ -28,6 +28,10 @@ export class QrScannerComponent implements OnInit, OnDestroy {
   private beepSound: Howl | null = null;
   private navigationSubscription: Subscription | null = null;
   private static hasReloaded = false;
+  private lastScannedId: string | null = null;
+  private lastScanTime: number = 0;
+  private scanCooldownMs = 3000;
+  private scanningInProgress = false;
 
   deviceInfoError: string | null = null;
   punchRequest!: PunchRequest;
@@ -178,8 +182,16 @@ export class QrScannerComponent implements OnInit, OnDestroy {
             if (!this.scannerActive) return;
 
             if (result) {
-              this.qrResult = result.getText();
-              this.handleScanSuccess(this.qrResult);
+              const scannedText = result.getText();
+              const now = Date.now();
+              if (scannedText === this.lastScannedId && now - this.lastScanTime < this.scanCooldownMs) {
+                // Same QR code scanned too quickly — ignore
+                return;
+              }
+              this.lastScannedId = scannedText;
+              this.lastScanTime = now;
+              // this.qrResult = scannedText;
+              this.handleScanSuccess(scannedText);
             } else if (error && this.scannerActive) {
               if (
                 error.message &&
@@ -214,6 +226,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
         this.qrResult = res.data.message;
         this.scanSuccessful = true;
         this.scanStatusMessage = 'Scan successful! ✓';
+        this.qrResult = res.data.message;
         this.speak(res.data.audioBytes);
         this.restartScannerAfterDelay();
       });
@@ -234,6 +247,7 @@ export class QrScannerComponent implements OnInit, OnDestroy {
     }
 
     this.restartTimeout = setTimeout(() => {
+      this.scanningInProgress = false; // ✅ Reset scanning flag
       if (this.scannerActive) {
         this.startScanner();
       }

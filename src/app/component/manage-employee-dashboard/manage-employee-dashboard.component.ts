@@ -59,17 +59,19 @@ export class ManageEmployeeDashboardComponent implements OnInit {
         if (!dateStr) return;
         const parts = dateStr.split('/');
         if (parts.length !== 3) return;
-  
+      
         const [day, month, year] = parts;
         const expiryDate = new Date(`${year}-${month}-${day}`);
         const diff = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  
+      
+        const dayLabel = (n: number) => `${Math.abs(n)} day${Math.abs(n) === 1 ? '' : 's'}`;
+      
         if (diff < 0) {
-          warnings.push(`${label} expired ${Math.abs(diff)} day(s) ago.`);
+          warnings.push(`${label} expired ${dayLabel(diff)} ago.`);
         } else if (diff <= 90) {
-          warnings.push(`${label} expires in ${diff} day(s).`);
+          warnings.push(`${label} expires in ${dayLabel(diff)}.`);
         }
-      };
+      };      
   
       checkExpiry('Passport', entry.passportExpiry);
       checkExpiry('Visa', entry.visaExpiry);
@@ -94,7 +96,7 @@ export class ManageEmployeeDashboardComponent implements OnInit {
         'Visa Expiry': entry.visaExpiry,
         'Reporting Manager': entry.reportingManager,
         'Manager': entry.manager ? 'Yes' : 'No',
-        'Expiring Soon/Expired': warnings.join('\n')
+        'Document Status': warnings.join('\n')
       };
     });
   

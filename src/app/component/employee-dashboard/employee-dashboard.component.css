@@ -343,4 +343,7 @@ html, body {
   .attendance-table td:last-child {
     border-bottom: none;
   }
+  .filter-group{
+    width: 100%;
+  }
 }
