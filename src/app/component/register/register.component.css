@@ -12,12 +12,12 @@
     text-align: center;
     margin-bottom: 1.5rem;
     font-size: 1.8rem;
+    font-weight: 500;
   }
   
   .register-form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
   }
   
   .form-row {
@@ -29,10 +29,14 @@
   .input-group {
     position: relative;
     flex: 1;
-    margin-bottom: 1rem;
+    margin: 1rem 0 1rem 0;
     background: var(--primary-gradient-color);
     padding: 2px;
     border-radius: 0.5rem;
+  }
+  
+  .checkbox-group{
+    margin: 1rem;
   }
   
   .input-group input,
@@ -90,12 +94,7 @@
   .btn-grad:hover:not(:disabled) {
     background-position: right center;
   }
-  .error-msg {
-    color: #ff4d4d;
-    font-size: 0.8rem;
-    margin-top: -0.8rem;
-    margin-bottom: 0.8rem;
-  }
+
   /* Just a small top label styling */
 .top-label {
     font-size: 0.75rem;
@@ -112,10 +111,7 @@
     margin-bottom: 1rem; /* Same vertical spacing as inputs */
   }
   
-  /* Keep input-group consistent margin */
-  .input-group {
-    margin-bottom: 1rem; /* consistent vertical spacing */
-  }
+  
   
   .password-field{
     display: flex;
@@ -127,4 +123,16 @@
     input{
       background-color: #2f081b;
     }
+  }
+
+  .flex-gap{
+    display: flex;
+    gap: 7px;
+  }
+
+  @media (max-width:480px) {
+    .register-container{
+      border-radius: unset;
+    }
+
   }

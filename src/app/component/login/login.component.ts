@@ -46,6 +46,10 @@ export class LoginComponent {
 
         const accessToken = userData.accessToken;
         const roles = userData.roles;
+        const firstName = userData.firstName;
+        const lastName = userData.lastName;
+        const employeeId = userData.employeeId;
+
 
         if (!roles) {
           this.errorMessage = 'Login failed: incomplete data';
@@ -55,16 +59,20 @@ export class LoginComponent {
         // persist auth info
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('roles', roles);
+        localStorage.setItem('firstName', firstName);
+        localStorage.setItem('lastName', lastName);
+        localStorage.setItem('employeeId', employeeId);
+
 
         // route by role
-        if (roles.includes('admin')) {
-          this.service.setSession(accessToken, roles); 
-          this.router.navigateByUrl('/admin-dashboard'); 
-        } else if (roles.some((r: string) => ['employee', 'office-staff', 'site-worker', 'factory-worker'].includes(r))) { 
-          this.service.setSession(accessToken, roles); 
-          this.router.navigateByUrl('/manage'); 
-        } else {
-          this.errorMessage = 'Unknown role';
+          if (roles.includes('admin')) {
+            this.service.setSession(accessToken, roles);
+            this.router.navigateByUrl('/admin-dashboard');
+          } else if (roles.some((r: string) => ['employee', 'office-staff', 'site-worker', 'factory-worker'].includes(r))) {
+            this.service.setSession(accessToken, roles);
+            this.router.navigateByUrl('/employee-dashboard');
+          } else {
+            this.errorMessage = 'Unknown role';
         }
       },
       error: () => {

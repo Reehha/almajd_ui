@@ -66,7 +66,19 @@ export class LoginService {
       `${this.BASE_URL}/auth/login`, req
     )
       .pipe(
-        tap(res => this.store(res)),
+        tap(res => {
+          this.store(res);
+          const user = res?.data?.data;
+          if (user?.firstName && user?.lastName) {
+            const defaultPassword = `${user.firstName.toLowerCase()}.${user.lastName.toLowerCase()}`;
+            if (req.password === defaultPassword) {
+              this.storage?.setItem('mustResetPassword', 'true');
+              this.router.navigate(['/reset-password']);
+            } else {
+              this.storage?.removeItem('mustResetPassword');
+            }
+          }
+        }),
         catchError(err => {
           return of(err.error ?? { message: 'Login failed' });
         })
@@ -89,6 +101,7 @@ export class LoginService {
         // whether it returns 204 or 409, we clear the local state
         catchError(() => of(null)),
         tap(() => this.clear()),
+        tap(() => alert('Logged out successfully')), // ✅ show alert
         tap(() => this.router.navigateByUrl('/login'))
       );
   }
@@ -108,7 +121,18 @@ export class LoginService {
 
   /** Remove ALL tokens & notify */
   private clear() {
-    this.storage?.clear();
+    // List of keys to remove
+    const keysToRemove = [
+      'accessToken',
+      'almajd-token',
+      'employeeId',
+      'firstName',
+      'lastName',
+      'roles',
+    ];
+    keysToRemove.forEach((key) => {
+      this.storage?.removeItem(key);
+    });
     this.currentUserSubject.next(null);
     this.authChangedSubject.next();
   }
@@ -160,5 +184,16 @@ export class LoginService {
     }
   }
 
+  public getEmployeeId(): string | null {
+    const token = this.getToken();
+    if (!token) { return null; }
+
+    try {
+      const { preferred_username } = jwtDecode<{ preferred_username: string }>(token);
+      return preferred_username ?? null;
+    } catch {
+      return null;
+    }
+  }
 
 }

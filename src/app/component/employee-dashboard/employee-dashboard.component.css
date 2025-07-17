@@ -1,69 +1,349 @@
+/* === GLOBAL RESET === */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: sans-serif;
+  background-color: #1a1a1a;
+  color: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* === CONTAINER === */
 .dashboard-container {
-    background-color: #1a1a1a;
-    padding: 2.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  background-color: #1a1a1a;
+  border-radius: 1rem;
+  margin: 1rem auto;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* === FILTER PANEL === */
+.filter-panel {
+  background-color: #000;
+  padding: 1rem;
+  border-radius: 1rem;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  flex-direction: column;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.filter-item label {
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-bottom: 0.3rem;
+}
+
+.filter-item input {
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #333;
+  border: 1px solid #444;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.filter-item button {
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  /* background-image: linear-gradient(to right, #ff512f, #dd2476); */
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s ease;
+  margin-bottom: 15px;
+  width: 100%;
+  height: 3rem;
+}
+
+/* === DASHBOARD OVERVIEW === */
+.dashboard-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.overview-chart {
+  display: flex;
+  flex-direction: row;
+  background-color: #000;
+  padding: 1rem;
+  border-radius: 1rem;
+  width: 100%;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.overview-chart canvas {
+  /* width: 75% !important; */
+  /* height: 250px !important; */
+  display: block;
+}
+
+.summary-box.total {
+  width: 100%;
+  background:  #000;
+  padding: 1rem;
+  border-radius: 1rem;
+  text-align: center;
+  color: white;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+/* === USER INFO === */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.user-avatar i {
+  font-size: 2.5rem;
+}
+
+.user-details h3 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.role-label {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.schedule-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-left: 1rem;
+}
+
+.schedule-item {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.label {
+  font-weight: 500;
+  color: #ccc;
+}
+.value {
+  font-weight: 500;
+  color: #f1f1f1;
+}
+
+.user-details {
+  text-transform: capitalize;
+}
+
+.btn {
+  background: linear-gradient(to right, #4e9af1, #3f51b5);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.export-btn {
+  background: linear-gradient(to right, #2ecc71, #27ae60);
+}
+
+/* === TABLE CONTAINER === */
+.table-container {
+  background-color: #000;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #222;
+  border-radius: 10px;
+  overflow: hidden;
+  color: white;
+  table-layout: fixed;
+}
+
+.attendance-table th,
+.attendance-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #333;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.attendance-table th {
+  background-color: #111;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.attendance-table td {
+  font-size: 0.95rem;
+}
+
+.attendance-table tr:hover {
+  background-color: #2a2a2a;
+}
+
+.present { color: #4CAF50; font-weight: bold; }
+.late    { color: #FFC107; font-weight: bold; }
+.absent  { color: #F44336; font-weight: bold; }
+
+/* === PAGINATION === */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.pagination button {
+  background-color: #444;
+  border: none;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.pagination button.active {
+  background-color: #ff512f;
+  color: white;
+}
+
+.pagination .dots {
+  padding: 0.5rem;
+  color: #aaa;
+  font-weight: bold;
+}
+
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .overview-chart  {
+    flex-direction: column;
+    align-items: center;
+
+  }
+  .overview-chart canvas {
+    /* width: 50% !important; */
+    /* height: 150px !important; */
+    display: block;
+  }
+  
+  .filter-item {
+    flex: unset;
+  }
+  .dashboard-container {
+    padding: 1rem;
+    margin: 0;
+    width: 100vw;
+    border-radius: unset;
+    margin-bottom: 3.125rem;
+  }
+
+  .dashboard-overview {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .summary-box {
     width: 100%;
-    max-width: 50rem;
-    text-align: center;
-    margin: 0 auto;
   }
-  
-  .dashboard-title {
-    font-size: 2rem;
-    margin-bottom: 2rem;
-    color: #fff;
+
+  .overview-chart {
+    width: 100%;
   }
-  
-  .options-container {
+
+  .filter-panel {
+    padding: 1rem;
+  }
+
+  .filter-item {
+    width: 100%;
+  }
+
+
+  .attendance-table thead {
+    display: none;
+  }
+
+  .attendance-table tr {
+    display: block;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #fff;
+    width: 100%;
+  }
+
+  .attendance-table td {
     display: flex;
-    justify-content: space-around;
-    gap: 1.5rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.5rem;
+    border-bottom: 1px solid #444;
+    width: 100%;
+    box-sizing: border-box;
     flex-wrap: wrap;
   }
-  
-  .option-card {
-    background-color: #333;
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    width: 100%;
-    max-width: 18rem;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-decoration: none;
-    color: inherit;
-  }
-  
-  .option-card:hover {
-    transform: translateY(-0.5rem);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
-  }
-  
-  .option-icon {
-    font-size: 2.5rem;
-    color: #007bff;
-    margin-bottom: 1rem;
-  }
-  
-  .option-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
-    color: #fff;
-  }
-  
-  .option-description {
-    font-size: 1rem;
+
+  .attendance-table td:before {
+    content: attr(data-label);
+    font-weight: bold;
     color: #aaa;
+    flex: 0 0 40%;
+    text-align: left;
+    padding-right: 1rem;
+    box-sizing: border-box;
   }
-  
-  @media (max-width: 768px) {
-    .options-container {
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    .option-card {
-      max-width: 100%;
-    }
+
+  .attendance-table td:last-child {
+    border-bottom: none;
   }
+  .filter-group{
+    width: 100%;
+  }
+}

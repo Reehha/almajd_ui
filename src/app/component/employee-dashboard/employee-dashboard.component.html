@@ -1,15 +1,118 @@
 <div class="dashboard-container">
-  <h1 class="dashboard-title">Your Dashboard</h1>
-  <div class="options-container">
-    <a [routerLink]="'/log-attendance'" routerLinkActive="active-link" class="option-card" id="log-attendance">
-      <i class="fas fa-calendar-check option-icon"></i>
-      <h2 class="option-title">Log Attendance</h2>
-      <!-- <p class="option-description">Mark your daily attendance here.</p> -->
-    </a>
-    <a [routerLink]="'/manage'" routerLinkActive="active-link" class="option-card" id="manage-data">
-      <i class="fas fa-user-edit option-icon"></i>
-      <h2 class="option-title">Manage My Data</h2>
-      <!-- <p class="option-description">Update your personal information.</p> -->
-    </a>
+
+  <!-- Chart + Schedule -->
+  <div class="dashboard-overview">
+
+    <!-- <div class="overview-summary"> -->
+      <div class="summary-box total">
+        <div class="user-info">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-details">
+            <h3>{{ userInfo.firstName }} {{ userInfo.lastName }}'s Schedule</h3>
+          </div>
+        </div>
+      
+        <div class="schedule-info">
+          <div class="schedule-item">
+            <span class="label"><i class="fas fa-clock"></i> Time:</span>
+            <span class="value">{{ todaySchedule.time }}</span>
+          </div>
+          <div class="schedule-item">
+            <span class="label"><i class="fas fa-map-marker-alt"></i> Location:</span>
+            <span class="value">{{ todaySchedule.location }}</span>
+          </div>
+        </div>
+      </div>
+    <div class="overview-chart">
+      <!-- <h3>Attendance Chart</h3> -->
+        <div *ngIf="!noData; else noDataTemplate " style="padding: 0 5rem;">
+          <canvas id="attendanceChart"></canvas>
+        </div>
+      
+        <ng-template #noDataTemplate>
+          <div class="no-chart-data">No records to display chart</div>
+        </ng-template>
+      
+       <!-- Filter Panel -->
+    <div class="filter-group">
+      <div class="filter-item">
+        <label for="startDate">Start date:</label>
+        <input type="date" id="startDate" name="startDate" [(ngModel)]="startDate" #startRef="ngModel"/>
+      </div>
+      <div class="filter-item">
+        <label for="endDate">End date:</label>
+        <input type="date" id="endDate" name="endDate" [(ngModel)]="endDate"  #endRef="ngModel" />
+      </div>
+      <div *ngIf="(startRef.touched || endRef.touched) && dateError" class="error-message">
+        {{ dateError }}
+      </div>      
+      <div class="filter-item align-end">
+        <button (click)="fetchData()" class="btn">Apply</button>
+        <button (click)="exportPDF()" class="export-btn">Export PDF</button>
+      </div>
+    </div>
+    </div>
+      
+    <!-- </div> -->
+  </div>
+
+  <!-- Attendance Table -->
+  <div class="table-container">
+    <div class="table-scroll">
+      <table class="attendance-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Punch In</th>
+            <th>Punch Out</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredData.length === 0">
+            <td colspan="4" class="no-records">No records found</td>
+          </tr>
+          <tr *ngFor="let row of filteredData">
+            <td data-label="Date">{{ formatDate(row.date) }}</td>
+            <td data-label="Punch In">{{ row.punchIn || '-' }}</td>
+            <td data-label="Punch Out">{{ row.punchOut || '-' }}</td>
+            <td data-label="Status" [ngStyle]="getColor(row.status)"><strong>{{ row.status }}</strong></td>
+          </tr>
+        </tbody>
+        <ng-template #noRecords>
+          <tbody>
+            <tr>
+              <td colspan="4" class="no-records">No attendance records found</td>
+            </tr>
+          </tbody>
+        </ng-template>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+    
+      <ng-container *ngFor="let page of paginationRange">
+        <button
+          *ngIf="isNumber(page)"
+          (click)="onPageChange(page)"
+          [class.active]="currentPage === page"
+        >
+          {{ page }}
+        </button>
+    
+        <span *ngIf="!isNumber(page)" class="dots">...</span>
+      </ng-container>
+    
+      <button
+        (click)="onPageChange(currentPage + 1)"
+        [disabled]="currentPage === totalPages"
+      >
+        Next
+      </button>
+    </div>    
   </div>
 </div>

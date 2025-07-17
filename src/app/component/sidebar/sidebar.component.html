@@ -1,31 +1,30 @@
-<!-- <nav class="sidebar">
-  <ul class="nav-list">
-    <li class="nav-item" 
-        *ngFor="let item of navItems" 
-        [routerLink]="item.link" 
-        routerLinkActive="active" (click)="item.action && item.action()" *ngIf="item.visible && !item.visible()">
-      <div class="nav-icon">
-        <i [class]="'fas fa-' + item.icon"></i>
-      </div>
-      <span class="nav-label">{{item.label}}</span>
-    </li>
-  </ul>
-</nav> -->
-
 <nav class="sidebar">
   <ul class="nav-list">
-    <ng-container *ngFor="let item of navItems">
+    <ng-container *ngFor="let item of visibleNavItems">
       <li
-        *ngIf="item.visible && item.visible()"
         class="nav-item"
-        [routerLink]="item.link"
-        routerLinkActive="active"
-        (click)="item.action?.()">
+        [ngClass]="{
+          'has-submenu': item.subItems?.length,
+          'scan-qr-style': item.label === 'Scan QR'
+        }"
+        (click)="item.link && !item.subItems?.length ? navigateTo(item.link) : item.action?.()"
+      >
         <div class="nav-icon">
           <i [class]="'fas fa-' + item.icon"></i>
         </div>
         <span class="nav-label">{{ item.label }}</span>
+
+        <!-- Submenu -->
+        <ul *ngIf="item.subItems?.length" class="submenu" [ngClass]="item.label.toLowerCase()" >
+          <li
+            *ngFor="let sub of item.subItems"
+            (click)="navigateTo(sub.link); $event.stopPropagation()" 
+          >
+            {{ sub.label }}
+          </li>
+        </ul>
       </li>
     </ng-container>
   </ul>
 </nav>
+  

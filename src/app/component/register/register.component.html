@@ -1,102 +1,100 @@
 <div class="register-container">
-  <h2 class="register-title">Employee Registration</h2>
-
-  <form
-    #registerForm="ngForm"
-    (ngSubmit)="onRegister()"
-    novalidate
-    class="register-form"
-  >
-
-    <!-- First Name -->
-    <div class="input-group">
-      <input
-        type="text"
-        name="firstName"
-        [(ngModel)]="employee.firstName"
-        #firstName="ngModel"
-        required
-        placeholder="First Name"
-      />
-    </div>
-    <div *ngIf="firstName.invalid && firstName.touched" class="error-msg">
-      First name is required.
-    </div>
-
-    <!-- Last Name -->
-    <div class="input-group">
-      <input
-        type="text"
-        name="lastName"
-        [(ngModel)]="employee.lastName"
-        #lastName="ngModel"
-        required
-        placeholder="Last Name"
-      />
-    </div>
-    <div *ngIf="lastName.invalid && lastName.touched" class="error-msg">
-      Last name is required.
-    </div>
-
-    <!-- Email -->
-    <div class="input-group">
-      <input
-        type="email"
-        name="email"
-        [(ngModel)]="employee.email"
-        #email="ngModel"
-        required
-        email
-        placeholder="Email Address"
-      />
-    </div>
-    <div *ngIf="email.invalid && email.touched" class="error-msg">
-      <span *ngIf="email.errors?.['required']">Email is required.</span>
-      <span *ngIf="email.errors?.['email']">Enter a valid email.</span>
-    </div>
-
-    <!-- Date inputs row -->
-    <div class="form-row date-row">
-      <div>
-        <div class="input-group date-group">
-          <label class="top-label">Date of Birth (DOB)</label>
-          <input
-            type="date"
-            name="dob"
-            [(ngModel)]="employee.dob"
-            #dob="ngModel"
-            required
-            placeholder="yyyy-mm-dd"
-          />
-        </div>
-        <div *ngIf="dob.invalid && dob.touched" class="error-msg">
-          DOB is required.
-        </div>
+    <h2 class="register-title">Employee Registration</h2>
+  
+    <form
+      #registerForm="ngForm"
+      (ngSubmit)="onRegister(registerForm)"
+      novalidate
+      class="register-form"
+    >
+      <!-- First Name -->
+      <div class="input-group">
+        <input
+          type="text"
+          name="firstName"
+          [(ngModel)]="employee.firstName"
+          #firstName="ngModel"
+          required
+          placeholder="First Name"
+        />
       </div>
-
-      <div>
-        <div class="input-group date-group">
-          <label class="top-label">Joining Date</label>
-          <input
-            type="date"
-            name="joiningDate"
-            [(ngModel)]="employee.joiningDate"
-            #joiningDate="ngModel"
-            required
-            placeholder="yyyy-mm-dd"
-          />
-        </div>
-        <div
-          *ngIf="joiningDate.invalid && joiningDate.touched"
-          class="error-msg"
-        >
-          Joining Date is required.
-        </div>
+      <div *ngIf="firstName.invalid && firstName.touched" class="error-message">
+        First name is required.
       </div>
-
-      <!-- 📅 Visa Expiry -->
-      <div>
-        <div class="input-group date-group">
+  
+      <!-- Last Name -->
+      <div class="input-group">
+        <input
+          type="text"
+          name="lastName"
+          [(ngModel)]="employee.lastName"
+          #lastName="ngModel"
+          required
+          placeholder="Last Name"
+        />
+      </div>
+      <div *ngIf="lastName.invalid && lastName.touched" class="error-message">
+        Last name is required.
+      </div>
+  
+      <!-- Email -->
+      <div class="input-group">
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="employee.email"
+          #email="ngModel"
+          required
+          email
+          placeholder="Email Address"
+        />
+      </div>
+      <div *ngIf="email.invalid && email.touched" class="error-message">
+        <span *ngIf="email.errors?.['required']">Email is required.</span>
+        <span *ngIf="email.errors?.['email']">Enter a valid email.</span>
+      </div>
+  
+      <!-- Date inputs row -->
+      <div class="form-row date-row">
+        <div>
+          <div class="input-group date-group">
+            <label class="top-label">Date of Birth (DOB)</label>
+            <input
+              type="date"
+              name="dob"
+              [(ngModel)]="employee.dob"
+              #dob="ngModel"
+              required
+              placeholder="yyyy-mm-dd"
+            />
+          </div>
+          <div *ngIf="dob.invalid && dob.touched" class="error-message">
+            DOB is required.
+          </div>
+          <div *ngIf="dob.valid && isUnder18(employee.dob)" class="error-message">
+            Must be at least 18 years old.
+          </div>
+        </div>
+  
+        <div>
+          <div class="input-group date-group">
+            <label class="top-label">Joining Date</label>
+            <input
+              type="date"
+              name="joiningDate"
+              [(ngModel)]="employee.joiningDate"
+              #joiningDate="ngModel"
+              required
+              placeholder="yyyy-mm-dd"
+            />
+          </div>
+          <div *ngIf="joiningDate.invalid && joiningDate.touched" class="error-message">
+            Joining Date is required.
+          </div>
+        </div>
+  
+        <div>
+          <div class="input-group date-group">
             <label class="top-label">Visa Expiry</label>
             <input
               type="date"
@@ -107,171 +105,228 @@
               placeholder="yyyy-mm-dd"
             />
           </div>
-          <div *ngIf="visaExpiry.invalid && visaExpiry.touched" class="error-msg">
+          <div *ngIf="visaExpiry.invalid && visaExpiry.touched" class="error-message">
             Visa expiry date is required.
           </div>
+          <!-- Expiry warning (non-blocking) -->
+          <div *ngIf="isDateExpired(employee.visaExpiry)" class="warning-message">
+            ⚠️ Visa has expired!
+          </div>          
+        </div>
       </div>
-    </div>
-
-    <!-- Passport Number -->
-    <div class="input-group">
-      <input
-        type="text"
-        name="passportNumber"
-        [(ngModel)]="employee.passportNumber"
-        #passportNumber="ngModel"
-        required
-        placeholder="Passport number"
-      />
-    </div>
-    <div
-      *ngIf="passportNumber.invalid && passportNumber.touched"
-      class="error-msg"
-    >
-      Passport number is required.
-    </div>
-
-    <!-- Emirates ID -->
-<div class="input-group">
-    <input
-      type="tel"
-      name="emiratesId"
-      [(ngModel)]="employee.emiratesId"
-      (input)="onEmiratesIdInput()"
-      #emiratesId="ngModel"
-      required
-      maxlength="18"
-      minlength="18"
-      (keypress)="allowOnlyNumbers($event)"
-      placeholder="Emirates ID"
-      autocomplete="off"
-    />
-  </div>
-  <div *ngIf="emiratesId.invalid && emiratesId.touched" class="error-msg">
-    Emirates ID is required.
-  </div>
   
+      <!-- Passport Expiry & Emirates ID Expiry -->
+      <div class="form-row date-row">
+        <div>
+          <div class="input-group date-group">
+            <label class="top-label">Passport Expiry</label>
+            <input
+              type="date"
+              name="passportExpiry"
+              [(ngModel)]="employee.passportExpiry"
+              #passportExpiry="ngModel"
+              required
+              placeholder="yyyy-mm-dd"
+            />
+          </div>
+          <div *ngIf="passportExpiry.invalid && passportExpiry.touched" class="error-message">
+            Passport expiry date is required.
+          </div>
+          <div *ngIf="isDateExpired(employee.passportExpiry)" class="warning-message">
+            ⚠️ Passport has expired!
+          </div>
+          
+        </div>
+  
+        <div>
+          <div class="input-group date-group">
+            <label class="top-label">Emirates ID Expiry</label>
+            <input
+              type="date"
+              name="emiratesIdExpiry"
+              [(ngModel)]="employee.emiratesIdExpiry"
+              #emiratesIdExpiry="ngModel"
+              required
+              placeholder="yyyy-mm-dd"
+            />
+          </div>
+          <div *ngIf="emiratesIdExpiry.invalid && emiratesIdExpiry.touched" class="error-message">
+            Emirates ID expiry date is required.
+          </div>
+          <div *ngIf="isDateExpired(employee.emiratesIdExpiry)" class="warning-message">
+            ⚠️ Emirates ID has expired!
+          </div>
+          
+        </div>
+      </div>
+  
+      <!-- Passport Number & Emirates ID -->
+      <div class="form-row">
+        <div>
+          <div class="input-group">
+            <input
+              type="text"
+              name="passportNumber"
+              [(ngModel)]="employee.passportNumber"
+              #passportNumber="ngModel"
+              required
+              placeholder="Passport number"
+            />
+          </div>
+          <div *ngIf="passportNumber.invalid && passportNumber.touched" class="error-message">
+            Passport number is required.
+          </div>
+        </div>
+  
+        <div>
+          <div class="input-group">
+            <input
+              type="tel"
+              name="emiratesId"
+              [(ngModel)]="employee.emiratesId"
+              (input)="onEmiratesIdInput()"
+              #emiratesId="ngModel"
+              required
+              maxlength="18"
+              minlength="18"
+              (keypress)="allowOnlyNumbers($event)"
+              placeholder="Emirates ID"
+              autocomplete="off"
+            />
+          </div>
+          <div *ngIf="emiratesId.invalid && emiratesId.touched" class="error-message">
+            Emirates ID is required.
+          </div>
+        </div>
+      </div>
 
-    <!-- Nationality -->
-    <div class="form-row">
-      <!-- <div class="input-group">
-                <label class="top-label" for="nationality">Nationality</label>
-                <select formControlName="nationality" id="nationality" class="form-control">
-                  <option value="" disabled>Select nationality</option>
-                  <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
-                </select>
-                <div *ngIf="submitted && registerForm.controls['nationality'].errors?.['required']" class="text-danger">
-                  Nationality is required.
-                </div>
-              </div> -->
-
-      <!-- Department dropdown -->
-      <div>
+      <!-- Organization & Nationality in one row -->
+      <div class="form-row">
+        <div>
+          <div class="input-group">
+            <label class="top-label">Organization</label>
+            <select name="organization" [(ngModel)]="employee.organization" #organization="ngModel"
+              (change)="onOrganizationChange()" required>
+              <option value="" disabled selected>Select an organization</option>
+              <option *ngFor="let company of organizations" [value]="company">{{ company }}</option>
+            </select>
+          </div>
+          <div *ngIf="organization.invalid && organization.touched" class="error-message">
+            Organization is required.
+          </div>
+        </div>
+  
+        <div>
+          <div class="input-group">
+            <label class="top-label">Nationality</label>
+            <select
+              name="nationality"
+              [(ngModel)]="employee.nationality"
+              #nationality="ngModel"
+              required
+            >
+              <option value="" disabled selected>Select your nationality</option>
+              <option *ngFor="let country of countries" [value]="country">
+                {{ country }}
+              </option>
+            </select>
+          </div>
+          <div *ngIf="nationality.invalid && nationality.touched" class="error-message">
+            Nationality is required.
+          </div>
+        </div>
+      </div>
+  
+      <!-- Department & Role in one row -->
+      <div class="form-row">
+        <div>
         <div class="input-group">
           <label for="department" class="top-label">Department</label>
-          <select
-    [(ngModel)]="employee.department"
-    name="department"
-    #departmentRef="ngModel"
-    required
-  >
-
-  <option value="" disabled selected>Select a department</option>
-  <option *ngFor="let dept of departments" [value]="dept.name">
-    {{ dept.name }}
-  </option>
-</select>
+          <select [(ngModel)]="employee.department" name="department" #departmentRef="ngModel" (change)="onDepartmentChange()"
+            required>
+            <option value="" disabled selected>Select a department</option>
+            <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+          </select>
         </div>
-        <div *ngIf="departmentRef.invalid && departmentRef.touched" class="error-msg">
-            Department is required.
-          </div>
+        <div *ngIf="departmentRef.invalid && departmentRef.touched" class="error-message">
+          Department is required.
+        </div>
+        </div>
+  
+        <div>
+        <div class="input-group">
+          <label class="top-label">Designation</label>
+          <select name="designation" [(ngModel)]="employee.designation" #designation="ngModel" required>
+            <option value="" disabled selected>Select designation</option>
+            <option *ngFor="let role of designations" [value]="role">{{ role }}</option>
+          </select>
+        </div>
+        <div *ngIf="designation.invalid && designation.touched" class="error-message">
+          Designation is required.
+        </div>
       </div>
-
-      <!-- Department dropdown -->
-       <div>
-      <div class="input-group">
-        <label class="top-label">Nationality</label>
-        <select
-          name="nationality"
-          [(ngModel)]="employee.nationality"
-          #nationality="ngModel"
-          required
-        >
-          <option value="" disabled selected>Select your nationality</option>
-          <option *ngFor="let country of countries" [value]="country">
-            {{ country }}
-          </option>
-        </select>
-      </div>
-      <div *ngIf="nationality.invalid && nationality.touched" class="error-msg">
-        Nationality is required.
-      </div>
-       </div>
     </div>
-
-    <!-- 📞 Contact Number -->
-<div class="input-group">
-    <label class="top-label">Contact Number</label>
-    <input
-      type="text"
-      name="contactNumber"
-      [(ngModel)]="employee.phone"
-      (input)="onPhoneInput(contactNumber)"
-      (keypress)="allowOnlyNumbers($event)"
-      #contactNumber="ngModel"
-      required
-      placeholder="971 55 1234567"
-      maxlength="15"
-      autocomplete="off"
-    />
+  
+  
+      <!-- Contact Number -->
+      <div class="input-group">
+        <label class="top-label">Contact Number</label>
+        <input
+          type="text"
+          name="contactNumber"
+          [(ngModel)]="employee.phone"
+          (input)="onPhoneInput(contactNumber)"
+          (keypress)="allowOnlyNumbers($event)"
+          #contactNumber="ngModel"
+          required
+          placeholder="+971 55 1234567"
+          maxlength="15"
+          autocomplete="off"
+        />
+      </div>
+      <div *ngIf="contactNumber.invalid && contactNumber.touched" class="error-message">
+        <span *ngIf="contactNumber.errors?.['required']">Contact Number is required.</span>
+        <span *ngIf="contactNumber.errors?.['invalidPhone']">Phone must start with 971 and follow format: 971 55 1234567</span>
+      </div>
+  
+      <!-- Reporting Manager Checkbox -->
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            name="isReportingManager"
+            [(ngModel)]="employee.manager"
+            class="checkbox-input"
+          />
+          <span> Employee has managerial role</span>
+        </label>
+      </div>
+  
+      <!-- Reporting Manager Dropdown -->
+      <div *ngIf="!employee.manager">
+        <div class="input-group">
+          <label class="top-label">Reporting Manager</label>
+          <select
+            [(ngModel)]="employee.reportingManager"
+            name="reportingManager"
+            #reportingManagerRef="ngModel"
+            required
+          >
+            <option value="" disabled selected>Select a manager</option>
+            <option *ngFor="let manager of reportingManagers" [value]="manager.id">
+              {{ manager.name }}
+            </option>
+          </select>
+        </div>
+        <div *ngIf="reportingManagerRef.invalid && reportingManagerRef.touched" class="error-message">
+          Reporting Manager is required.
+        </div>
+      </div>
+  
+      <!-- Submit Button -->
+      <button type="submit" class="btn-grad" [disabled]="registerForm.invalid">
+        Register
+      </button>
+    </form>
   </div>
   
-  <div *ngIf="contactNumber.invalid && contactNumber.touched" class="error-msg">
-    <span *ngIf="contactNumber.errors?.['required']">Contact Number is required.</span>
-    <span *ngIf="contactNumber.errors?.['invalidPhone']">Phone must start with 971 and follow format: 971 55 1234567</span>
-  </div>
-   
-
-<!-- Reporting Manager Checkbox -->
-<div class="checkbox-group">
-    <label class="checkbox-label">
-      <input
-        type="checkbox"
-        name="isReportingManager"
-        [(ngModel)]="employee.manager"
-        class="checkbox-input"
-      />
-      <span> Employee has managerial role</span>
-    </label>
-  </div>
-
-     <!-- 👤 Reporting Manager Dropdown -->
-<div *ngIf="!employee.manager" >
-    <div class="input-group">
-        <label class="top-label">Reporting Manager</label>
-        <select
-        [(ngModel)]="employee.reportingManager"
-        name="reportingManager"
-        #reportingManagerRef="ngModel"
-        required
-      >
-          <option value="" disabled selected>Select a manager</option>
-          <option *ngFor="let manager of reportingManagers" [value]="manager.id">
-            {{ manager.name }}
-          </option>
-        </select>
-      </div>
-      
-      <div *ngIf="reportingManagerRef.invalid && reportingManagerRef.touched" class="error-msg">
-        Reporting Manager is required.
-      </div>
-      
-</div>
-  
-
-    <!-- Submit Button -->
-    <button type="submit" class="btn-grad" [disabled]="registerForm.invalid">
-      Register
-    </button>
-  </form>
-</div>

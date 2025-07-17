@@ -1,41 +1,65 @@
 <div class="dashboard-container">
-    <h1 class="dashboard-title">Employee Dashboard</h1>
-  
-    <!-- Date Filter -->
-  
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Table -->
-      <div class="table-container">
-        <div class="date-filter">
-          <div class="date-input-group">
-            <div class="date-input-container">
-              <label>Start Date</label>
-              <input type="date" [(ngModel)]="startDate">
-            </div>
-            <div class="date-input-container">
-              <label>End Date</label>
-              <input type="date" [(ngModel)]="endDate">
-            </div>
-          </div>
-          <button class="filter-btn" (click)="filterData()">Filter</button>
-        </div>   
-        <app-attendance-table [data]="filteredData"></app-attendance-table>
-      </div>
-  
-      <!-- Pie Chart -->
-      <div class="chart-container">
-        <app-attendance-chart [data]="filteredData"></app-attendance-chart>
-      </div>
+  <!-- <div class="dashboard-header">
+    <h2>Manage Employees</h2>
+  </div> -->
+
+  <div class="filter-panel">
+    <div class="filter-group">
+      <input [(ngModel)]="filters.name" (ngModelChange)="applyFilters()" placeholder="Search by Name" />
+      <input [(ngModel)]="filters.employeeId" (ngModelChange)="applyFilters()" placeholder="Employee ID" />
+      <select [(ngModel)]="filters.department" (ngModelChange)="applyFilters()">
+        <option value="">All Departments</option>
+        <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+      </select>
+      <select [(ngModel)]="filters.designation" (ngModelChange)="applyFilters()">
+        <option value="">All Roles</option>
+        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+      </select>
+      <div class="filter-apply">
+      <button (click)="exportToExcel()" class="btn export-btn">Export Excel</button>
     </div>
-  
-    <!-- Leave Request -->
-    <div class="leave-request-container">
-      <button class="toggle-button" (click)="toggleLeaveRequest()">
-        {{ isLeaveRequestOpen ? 'Close Leave Request' : 'Request Leave' }}
-      </button>
-      <div class="leave-request-form" *ngIf="isLeaveRequestOpen">
-        <app-leave-request></app-leave-request>
-      </div>
     </div>
   </div>
+
+  <div class="table-container">
+    <table class="attendance-table">
+      <thead>
+        <tr>
+          <th>Employee ID</th>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Designation</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="paginatedEmployees.length === 0">
+          <td colspan="6" class="no-records">No records found</td>
+        </tr>
+        <tr *ngFor="let emp of paginatedEmployees">
+          <td data-label="Employee ID">{{ emp.employeeId }}</td>
+          <td data-label="Name">{{ emp.firstName }} {{ emp.lastName }}</td>
+          <td data-label="Department">{{ emp.department }}</td>
+          <td data-label="Role">{{ emp.designation }}</td>
+          <td data-label="View">
+            <button class="scan-btn" (click)="viewEmployee(emp.employeeId)">View/Edit</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-container">
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+    
+    <ng-container *ngFor="let p of paginationRange">
+      <button 
+        *ngIf="isNumber(p)" 
+        (click)="goToPage(p)" 
+        [class.active]="p === currentPage">{{ p }}</button>
+      <span *ngIf="!isNumber(p)">...</span>
+    </ng-container>
+
+    <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+  </div>
+</div>

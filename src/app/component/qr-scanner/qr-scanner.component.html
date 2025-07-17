@@ -61,7 +61,37 @@
     <div *ngIf="qrResult" class="result">
       <h3>Scan Result:</h3>
       <p>{{ qrResult }}</p>
-      <button (click)="clearResult()">Scan Another</button>
+      <button (click)="clearResult()" class="btn">Scan Another</button>
     </div>
   </div>
 </div>
+
+<!-- Device Info Modal -->
+<div *ngIf="showDeviceInfoPopup" class="modal-backdrop">
+  <div class="modal">
+    <h3>Enter Device Information</h3>
+
+    <form #deviceForm="ngForm" (ngSubmit)="saveDeviceInfo()">
+      <div class="input-group">
+        <input type="text"
+               name="deviceInfo"
+               [(ngModel)]="deviceInfoInput"
+               #deviceInfoRef="ngModel"
+               required
+               placeholder="Enter device name"
+               [ngClass]="{ 'input-error': deviceInfoRef.invalid && deviceInfoRef.touched }" />
+      </div>
+
+      <!-- Error shown only if touched and invalid -->
+      <div class="error-message" *ngIf="deviceInfoRef.invalid && deviceInfoRef.touched">
+        Device information is required.
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
