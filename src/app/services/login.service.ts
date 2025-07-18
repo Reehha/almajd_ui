@@ -85,6 +85,37 @@ export class LoginService {
       );
   }
 
+  refreshToken() {
+    const token = this.getToken();
+    if (!token) return of(null);
+  
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  
+    return this.http.post<any>(`${this.BASE_URL}/auth/refresh-token`, null, { headers })
+      .pipe(
+        tap(res => {
+          const newAccessToken = res?.data?.data?.accessToken;
+          const roles = res?.data?.data?.roles;
+          const updated: LoginResponse = {
+            data: {
+              data: {
+                accessToken: newAccessToken,
+                roles,
+                firstName: res?.data?.data?.firstName,
+                lastName: res?.data?.data?.lastName
+              }
+            }
+          };
+          this.store(updated); // update token in storage
+          localStorage.setItem('accessToken', newAccessToken); // keep consistent with login
+        }),
+        catchError(err => {
+          console.error('Refresh failed', err);
+          return of(null);
+        })
+      );
+  }  
+
   logout() {
 
     const token = this.getToken();

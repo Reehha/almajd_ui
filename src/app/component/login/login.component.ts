@@ -4,6 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoginService } from '../../services/login.service';
 import { firstValueFrom } from 'rxjs';
+import { SessionMonitorService } from '../../services/session-monitor.service';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +19,7 @@ export class LoginComponent {
   errorMessage = '';
   showPassword = false;
 
-  constructor(private router: Router, private service: LoginService) { }
+  constructor(private router: Router, private service: LoginService, private sessionMonitor: SessionMonitorService ) { }
 
   allowOnlyNumbers(event: KeyboardEvent): void {
     const isDigit = /\d/.test(event.key);
@@ -68,9 +69,11 @@ export class LoginComponent {
           if (roles.includes('admin')) {
             this.service.setSession(accessToken, roles);
             this.router.navigateByUrl('/admin-dashboard');
+            this.sessionMonitor.startMonitoring();
           } else if (roles.some((r: string) => ['employee', 'office-staff', 'site-worker', 'factory-worker'].includes(r))) {
             this.service.setSession(accessToken, roles);
             this.router.navigateByUrl('/employee-dashboard');
+            this.sessionMonitor.startMonitoring();
           } else {
             this.errorMessage = 'Unknown role';
         }
