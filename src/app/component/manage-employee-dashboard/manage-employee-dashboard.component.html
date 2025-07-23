@@ -43,7 +43,8 @@
           <td data-label="Role">{{ emp.designation }}</td>
           <td data-label="View">
             <button class="scan-btn" (click)="viewEmployee(emp.employeeId)">View/Edit</button>
-          </td>
+            <button class="scan-btn" (click)="generateIdCard(emp)">ID Card</button>
+          </td>          
         </tr>
       </tbody>
     </table>

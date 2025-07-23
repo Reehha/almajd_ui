@@ -68,12 +68,12 @@ export class LoginComponent {
         // route by role
           if (roles.includes('admin')) {
             this.service.setSession(accessToken, roles);
-            this.router.navigateByUrl('/admin-dashboard');
             this.sessionMonitor.startMonitoring();
+            this.router.navigateByUrl('/admin-dashboard');
           } else if (roles.some((r: string) => ['employee', 'office-staff', 'site-worker', 'factory-worker'].includes(r))) {
             this.service.setSession(accessToken, roles);
-            this.router.navigateByUrl('/employee-dashboard');
             this.sessionMonitor.startMonitoring();
+            this.router.navigateByUrl('/employee-dashboard');
           } else {
             this.errorMessage = 'Unknown role';
         }

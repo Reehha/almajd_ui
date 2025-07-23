@@ -14,6 +14,7 @@ import { AdminDashboardComponent } from './component/admin-dashboard/admin-dashb
 import { EmployeeViewComponent } from './component/employee-view/employee-view.component';
 import { UnderConstructionComponent } from './component/under-construction/under-construction.component';
 import { QrScannerExitGuard } from './guards/qr-scanner-exit.guard';
+import { EmployeeIdCardComponent } from './component/employee-id-card/employee-id-card.component';
 
 export const routes: Routes = [
   /* ---------- Public routes (no authentication) ---------- */
@@ -75,6 +76,12 @@ export const routes: Routes = [
     component: UnderConstructionComponent,
     canActivate: [AuthGuard],
     data: { roles: ['admin','employee'] }
+  },
+  {
+    path: 'employee-id-card/:employeeId/:firstName/:lastName',
+    component: EmployeeIdCardComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['admin'] }
   },
   
 

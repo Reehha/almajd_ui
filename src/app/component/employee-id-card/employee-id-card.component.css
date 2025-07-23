@@ -1,0 +1,166 @@
+:root {
+    --primary-gradient-color: linear-gradient(
+      to right,
+      #ff512f 0%,
+      #dd2476 51%,
+      #ff512f 100%
+    );
+  }
+  
+  body {
+    background-color: #111;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .id-card {
+    width: 320px;
+    height: 500px;
+    background: black;
+    padding: 6px;
+    border-radius: 20px;
+    /* background-image: var(--primary-gradient-color); */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .id-card-inner {
+    background: #fff;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    padding: 20px 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .photo-container {
+    margin-top: 10px;
+    border: 2px solid #000;
+    width: 180px;
+    height: 220px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .employee-photo {
+    width: 100%;
+    height: 190px;
+    margin-top: 30px;
+  }
+  
+  .company-logo img {
+    margin-top: 12px;
+    width: 120px;
+    height: auto;
+  }
+  
+  .employee-info {
+    margin-top: 10px;
+    /* width: 100%; */
+    font-size: 16px;
+    color: black;
+    padding: 0 1rem;
+  }
+  
+  .employee-info .label {
+    font-weight: bold;
+    display: inline-block;
+    width: 120px;
+  }
+  
+  .employee-info .value {
+    font-weight: 500;
+  }
+  
+  .card-wrapper {
+    display: flex;
+    gap: 3rem;
+  }
+  .card-container {
+    /* padding: 5rem; */
+    /* background: #1a1a1a; */
+    border-radius: 1rem;
+  }
+
+  @media(max-width: 576px){
+    .card-wrapper{
+        flex-direction: column;
+    }
+  }
+  .employee-info {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 15px;
+    color: black;
+  }
+  
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  
+  .info-row strong {
+    min-width: 100px; /* fixed title width */
+    text-align: left;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  
+  .info-row span {
+    flex: 1;
+    text-align: right;
+    word-break: break-word;
+  }
+  .id-card-inner.back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+  }
+  
+  .qr-container {
+    width: 220px;
+    height: 220px;
+    padding: 10px;
+    background: white;
+    border: 2px dashed #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .qr-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .photo-upload-label {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .upload-overlay {
+    position: absolute;
+    bottom: 0;
+    background: #000;
+    color: white;
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    padding: 4px 0;
+  }
+  
+  
+  
+  

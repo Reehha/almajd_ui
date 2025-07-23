@@ -4,6 +4,7 @@ import { EmployeeService } from '../../services/employee.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
+import { IdCardService } from '../../services/id-card.service';
 
 @Component({
   selector: 'app-manage-employee-dashboard',
@@ -29,7 +30,7 @@ export class ManageEmployeeDashboardComponent implements OnInit {
     designation: ''
   };
 
-  constructor(private employeeService: EmployeeService, private router: Router) {}
+  constructor(private employeeService: EmployeeService, private router: Router, private idCardService: IdCardService ) {}
 
   ngOnInit(): void {
     this.employeeService.getAllEmployees().subscribe((res) => {
@@ -194,4 +195,18 @@ export class ManageEmployeeDashboardComponent implements OnInit {
     this.router.navigate(['/under-construction']);
     // this.router.navigate(['/employee-view', employeeId]);
   }
+
+
+  generateIdCard(employee: any): void {
+    const { employeeId, firstName, lastName } = employee;
+  
+    this.router.navigate([
+      '/employee-id-card',
+      employeeId,
+      encodeURIComponent(firstName),
+      encodeURIComponent(lastName)
+    ]);
+  }
+  
+  
 }

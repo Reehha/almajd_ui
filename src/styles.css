@@ -92,3 +92,13 @@ td[data-label]::before {
   white-space: nowrap;
 }
 }
+
+.export-btn {
+  background: linear-gradient(to right, #2ecc71, #27ae60);
+}
+
+.download-wrapper {
+  padding: 1rem;
+  justify-content: center;
+  display: flex;
+}
