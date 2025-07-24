@@ -6,10 +6,9 @@
                 <div class="photo-container">
                     <label class="photo-upload-label">
                         <img
-                        [src]="employeePhotoUrl"
+                        *ngIf="imageBase64" [src]="imageBase64" 
                         alt="Employee Photo"
                         class="employee-photo"
-                        loading="lazy"
                       />                      
                       <input type="file" (change)="onPhotoSelected($event)" accept="image/*" hidden />
                     </label>
