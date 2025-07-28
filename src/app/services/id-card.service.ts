@@ -8,8 +8,6 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class IdCardService {
-  private uploadUrl = `${environment.api}/auth/upload-profile-pic`;;
-
   constructor(private http: HttpClient) {}
 
   uploadProfilePicture(employeeId: string, imageFile: File): Observable<any> {
@@ -21,7 +19,9 @@ export class IdCardService {
       Authorization: `Bearer ${localStorage.getItem('accessToken') || ''}`,
     });
 
-    return this.http.post(this.uploadUrl, formData, { headers });
+    const uploadUrl = `${environment.api}/employee/upload-profile-pic?employeeId=${employeeId}`;
+
+    return this.http.post(uploadUrl, formData, { headers });
   }
 
   getProfileImage(employeeId: string): Observable<any> {
@@ -29,7 +29,7 @@ export class IdCardService {
       Authorization: `Bearer ${localStorage.getItem('accessToken') || ''}`,
     };
   
-    return this.http.get(`${environment.api}/auth/profile-image?employeeId=${employeeId}`, {
+    return this.http.get(`${environment.api}/employee/profile-image?employeeId=${employeeId}`, {
       headers,
       observe: 'response',
     });
