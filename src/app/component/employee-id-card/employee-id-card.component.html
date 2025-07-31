@@ -9,6 +9,7 @@
                         *ngIf="imageBase64" [src]="imageBase64" 
                         alt="Employee Photo"
                         class="employee-photo"
+                        crossorigin="anonymous"
                       />                      
                       <input type="file" (change)="onPhotoSelected($event)" accept="image/*" hidden />
                     </label>

@@ -34,13 +34,25 @@ export class EmployeeIdCardComponent implements OnInit {
 
     if (file && this.employee?.id) {
       this.idCardService.uploadProfilePicture(this.employee.id, file).subscribe({
-        next: (res) => {
-          // Update local photo preview
-          const reader = new FileReader();
-          reader.onload = () => {
-            this.employeePhotoUrl = reader.result as string;
-          };
-          reader.readAsDataURL(file);
+        next: () => {
+          // After successful upload, fetch latest image from DB
+          this.idCardService.getProfileImage(this.employee.id).subscribe({
+            next: (response) => {
+              if (response.status === 200 && response.body?.data?.data?.profileImageUrl) {
+                const imageUrl = response.body.data.data.profileImageUrl;
+                const updatedUrl = `${imageUrl}?t=${Date.now()}`;
+  
+                fetchImageAsBase64(updatedUrl)
+                  .then((base64) => (this.imageBase64 = base64))
+                  .catch((err) => console.error(err));
+  
+                this.employeePhotoUrl = updatedUrl;
+              }
+            },
+            error: (err) => {
+              console.error('Failed to fetch updated image:', err);
+            }
+          });
         },
         error: (err) => {
           console.error('Error uploading photo:', err);
@@ -64,10 +76,10 @@ export class EmployeeIdCardComponent implements OnInit {
         next: (response) => {
           if (response.status === 200 && response.body?.data?.data?.profileImageUrl) {
             const imageUrl = response.body.data.data.profileImageUrl;
-            fetchImageAsBase64(imageUrl)
+            fetchImageAsBase64(`${imageUrl}?t=${Date.now()}`)
               .then((base64) => (this.imageBase64 = base64))
               .catch((err) => console.error(err));
-            this.employeePhotoUrl = `${imageUrl}`;
+              this.employeePhotoUrl = `${imageUrl}?t=${Date.now()}`;
 
           }
         },
