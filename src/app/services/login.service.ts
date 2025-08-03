@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
 import { isPlatformBrowser } from '@angular/common';
+import { TableStateService } from './table-state.service';
 
 interface LoginRequest {
   employeeId: string;
@@ -32,6 +33,7 @@ export class LoginService {
   private storage: Storage | null = null;
   private loggedIn = false;
   private currentRoles: string[] = [];
+  public isLoggingOut = false;
 
   /** last known user (null when logged-out) */
   private currentUserSubject =
@@ -45,7 +47,7 @@ export class LoginService {
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient,
-    private router: Router, @Inject(PLATFORM_ID) private platformId: any) {
+    private router: Router, @Inject(PLATFORM_ID) private platformId: any, private tableStateService: TableStateService) {
     if (isPlatformBrowser(this.platformId)) {
       this.storage = window.localStorage;
     }
@@ -117,6 +119,7 @@ export class LoginService {
   }  
 
   logout() {
+    this.isLoggingOut = true;
 
     const token = this.getToken();
     if (!token) {
@@ -164,6 +167,7 @@ export class LoginService {
     keysToRemove.forEach((key) => {
       this.storage?.removeItem(key);
     });
+    this.tableStateService.clearState();
     this.currentUserSubject.next(null);
     this.authChangedSubject.next();
   }
