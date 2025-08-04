@@ -4,10 +4,11 @@ import { SidebarComponent } from './component/sidebar/sidebar.component';
 // import { HeaderComponent } from './header/header.component';
 import { Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { LoadingComponent } from './component/loading/loading.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet,SidebarComponent,CommonModule],
+  imports: [RouterOutlet,SidebarComponent,CommonModule,LoadingComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

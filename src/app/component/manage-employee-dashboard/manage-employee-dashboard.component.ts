@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
+import { IdCardService } from '../../services/id-card.service';
 
 @Component({
   selector: 'app-manage-employee-dashboard',
@@ -12,7 +13,7 @@ import * as XLSX from 'xlsx';
   templateUrl: './manage-employee-dashboard.component.html',
   styleUrls: ['./manage-employee-dashboard.component.css']
 })
-export class ManageEmployeeDashboardComponent implements OnInit {
+export class ManageEmployeeDashboardComponent implements OnInit, OnDestroy {
   employees: any[] = [];
   filteredEmployees: any[] = [];
   paginatedEmployees: any[] = [];
@@ -29,54 +30,84 @@ export class ManageEmployeeDashboardComponent implements OnInit {
     designation: ''
   };
 
-  constructor(private employeeService: EmployeeService, private router: Router) {}
+  private readonly SESSION_KEY = 'employeeDashboardState';
+
+  constructor(
+    private employeeService: EmployeeService,
+    private router: Router,
+    private idCardService: IdCardService
+  ) {}
 
   ngOnInit(): void {
+    this.loadPersistedState();
+
     this.employeeService.getAllEmployees().subscribe((res) => {
       this.employees = res.data;
       this.filterDepartment();
       this.filterRoles();
-      this.filteredEmployees = [...this.employees];
-      this.updatePaginatedData();
+
+      this.applyFilters(false); // Don't reset page if loading from session
     });
   }
 
-  filterDepartment(){
+  ngOnDestroy(): void {
+    this.saveStateToSession();
+  }
+
+  private loadPersistedState(): void {
+    const saved = sessionStorage.getItem(this.SESSION_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      this.filters = parsed.filters || this.filters;
+      this.currentPage = parsed.currentPage || 1;
+    }
+  }
+
+  private saveStateToSession(): void {
+    sessionStorage.setItem(this.SESSION_KEY, JSON.stringify({
+      filters: this.filters,
+      currentPage: this.currentPage
+    }));
+  }
+
+  clearSessionState(): void {
+    sessionStorage.removeItem(this.SESSION_KEY);
+  }
+
+  filterDepartment() {
     this.departments = [...new Set(this.employees.map(emp => emp.department).filter(Boolean))];
   }
 
-  filterRoles(){
+  filterRoles() {
     this.roles = [...new Set(this.employees.map(emp => emp.designation).filter(Boolean))];
   }
 
   exportToExcel(): void {
     const today = new Date();
-    
     const exportData = this.filteredEmployees.map((entry: any) => {
       const warnings: string[] = [];
-  
+
       const checkExpiry = (label: string, dateStr: string) => {
         if (!dateStr) return;
         const parts = dateStr.split('/');
         if (parts.length !== 3) return;
-      
+
         const [day, month, year] = parts;
         const expiryDate = new Date(`${year}-${month}-${day}`);
         const diff = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      
         const dayLabel = (n: number) => `${Math.abs(n)} day${Math.abs(n) === 1 ? '' : 's'}`;
-      
+
         if (diff < 0) {
           warnings.push(`${label} expired ${dayLabel(diff)} ago.`);
         } else if (diff <= 90) {
           warnings.push(`${label} expires in ${dayLabel(diff)}.`);
         }
-      };      
-  
+      };
+
       checkExpiry('Passport', entry.passportExpiry);
       checkExpiry('Visa', entry.visaExpiry);
       checkExpiry('Emirates ID', entry.emiratesIdExpiry);
-  
+
       return {
         'Employee ID': entry.employeeId,
         'First Name': entry.firstName,
@@ -99,33 +130,25 @@ export class ManageEmployeeDashboardComponent implements OnInit {
         'Document Status': warnings.join('\n')
       };
     });
-  
+
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
-  
-    // Auto-fit columns based on longest text in each column
-    const autoFitColumns = (data: any[]): XLSX.ColInfo[] => {
-      const keys = Object.keys(data[0] || {});
-      return keys.map(key => {
-        const maxLength = Math.max(
-          key.length,
-          ...data.map(row => String(row[key] ?? '').length)
-        );
-        return { wch: maxLength + 2 }; // +2 for padding
-      });
-    };
-  
-    worksheet['!cols'] = autoFitColumns(exportData);
-  
+    worksheet['!cols'] = Object.keys(exportData[0]).map(key => {
+      const maxLength = Math.max(key.length, ...exportData.map(row => String((row as any)[key] ?? '').length)
+    );
+      return { wch: maxLength + 2 };
+    });
+
     const workbook: XLSX.WorkBook = {
       Sheets: { 'Employees': worksheet },
       SheetNames: ['Employees']
     };
-  
+
     XLSX.writeFile(workbook, `filtered_employees_${today.toISOString().split('T')[0]}.xlsx`);
   }
 
-  applyFilters(): void {
-    this.currentPage = 1;
+  applyFilters(resetPage = true): void {
+    if (resetPage) this.currentPage = 1;
+
     this.filteredEmployees = this.employees.filter(emp => {
       const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
       const role = emp.designation;
@@ -137,9 +160,9 @@ export class ManageEmployeeDashboardComponent implements OnInit {
         (!this.filters.designation || role === this.filters.designation)
       );
     });
+
     this.updatePaginatedData();
-    this.filterDepartment();
-    this.filterRoles();
+    this.saveStateToSession();
   }
 
   updatePaginatedData(): void {
@@ -155,43 +178,47 @@ export class ManageEmployeeDashboardComponent implements OnInit {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
       this.updatePaginatedData();
+      this.saveStateToSession();
     }
   }
 
-  // ✅ FIX: Must return a value!
   get paginationRange(): (number | string)[] {
     const total = this.totalPages;
     const current = this.currentPage;
-    const delta = 1;
     const range: (number | string)[] = [];
 
     if (total <= 5) {
       for (let i = 1; i <= total; i++) range.push(i);
-      return range;
+    } else {
+      range.push(1);
+      if (current > 3) range.push('...');
+      const start = Math.max(2, current - 1);
+      const end = Math.min(total - 1, current + 1);
+      for (let i = start; i <= end; i++) range.push(i);
+      if (current < total - 2) range.push('...');
+      range.push(total);
     }
-
-    range.push(1);
-    if (current > 3) range.push('...');
-
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
-
-    for (let i = start; i <= end; i++) range.push(i);
-
-    if (current < total - 2) range.push('...');
-    range.push(total);
 
     return range;
   }
 
-  // ✅ FIX: This method is missing
   isNumber(value: any): value is number {
     return typeof value === 'number';
   }
 
-  // ✅ FIX: This method is missing
   viewEmployee(employeeId: string): void {
     this.router.navigate(['/under-construction']);
     // this.router.navigate(['/employee-view', employeeId]);
+  }
+
+  generateIdCard(employee: any): void {
+    const { employeeId, firstName, lastName } = employee;
+
+    this.router.navigate([
+      '/employee-id-card',
+      employeeId,
+      encodeURIComponent(firstName),
+      encodeURIComponent(lastName)
+    ]);
   }
 }

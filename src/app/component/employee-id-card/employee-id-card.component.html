@@ -1,0 +1,51 @@
+<div class="card-container">
+    <div class="card-wrapper">
+        <!-- FRONT SIDE -->
+        <div class="id-card">
+            <div class="id-card-inner">
+                <div class="photo-container">
+                    <label class="photo-upload-label">
+                        <img
+                        *ngIf="imageBase64" [src]="imageBase64" 
+                        alt="Employee Photo"
+                        class="employee-photo"
+                        crossorigin="anonymous"
+                      />                      
+                      <input type="file" (change)="onPhotoSelected($event)" accept="image/*" hidden />
+                    </label>
+                  </div>
+                  
+                  
+              <div class="company-logo">
+                <img src="../../../assets/img/almajd.jpg" alt="Company Logo" />
+              </div>
+              <div class="employee-info">
+                <div class="info-row"><strong>Employee ID:</strong>{{ employee.id }}</div>
+                <div class="info-row">
+                    <strong>First Name:</strong>
+                    <span>{{ employee.firstname }}</span>
+                  </div>                  
+                  <div class="info-row">
+                    <strong>Last Name:</strong>
+                    <span>{{ employee.lastname }}</span>
+                  </div> 
+              </div>
+            </div>
+          </div>
+          
+      
+        <!-- BACK SIDE -->
+        <div class="id-card">
+            <div class="id-card-inner back">
+              <div class="qr-container">
+                <img *ngIf="qrData" [src]="qrData" [alt]="'QR for ' + employee.id" class="qr-image" />
+              </div>
+            </div>
+          </div>          
+      </div>
+       <!-- DOWNLOAD BUTTON -->
+  <div class="download-wrapper">
+    <button (click)="downloadBothAsPdf()" class="btn export-btn">Download ID Card</button>
+  </div>
+</div>
+  

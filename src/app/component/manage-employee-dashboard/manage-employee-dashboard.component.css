@@ -175,6 +175,13 @@ td {
   background-color: #2196f3;
 }
 
+td[data-label="View"] {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+
 /* === RESPONSIVE === */
 @media (max-width: 767px) {
   body{

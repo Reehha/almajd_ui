@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
 import { isPlatformBrowser } from '@angular/common';
+import { TableStateService } from './table-state.service';
 
 interface LoginRequest {
   employeeId: string;
@@ -32,6 +33,7 @@ export class LoginService {
   private storage: Storage | null = null;
   private loggedIn = false;
   private currentRoles: string[] = [];
+  public isLoggingOut = false;
 
   /** last known user (null when logged-out) */
   private currentUserSubject =
@@ -45,7 +47,7 @@ export class LoginService {
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient,
-    private router: Router, @Inject(PLATFORM_ID) private platformId: any) {
+    private router: Router, @Inject(PLATFORM_ID) private platformId: any, private tableStateService: TableStateService) {
     if (isPlatformBrowser(this.platformId)) {
       this.storage = window.localStorage;
     }
@@ -85,7 +87,39 @@ export class LoginService {
       );
   }
 
+  refreshToken() {
+    const token = this.getToken();
+    if (!token) return of(null);
+  
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  
+    return this.http.post<any>(`${this.BASE_URL}/auth/refresh-token`, null, { headers })
+      .pipe(
+        tap(res => {
+          const newAccessToken = res?.data?.data?.accessToken;
+          const roles = res?.data?.data?.roles;
+          const updated: LoginResponse = {
+            data: {
+              data: {
+                accessToken: newAccessToken,
+                roles,
+                firstName: res?.data?.data?.firstName,
+                lastName: res?.data?.data?.lastName
+              }
+            }
+          };
+          this.store(updated); // update token in storage
+          localStorage.setItem('accessToken', newAccessToken); // keep consistent with login
+        }),
+        catchError(err => {
+          console.error('Refresh failed', err);
+          return of(null);
+        })
+      );
+  }  
+
   logout() {
+    this.isLoggingOut = true;
 
     const token = this.getToken();
     if (!token) {
@@ -133,6 +167,7 @@ export class LoginService {
     keysToRemove.forEach((key) => {
       this.storage?.removeItem(key);
     });
+    this.tableStateService.clearState();
     this.currentUserSubject.next(null);
     this.authChangedSubject.next();
   }

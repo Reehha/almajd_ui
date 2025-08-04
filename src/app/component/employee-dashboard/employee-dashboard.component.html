@@ -39,11 +39,11 @@
     <div class="filter-group">
       <div class="filter-item">
         <label for="startDate">Start date:</label>
-        <input type="date" id="startDate" name="startDate" [(ngModel)]="startDate" #startRef="ngModel"/>
+        <input type="date" lang="en-CA" id="startDate" name="startDate" [(ngModel)]="startDate" #startRef="ngModel"/>
       </div>
       <div class="filter-item">
         <label for="endDate">End date:</label>
-        <input type="date" id="endDate" name="endDate" [(ngModel)]="endDate"  #endRef="ngModel" />
+        <input type="date" lang="en-CA" id="endDate" name="endDate" [(ngModel)]="endDate"  #endRef="ngModel" />
       </div>
       <div *ngIf="(startRef.touched || endRef.touched) && dateError" class="error-message">
         {{ dateError }}
