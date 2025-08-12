@@ -19,13 +19,20 @@ export interface PunchResponse {
     message: string
 }
 
+
 export interface AttendanceData {
-    date: string,
-    empId: string,
-    punchIn: string,
-    punchOut: string
-    status: string
-}
+    date: string;
+    punchIn: string | null;
+    punchInUpdated?: string | null;
+    updatedDeduction?: string | null;
+    punchOut: string | null;
+    punchOutUpdated?: string | null;
+    status: 'On Time' | 'Short Time' | 'Overtime';
+    overtime?: string | null;      // e.g. "120mins"
+    shortTime?: string | null;     // e.g. "30mins"
+    travelDeduction?: number;
+  }
+  
 
 export interface ScheduleInfo {
     data: {

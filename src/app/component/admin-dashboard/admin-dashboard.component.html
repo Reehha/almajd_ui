@@ -25,7 +25,7 @@
     
        <div class="box-container">
         <div class="summary-box present"> {{ initialCounts.onTime }} <br><div>On Time</div></div>
-        <div class="summary-box late">{{ initialCounts.late }}<br><div>Late</div></div>
+        <div class="summary-box shortTime">{{ initialCounts.shortTime }}<br><div>shortTime</div></div>
         <div class="summary-box absent">{{ initialCounts.overTime }}<br><div>Over Time</div></div>
         <div class="summary-box total">{{ initialCounts.absent }}<br><div>Absent</div></div>
       </div>
@@ -92,14 +92,47 @@
               <td data-label="Date">{{formatDate(entry.date)}}</td>
               <td data-label="ID">{{entry.employeeId}}</td>
               <td data-label="Name">{{entry.firstName}} {{entry.lastName}}</td>
-              <td data-label="In">{{entry.punchIn || '-'}}</td>
-              <td data-label="Out">{{entry.punchOut || '-'}}</td>
+              <td data-label="In">
+                <ng-container *ngIf="entry.punchInUpdated; else normalIn">
+                  {{ entry.punchInUpdated }} 
+                  <span class="up-arrow">↑</span> [ {{ entry.updatedDeduction }} ]
+                </ng-container>
+                <ng-template #normalIn>
+                  {{ entry.punchIn || '-' }}
+                </ng-template>
+              </td>
+              
+              <td data-label="Out">
+                <ng-container *ngIf="entry.punchOutUpdated; else normalOut">
+                  {{ entry.punchOutUpdated }} 
+                  <span class="down-arrow">↓</span> [ {{ entry.updatedDeduction }} ]
+                </ng-container>
+                <ng-template #normalOut>
+                  {{ entry.punchOut || '-' }}
+                </ng-template>
+              </td>              
               <td data-label="Status" [ngClass]="{
-                  'present': entry.status === 'On Time',
-                  'late': entry.status === 'Late',
-                  'absent': entry.status === 'Over Time'
-                }">
-                {{entry.status}}
+                    'present': entry.status === 'On Time',
+                    'short-time': entry.status === 'Short Time',
+                    'overtime': entry.status === 'Overtime'
+                  }">
+              
+                <!-- On Time -->
+                <ng-container *ngIf="entry.status === 'On Time'">
+                  {{ entry.status }}
+                </ng-container>
+              
+                <!-- Overtime -->
+                <ng-container *ngIf="entry.status === 'Overtime'">
+                  {{ entry.status }}
+                  <span class="overtime-hours">[ {{ entry.overtime }} ]</span>
+                </ng-container>
+              
+                <!-- Short Time -->
+                <ng-container *ngIf="entry.status === 'Short Time'">
+                  {{ entry.status }}
+                  <span class="shorttime-hours">[ {{ entry.shortTime }} ]</span>
+                </ng-container>
               </td>
             </tr>
           </tbody>

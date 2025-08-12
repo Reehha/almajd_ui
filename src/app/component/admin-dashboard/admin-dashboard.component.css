@@ -487,3 +487,20 @@ td.no-records {
   }
 }
 
+.overtime-hours {
+  color: yellow;
+  font-weight: bold;
+}
+
+.shorttime-hours {
+  color: red;
+  font-weight: bold;
+}
+
+.short-time {
+  color: red;
+}
+
+.overtime {
+  color: yellow;
+}

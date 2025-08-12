@@ -4,9 +4,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import Chart from 'chart.js/auto';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { AttendanceData } from '../../models/types';
+import * as XLSX from 'xlsx';
+
 
 @Component({
   selector: 'app-employee-dashboard',
@@ -60,22 +60,57 @@ export class MainEmployeeDashboardComponent implements OnInit {
     this.fetchData();
   }
 
-  exportPDF() {
-    const doc = new jsPDF();
-    const tableData = this.attendanceData.map((row) => [
-      row.date,
-      row.punchIn || '-',
-      row.punchOut || '-',
-      row.status,
-    ]);
-
-    autoTable(doc, {
-      head: [['Date', 'Punch In', 'Punch Out', 'Status']],
-      body: tableData,
-      startY: 20,
+  exportToExcel(): void {
+    // Map the data for Excel (no Short Hours column)
+    const exportData = this.attendanceData.map(entry => {
+      // Punch In comparison with arrow
+      let punchInDisplay = entry.punchIn || '-';
+      if (entry.punchInUpdated) {
+        punchInDisplay = `${entry.punchInUpdated} ↑ [${entry.updatedDeduction || '0'}]`;
+      }
+  
+      // Punch Out comparison with arrow
+      let punchOutDisplay = entry.punchOut || '-';
+      if (entry.punchOutUpdated) {
+        punchOutDisplay = `${entry.punchOutUpdated} ↓ [${entry.updatedDeduction || '0'}]`;
+      }
+  
+      // Overtime / Short Time columns
+      let overtimeHours = '';
+  
+      if (entry.status === 'Overtime') {
+        overtimeHours = entry.overtime || '';
+      } 
+  
+      return {
+        Date: entry.date,
+        'Punch In': punchInDisplay,
+        'Punch Out': punchOutDisplay,
+        Status: entry.status,
+        'Overtime Hours': overtimeHours,
+      };
     });
-
-    doc.save('attendance.pdf');
+  
+    // Create worksheet
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
+  
+    // Set column widths
+    worksheet['!cols'] = [
+      { wch: 15 }, // Date
+      { wch: 20 }, // Punch In
+      { wch: 20 }, // Punch Out
+      { wch: 15 }, // Status
+      { wch: 18 }  // Overtime
+    ];
+  
+    // Create workbook and add worksheet
+    const workbook: XLSX.WorkBook = {
+      Sheets: { 'Attendance': worksheet },
+      SheetNames: ['Attendance']
+    };
+  
+    // Save Excel file
+    XLSX.writeFile(workbook, `Attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
   }
 
   hasDateError(): boolean {
@@ -159,20 +194,22 @@ export class MainEmployeeDashboardComponent implements OnInit {
   }
 
   getColor(status: string): { color: string } {
-    if (status == 'On Time') {
-      return { color: '#4caf50' };
-    } else if (status == 'Over Time') {
-      return { color: '#e53935' };
+    if (status === 'On Time') {
+      return { color: '#4caf50' }; // green
+    } else if (status === 'Overtime') {
+      return { color: '#ffb300' }; // yellow
+    } else if (status === 'Short Time') {
+      return { color: '#e53935' }; // red
     } else {
-      return { color: '#ffb300' };
+      return { color: '#6c757d' }; // fallback gray
     }
   }
 
   buildChart() {
     const counts: Record<string, { count: number; color: string }> = {
       'On Time': { count: 0, color: '#4caf50' },
-      Late: { count: 0, color: '#e53935' },
-      'Over Time': { count: 0, color: '#ffb300' },
+      'Short Time': { count: 0, color: '#e53935' },
+      'Overtime': { count: 0, color: '#ffb300' },
     };
 
     this.attendanceData.forEach((entry) => {

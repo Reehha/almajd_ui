@@ -28,7 +28,7 @@ export class AdminDashboardComponent implements OnInit {
   extraEmployeeCount = 0;
   totalEmployees = 0;
 
-  initialCounts = { onTime: 0, late: 0, overTime: 0, absent: 0 };
+  initialCounts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0 };
   currentPage = 1;
   itemsPerPage = 10;
 
@@ -42,22 +42,64 @@ export class AdminDashboardComponent implements OnInit {
     this.onDateFilter();
   }
 
-  exportToExcel(): void {
-    const exportData = this.filteredData.map(entry => ({
+exportToExcel(): void {
+  // Map the data for Excel (no Short Hours column)
+  const exportData = this.filteredData.map(entry => {
+    // Punch In comparison with arrow
+    let punchInDisplay = entry.punchIn || '-';
+    if (entry.punchInUpdated) {
+      punchInDisplay = `${entry.punchInUpdated} ↑ [${entry.updatedDeduction || '0'}]`;
+    }
+
+    // Punch Out comparison with arrow
+    let punchOutDisplay = entry.punchOut || '-';
+    if (entry.punchOutUpdated) {
+      punchOutDisplay = `${entry.punchOutUpdated} ↓ [${entry.updatedDeduction || '0'}]`;
+    }
+
+    // Overtime / Short Time columns
+    let overtimeHours = '';
+
+    if (entry.status === 'Overtime') {
+      overtimeHours = entry.overtime || '';
+    } 
+
+    return {
       Date: entry.date,
       'Employee ID': entry.employeeId,
       Name: `${entry.firstName} ${entry.lastName}`,
       Department: entry.department,
       Organization: entry.organization,
-      'Punch In': entry.punchIn || '-',
-      'Punch Out': entry.punchOut || '-',
-      Status: entry.status
-    }));
-  
-    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook: XLSX.WorkBook = { Sheets: { 'Attendance': worksheet }, SheetNames: ['Attendance'] };
-    XLSX.writeFile(workbook, 'attendance_report.xlsx');
-  }
+      'Punch In': punchInDisplay,
+      'Punch Out': punchOutDisplay,
+      Status: entry.status,
+      'Overtime Hours': overtimeHours,
+    };
+  });
+
+  // Create worksheet
+  const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
+
+  // Set column widths
+  worksheet['!cols'] = [
+    { wch: 15 }, // Date
+    { wch: 15 }, // Employee ID
+    { wch: 25 }, // Name
+    { wch: 20 }, // Punch In
+    { wch: 20 }, // Punch Out
+    { wch: 15 }, // Status
+    { wch: 18 }  // Overtime
+  ];
+
+  // Create workbook and add worksheet
+  const workbook: XLSX.WorkBook = {
+    Sheets: { 'Attendance': worksheet },
+    SheetNames: ['Attendance']
+  };
+
+  // Save Excel file
+  XLSX.writeFile(workbook, `Attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
   
   onDateFilter() {
     this.attendanceService.getAttendanceData(this.startDate, this.endDate).subscribe({
@@ -109,8 +151,8 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  calculateCounts(data: any[]): { onTime: number; late: number; overTime: number; absent: number } {
-    const counts = { onTime: 0, late: 0, overTime: 0, absent: 0 };
+  calculateCounts(data: any[]): { onTime: number; shortTime: number; overTime: number; absent: number } {
+    const counts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0 };
     const uniqueEmpIds = new Set<string>();
 
     data.forEach((entry) => {
@@ -120,8 +162,8 @@ export class AdminDashboardComponent implements OnInit {
         case 'on time':
           counts.onTime++;
           break;
-        case 'late':
-          counts.late++;
+        case 'shortTime':
+          counts.shortTime++;
           break;
         case 'over time':
           counts.overTime++;
