@@ -16,6 +16,7 @@ import { UnderConstructionComponent } from './component/under-construction/under
 import { QrScannerExitGuard } from './guards/qr-scanner-exit.guard';
 import { EmployeeIdCardComponent } from './component/employee-id-card/employee-id-card.component';
 import { ManageOrganizationComponent } from './component/manage-organization/manage-organization.component';
+import { OrganizationSettingsComponent } from './component/organization-settings/organization-settings.component';
 
 export const routes: Routes = [
   /* ---------- Public routes (no authentication) ---------- */
@@ -87,6 +88,12 @@ export const routes: Routes = [
   {
     path: 'manage-org',
     component: ManageOrganizationComponent,
+    canActivate: [AuthGuard],
+    data: { roles: [ 'admin'] }
+  },
+  {
+    path: 'org-settings',
+    component: OrganizationSettingsComponent,
     canActivate: [AuthGuard],
     data: { roles: [ 'admin'] }
   },

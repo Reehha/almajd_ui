@@ -1,124 +1,344 @@
-import { Component, OnInit } from '@angular/core';
-import { RegistrationService } from '../../services/registration.service';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-manage-organization',
-  imports:[CommonModule,FormsModule],
+  selector: 'app-dashboard',
+  imports: [FormsModule, CommonModule],
   templateUrl: './manage-organization.component.html',
-  styleUrls: ['./manage-organization.component.css']
+  styleUrls: ['./manage-organization.component.css'],
 })
-export class ManageOrganizationComponent implements OnInit {
-  organizations: any[] = [];
-  selectedOrg: any = null;
-  selectedDept: string = '';
-  selectedRole: string = '';
-  actionType: string = 'add';
-  nameInput: string = '';
-  activeTab: 'org' | 'dept' | 'role' | 'schedule' | 'location' = 'org';
-   // -------- Schedule Vars --------
-   schedules: any[] = [];
-   selectedSchedule: any = null;
-   startTime: string = '';
-   endTime: string = '';
- 
-   // -------- Location Vars --------
-   locations: any[] = [];
-   selectedLocation: any = null;
-   siteLocation: string = '';
-   travelTimes: any[] = [30, 60, 90, 120, 'custom'];
-   travelTime: any = '';
-   customTravelTime: number | null = null;
-   showCustomTravel: boolean = false;
+export class ManageOrganizationComponent {
+  constructor(private router: Router) {}
+  employees = [
+    {
+      name: 'John Doe',
+      projectStartTime: new Date('2025-08-10'),
+      siteLocation: 'Site A',
+      department: 'IT',
+      designation: 'Engineer',
+    },
+    {
+      name: 'Jane Smith',
+      projectStartTime: new Date('2025-08-10'),
+      siteLocation: 'Site B',
+      department: 'HR',
+      designation: 'Manager',
+    },
+    {
+      name: 'Alex Lee',
+      projectStartTime: new Date('2025-08-12'),
+      siteLocation: 'Site C',
+      department: 'Finance',
+      designation: 'Analyst',
+    },
+    {
+      name: 'John Doe',
+      projectStartTime: new Date('2025-08-10'),
+      siteLocation: 'Site A',
+      department: 'IT',
+      designation: 'Engineer',
+    },
+    {
+      name: 'Jane Smith',
+      projectStartTime: new Date('2025-08-10'),
+      siteLocation: 'Site B',
+      department: 'HR',
+      designation: 'Manager',
+    },
+    {
+      name: 'Alex Lee',
+      projectStartTime: new Date('2025-08-12'),
+      siteLocation: 'Site C',
+      department: 'Finance',
+      designation: 'Analyst',
+    },
+    {
+      name: 'John Doe',
+      projectStartTime: new Date('2025-08-10'),
+      siteLocation: 'Site A',
+      department: 'IT',
+      designation: 'Engineer',
+    },
+    {
+      name: 'Jane Smith',
+      projectStartTime: new Date('2025-08-10'),
+      siteLocation: 'Site B',
+      department: 'HR',
+      designation: 'Manager',
+    },
+    {
+      name: 'Alex Lee',
+      projectStartTime: new Date('2025-08-12'),
+      siteLocation: 'Site C',
+      department: 'Finance',
+      designation: 'Analyst',
+    },
+    {
+      name: 'John Doe',
+      projectStartTime: new Date('2025-08-10'),
+      siteLocation: 'Site A',
+      department: 'IT',
+      designation: 'Engineer',
+    },
+    {
+      name: 'Jane Smith',
+      projectStartTime: new Date('2025-08-10'),
+      siteLocation: 'Site B',
+      department: 'HR',
+      designation: 'Manager',
+    },
+    {
+      name: 'Alex Lee',
+      projectStartTime: new Date('2025-08-12'),
+      siteLocation: 'Site C',
+      department: 'Finance',
+      designation: 'Analyst',
+    },
+    
+  ];
 
-// onTravelTimeChange() {
-//   if (this.selectedTravelTime !== 'custom') {
-//     this.customTravelTime = 0;
-//   }
+  filters = { name: '', startTime: '', department: '', designation: '' };
+  filteredEmployees = [...this.employees];
+
+  selectedEmployees: any[] = [];
+  selectAllChecked = false;
+  departments: string[] = [];
+  designations: string[] = [];
+
+  selectedDepartment = '';
+  selectedDesignation = '';
+
+  schedules = [
+    { id: 1, name: 'Morning Shift' },
+    { id: 2, name: 'Evening Shift' },
+  ];
+  siteLocations = [
+    { id: 1, name: 'Site A', travelTime: '30 mins' },
+    { id: 2, name: 'Site B', travelTime: '60 mins' },
+  ];
+
+  modalData = {
+    scheduleId: '',
+    siteLocationId: '',
+    travelTime: '',
+    startDate: '',
+    endDate: '',
+  };
+  minStartDate = '';
+  showModal = false;
+  currentPage = 1;
+pageSize = 10;
+
+touched = {
+  scheduleId: false,
+  startDate: false,
+  endDate: false,
+  siteLocationId: false
+};
+
+markTouched(field: keyof typeof this.touched) {
+  this.touched[field] = true;
+}
+
+isScheduleInvalid() {
+  return this.touched.scheduleId && !this.modalData.scheduleId;
+}
+
+isLocationInvalid() {
+  return this.touched.siteLocationId && !this.modalData.siteLocationId;
+}
+
+isStartDateInvalid(): boolean {
+  if (!this.modalData.startDate) return false;
+    return this.touched.startDate && new Date(this.modalData.startDate) < new Date(this.minStartDate);
+}
+
+isEndDateInvalid(): boolean {
+  if (!this.modalData.endDate || !this.modalData.startDate) return false;
+  return this.touched.endDate && new Date(this.modalData.endDate) < new Date(this.modalData.startDate);
+}
+
+
+filterTable() {
+  this.filteredEmployees = this.employees.filter(
+    (e) =>
+      (this.selectedDepartment ? e.department === this.selectedDepartment : true) &&
+      (this.selectedDesignation ? e.designation === this.selectedDesignation : true)
+  );
+  this.currentPage = 1; // reset pagination
+}
+
+onDepartmentChange() {
+  this.filterTable();
+}
+
+onDesignationChange() {
+  this.filterTable();
+}
+
+// isStartDateInvalid(): boolean {
+//   if (!this.modalData.startDate) return false;
+//   return new Date(this.modalData.startDate) < new Date(this.minStartDate);
+// }
+
+// isEndDateInvalid(): boolean {
+//   if (!this.modalData.endDate || !this.modalData.startDate) return false;
+//   return new Date(this.modalData.endDate) < new Date(this.modalData.startDate);
 // }
 
 
-  constructor(private regService: RegistrationService) {}
-
-  ngOnInit(): void {
-    this.regService.getOrganizations().subscribe({
-      next: (response: { data: any[] }) => {
-        this.organizations = response.data; // keep full object
-      },
-      error: (err) => console.error('Failed to load organizations', err),
-    });
-    
+isFormValid(): boolean {
+  if (!this.modalData.scheduleId || !this.modalData.startDate || !this.modalData.endDate || !this.modalData.siteLocationId) {
+    return false;
   }
 
-  getDepartments(): string[] {
-    return this.selectedOrg ? Object.keys(this.selectedOrg.departments || {}) : [];
+  const earliestStart = new Date(
+    Math.min(...this.selectedEmployees.map(e => new Date(e.projectStartTime).getTime()))
+  );
+  const start = new Date(this.modalData.startDate);
+  const end = new Date(this.modalData.endDate);
+  return start >= earliestStart && end >= start;
+}
+
+
+get totalPages() {
+  return Math.ceil(this.filteredEmployees.length / this.pageSize);
+}
+
+get pagedEmployees() {
+  const start = (this.currentPage - 1) * this.pageSize;
+  return this.filteredEmployees.slice(start, start + this.pageSize);
+}
+
+goToPage(page: number) {
+  this.currentPage = page;
+}
+
+prevPage() {
+  if (this.currentPage > 1) this.currentPage--;
+}
+
+nextPage() {
+  if (this.currentPage < this.totalPages) this.currentPage++;
+}
+
+get pageNumbers(): number[] {
+  return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+}
+
+
+  ngOnInit() {
+    // Assuming you already have this.employees loaded from your table
+    this.generateFilterLists();
   }
 
-  getRoles(): string[] {
-    if (!this.selectedOrg || !this.selectedDept) return [];
-    return this.selectedOrg.departments?.[this.selectedDept] || [];
-  }
-
-  getLocations() {
-    this.regService.getAllLocations().subscribe({
-      next: (res) => this.locations = res,
-      error: (err) => console.error('Error loading locations', err)
-    });
+  generateFilterLists() {
+    this.departments = [
+      ...new Set(this.employees.map((e) => e.department)),
+    ].sort();
+    this.designations = [
+      ...new Set(this.employees.map((e) => e.designation)),
+    ].sort();
   }
   
 
-  resetForm() {
-    this.nameInput = '';
-    this.startTime = '';
-    this.endTime = '';
-    this.siteLocation = '';
-    this.travelTime = '';
-    this.customTravelTime = null;
-    this.showCustomTravel = false;
-    this.selectedDept = '';
-    this.selectedRole = '';
-    this.selectedSchedule = null;
-    this.selectedLocation = null;
+  resetFilters() {
+    this.selectedDepartment = '';
+    this.selectedDesignation = '';
+    this.filteredEmployees = [...this.employees];
   }
 
-  submitOrg() {
-    console.log('Add Org:', this.nameInput);
+  applyFilters() {
+    this.filteredEmployees = this.employees.filter(
+      (emp) =>
+        (!this.filters.name ||
+          emp.name.toLowerCase().includes(this.filters.name.toLowerCase())) &&
+        (!this.filters.startTime ||
+          new Date(emp.projectStartTime).toISOString().slice(0, 10) ===
+            this.filters.startTime) &&
+        (!this.filters.department ||
+          emp.department
+            .toLowerCase()
+            .includes(this.filters.department.toLowerCase())) &&
+        (!this.filters.designation ||
+          emp.designation
+            .toLowerCase()
+            .includes(this.filters.designation.toLowerCase()))
+    );
+    this.selectAllChecked = false;
+    this.selectedEmployees = [];
   }
 
-  submitDept() {
-    console.log(`${this.actionType} Dept under`, this.selectedOrg.name, ':', this.nameInput || this.selectedDept);
+  clearFilters() {
+    this.filters = { name: '', startTime: '', department: '', designation: '' };
+    this.filteredEmployees = [...this.employees];
+    this.selectedEmployees = [];
+    this.selectAllChecked = false;
   }
 
-  submitRole() {
-    console.log(`${this.actionType} Role under`, this.selectedOrg.name, '>', this.selectedDept, ':', this.nameInput || this.selectedRole);
+  toggleSelectAll(event: any) {
+    if (event.target.checked) {
+      this.selectedEmployees = [...this.filteredEmployees];
+    } else {
+      this.selectedEmployees = [];
+    }
+    this.selectAllChecked = event.target.checked;
   }
 
-  submitLocation() {
-    console.log(`${this.actionType} Role under`, this.selectedOrg.name, '>', this.selectedDept, ':', this.nameInput || this.selectedRole);
-  }
-
-  submitSchedule() {
-    if (this.actionType === 'add') {
-      if (this.schedules.some(s => s.startTime === this.startTime && s.endTime === this.endTime)) {
-        alert('This schedule already exists.');
-        return;
-      }
-      // POST add schedule
-    } else if (this.actionType === 'update') {
-      if (!this.selectedSchedule) {
-        alert('Please select a schedule to update.');
-        return;
-      }
-      // PUT update schedule
-    } else if (this.actionType === 'delete') {
-      if (!this.selectedSchedule) {
-        alert('Please select a schedule to delete.');
-        return;
-      }
-      // DELETE schedule
+  toggleSelection(emp: any) {
+    const sameStartTime =
+      this.selectedEmployees.length === 0 ||
+      emp.projectStartTime.getTime() ===
+        this.selectedEmployees[0].projectStartTime.getTime();
+    if (this.selectedEmployees.includes(emp)) {
+      this.selectedEmployees = this.selectedEmployees.filter((e) => e !== emp);
+    } else if (sameStartTime) {
+      this.selectedEmployees.push(emp);
     }
   }
 
+  isSelectionDisabled(emp: any) {
+    return (
+      this.selectedEmployees.length > 0 &&
+      emp.projectStartTime.getTime() !==
+        this.selectedEmployees[0].projectStartTime.getTime()
+    );
+  }
+
+  openScheduleModal() {
+    if (this.selectedEmployees.length > 0) {
+      const today = new Date();
+      const earliestStart = new Date(
+        Math.min(...this.selectedEmployees.map(e => new Date(e.projectStartTime).getTime()))
+      );
+      // Set minStartDate to the later of today or earliest employee projectStartTime
+      this.minStartDate = new Date(Math.min(today.getTime(), earliestStart.getTime()))
+        .toISOString()
+        .split('T')[0];
+  
+      this.showModal = true;
+    }
+  }
+  
+
+  updateTravelTime() {
+    const site = this.siteLocations.find(
+      (s) => s.id === +this.modalData.siteLocationId
+    );
+    this.modalData.travelTime = site ? site.travelTime : '';
+  }
+
+  saveSchedule() {
+    // TODO: Save to backend
+    this.closeModal();
+  }
+
+  closeModal() {
+    this.showModal = false;
+  }
+  goToSettings() {
+    this.router.navigate(['/org-settings']);
+  }
 }

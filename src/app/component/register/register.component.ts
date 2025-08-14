@@ -20,6 +20,8 @@ export class RegisterComponent {
   organizations: string[] = [];  // Just names to show in dropdown
   designations: string[] = [];  
   today: string = new Date().toISOString().split('T')[0]; // 'yyyy-mm-dd' format
+  schedules: string[] = [];
+  workLocations: string[] = [];
 
 
 
@@ -42,6 +44,21 @@ export class RegisterComponent {
       },
       error: (err) => console.error('Failed to load organizations', err),
     });    
+// ✅ Schedules
+this.registrationService.getAllSchedules().subscribe({
+  next: (data: any[]) => {
+    this.schedules = data.map(s => s.name); // adjust if your API returns just strings
+  },
+  error: (err) => console.error('Failed to load schedules', err),
+});
+
+// ✅ Locations
+this.registrationService.getAllLocations().subscribe({
+  next: (data: any[]) => {
+    this.workLocations = data.map(l => l.name); // adjust if your API returns just strings
+  },
+  error: (err) => console.error('Failed to load locations', err),
+});
   }  
 
 

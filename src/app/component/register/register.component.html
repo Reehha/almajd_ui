@@ -265,7 +265,80 @@
           Designation is required.
         </div>
       </div>
+
+      <!-- Schedule Dropdown -->
+  <div>
+    <div class="input-group">
+      <label class="top-label">Schedule</label>
+      <select name="schedule" [(ngModel)]="employee.schedule" #schedule="ngModel" required>
+        <option value="" disabled selected>Select schedule</option>
+        <option *ngFor="let sched of schedules" [value]="sched">{{ sched }}</option>
+      </select>
     </div>
+    <div *ngIf="schedule.invalid && schedule.touched" class="error-message">
+      Schedule is required.
+    </div>
+  </div>
+    </div>
+
+    <!-- Schedule Work Location -->
+    <div class="form-row">
+
+      <!-- Start & End Dates -->
+<div class="form-row date-row">
+  <div>
+    <div class="input-group date-group">
+      <label class="top-label">Start Date</label>
+      <input
+        type="date"
+        name="scheduleStartDate"
+        [(ngModel)]="employee.scheduleStartDate"
+        #scheduleStartDate="ngModel"
+        required
+        placeholder="yyyy-mm-dd"
+      />
+    </div>
+    <div *ngIf="scheduleStartDate.invalid && scheduleStartDate.touched" class="error-message">
+      Start date is required.
+    </div>
+  </div>
+
+  <div>
+    <div class="input-group date-group">
+      <label class="top-label">End Date</label>
+      <input
+        type="date"
+        name="scheduleEndDate"
+        [(ngModel)]="employee.scheduleEndDate"
+        #scheduleEndDate="ngModel"
+        required
+        placeholder="yyyy-mm-dd"
+      />
+    </div>
+    <div *ngIf="scheduleEndDate.invalid && scheduleEndDate.touched" class="error-message">
+      End date is required.
+    </div>
+  </div>
+</div>
+
+    
+      <!-- Work Location Dropdown -->
+      <div>
+        <div class="input-group">
+          <label class="top-label">Work Location</label>
+          <select name="workLocation" [(ngModel)]="employee.workLocation" #workLocation="ngModel" required>
+            <option value="" disabled selected>Select work location</option>
+            <option *ngFor="let location of workLocations" [value]="location">
+              {{ location }}
+            </option>
+          </select>
+        </div>
+        <div *ngIf="workLocation.invalid && workLocation.touched" class="error-message">
+          Work location is required.
+        </div>
+      </div>
+    </div>
+
   
   
       <!-- Contact Number -->
