@@ -1,190 +1,291 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { RegistrationService } from '../../services/registration.service';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import * as XLSX from 'xlsx';
-import { IdCardService } from '../../services/id-card.service';
+import { CommonModule } from '@angular/common';
+
+interface Role {
+  name: string;
+  isEditing?: boolean;
+  isNew?: boolean;
+  error?: string;
+  touched?: boolean;
+}
+
+interface Department {
+  name: string;
+  roles: Role[];
+  expanded?: boolean;
+  isEditing?: boolean;
+  isNew?: boolean;
+  error?: string;
+  touched?: boolean;
+}
+
+interface Organization {
+  name: string;
+  departments: Department[];
+  expanded?: boolean;
+  isEditing?: boolean;
+  isNew?: boolean;
+  error?: string;
+  touched?: boolean;
+}
 
 @Component({
   selector: 'app-organization-settings',
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './organization-settings.component.html',
-  styleUrl: './organization-settings.component.css'
+  styleUrls: ['./organization-settings.component.css']
 })
 export class OrganizationSettingsComponent implements OnInit {
-  organizations: any[] = [];
-  selectedOrg: any = null;
-  selectedDept: string = '';
-  selectedRole: string = '';
-  actionType: string = 'add';
-  nameInput: string = '';
-  activeTab: 'org' | 'dept' | 'role' | 'schedule' | 'location' = 'org';
-   // -------- Schedule Vars --------
-   schedules: any[] = [];
-   selectedSchedule: any = null;
-   startTime: string = '';
-   endTime: string = '';
- 
-   // -------- Location Vars --------
-   locations: any[] = [];
-   selectedLocation: any = null;
-   siteLocation: string = '';
-   travelTimes: any[] = [30, 60, 90, 120, 'custom'];
-   travelTime: any = '';
-   customTravelTime: number | null = null;
-   showCustomTravel: boolean = false;
-
-// onTravelTimeChange() {
-//   if (this.selectedTravelTime !== 'custom') {
-//     this.customTravelTime = 0;
-//   }
-// }
-
+  organizations: Organization[] = [];
+  loading: boolean = true;
+  deletedItems: {
+    orgs: Organization[];
+    depts: Department[];
+    roles: Role[];
+  } = { orgs: [], depts: [], roles: [] };
+  
+  // ---------- Delete ----------
+  deleteItem(item: Organization | Department | Role, list: any[], type: 'org' | 'dept' | 'role') {
+    const index = list.indexOf(item);
+    if (index >= 0) list.splice(index, 1);
+  
+    // Track deleted items
+    if (type === 'org') this.deletedItems.orgs.push(item as Organization);
+    if (type === 'dept') this.deletedItems.depts.push(item as Department);
+    if (type === 'role') this.deletedItems.roles.push(item as Role);
+  }
+  
+  // ---------- Unsaved Changes ----------
+  get hasUnsavedChanges(): boolean {
+    const edits = this.organizations.some(org =>
+      org.isEditing || org.isNew || org.touched ||
+      org.departments.some(dept =>
+        dept.isEditing || dept.isNew || dept.touched ||
+        dept.roles.some(role => role.isEditing || role.isNew || role.touched)
+      )
+    );
+    const deletions = this.deletedItems.orgs.length > 0 ||
+                      this.deletedItems.depts.length > 0 ||
+                      this.deletedItems.roles.length > 0;
+    return edits || deletions;
+  }
+  
+  
+  // ---------- Discard ----------
+  confirmDiscard() {
+    if (!this.hasUnsavedChanges) return;
+  
+    const confirmDiscard = window.confirm(
+      'You have unsaved changes. Are you sure you want to discard them?'
+    );
+    if (confirmDiscard) {
+      this.deletedItems = { orgs: [], depts: [], roles: [] };
+      this.loadOrganizations();
+    }
+  }
+  
 
   constructor(private regService: RegistrationService) {}
 
   ngOnInit(): void {
+    this.loadOrganizations();
+  }
+
+  // ---------- Load Data ----------
+  loadOrganizations() {
     this.regService.getOrganizations().subscribe({
-      next: (response: { data: any[] }) => {
-        this.organizations = response.data; // keep full object
+      next: (res: any) => {
+        this.organizations = res.data.map((org: any) => ({
+          name: org.name,
+          expanded: false,
+          isEditing: false,
+          isNew: false,
+          error: '',
+          touched: false,
+          departments: org.departments
+            ? Object.keys(org.departments).map(depName => ({
+                name: depName,
+                expanded: false,
+                isEditing: false,
+                isNew: false,
+                error: '',
+                touched: false,
+                roles: org.departments[depName].map((role: string) => ({
+                  name: role,
+                  error: '',
+                  touched: false
+                }))
+              }))
+            : []
+        }));
+        this.loading = false;
       },
-      error: (err) => console.error('Failed to load organizations', err),
-    });
-    
-  }
-
-  getDepartments(): string[] {
-    return this.selectedOrg ? Object.keys(this.selectedOrg.departments || {}) : [];
-  }
-
-  getRoles(): string[] {
-    if (!this.selectedOrg || !this.selectedDept) return [];
-    return this.selectedOrg.departments?.[this.selectedDept] || [];
-  }
-
-  getLocations() {
-    this.regService.getAllLocations().subscribe({
-      next: (res) => this.locations = res,
-      error: (err) => console.error('Error loading locations', err)
+      error: err => {
+        console.error('Failed to load organizations', err);
+        this.loading = false;
+      }
     });
   }
-  
 
-  resetForm() {
-    this.nameInput = '';
-    this.startTime = '';
-    this.endTime = '';
-    this.siteLocation = '';
-    this.travelTime = '';
-    this.customTravelTime = null;
-    this.showCustomTravel = false;
-    this.selectedDept = '';
-    this.selectedRole = '';
-    this.selectedSchedule = null;
-    this.selectedLocation = null;
+  // ---------- Validation ----------
+  isDuplicateName(item: Organization | Department | Role, list: any[]): boolean {
+    return list
+      .filter(i => i !== item)
+      .some(i => i.name.trim().toLowerCase() === item.name.trim().toLowerCase());
   }
 
-  submitOrg() {
-    if (!this.nameInput.trim() && this.actionType === 'add') {
-      alert('Organization name is required!');
-      return;
+  validateItem(item: Organization | Department | Role, list?: any[]): boolean {
+    if (!item.name || !item.name.trim()) {
+      item.error = 'Name cannot be empty';
+      return false;
     }
-  
-    const token = localStorage.getItem('accessToken'); // get JWT
-  
-    if (!token) {
-      alert('User is not authenticated.');
-      return;
+    if (list && this.isDuplicateName(item, list)) {
+      item.error = 'Duplicate name not allowed at this level';
+      return false;
     }
-  
-    if (this.actionType === 'add') {
-      this.regService.addOrganization(this.nameInput).subscribe({
-        next: () => {
-          alert('Organization added successfully!');
-          this.organizations.push({ name: this.nameInput, departments: {} });
-          this.resetForm();
-        },
-        error: (err) => {
-          console.error('Error creating organization', err);
-          alert('Failed to add organization.');
-        }
+    item.error = '';
+    return true;
+  }
+
+  markTouchedAndValidate(item: Organization | Department | Role, list?: any[]) {
+    item.touched = true;
+    this.validateItem(item, list);
+  }
+
+  hasValidationErrors(): boolean {
+    return this.organizations.some(org => {
+      if (!this.validateItem(org, this.organizations)) return true;
+      return org.departments.some(dept => {
+        if (!this.validateItem(dept, org.departments)) return true;
+        return dept.roles.some(role => !this.validateItem(role, dept.roles));
       });
-    } 
-    // else if (this.actionType === 'update') {
-    //   if (!this.selectedOrg) {
-    //     alert('Please select an organization to update.');
-    //     return;
-    //   }
-  
-    //   this.regService.updateOrganization(this.selectedOrg.name, this.nameInput, token).subscribe({
-    //     next: () => {
-    //       alert('Organization updated successfully!');
-    //       this.selectedOrg.name = this.nameInput;
-    //       this.resetForm();
-    //     },
-    //     error: (err) => {
-    //       console.error('Error updating organization', err);
-    //       alert('Failed to update organization.');
-    //     }
-    //   });
-    // } 
-    else if (this.actionType === 'delete') {
-      if (!this.selectedOrg) {
-        alert('Please select an organization to delete.');
-        return;
-      }
-  
-      if (!confirm(`Are you sure you want to delete "${this.selectedOrg.name}"?`)) return;
-  
-      this.regService.deleteOrganization(this.selectedOrg.name).subscribe({
-        next: () => {
-          alert('Organization deleted successfully!');
-          // Remove from local array
-          this.organizations = this.organizations.filter(org => org !== this.selectedOrg);
-          this.resetForm();
-        },
-        error: (err) => {
-          console.error('Error deleting organization', err);
-          alert('Failed to delete organization.');
-        }
+    });
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event: Event) {
+    if (this.hasUnsavedChanges) {
+      event.preventDefault();
+      (event as any).returnValue = '';
+    }
+  }
+
+  // ---------- Edit / Save ----------
+  editItem(item: Organization | Department | Role) {
+    item.isEditing = true;
+  }
+
+  saveItem(item: Organization | Department | Role, list?: any[]) {
+    item.touched = true;
+    if (!this.validateItem(item, list)) return;
+    item.isEditing = false;
+    item.isNew = false;
+  }
+
+  cancelEdit(item: Organization | Department | Role, list: any[]) {
+    if (item.isNew) {
+      const index = list.indexOf(item);
+      if (index >= 0) list.splice(index, 1);
+    } else {
+      item.isEditing = false;
+      item.error = '';
+      item.touched = false;
+    }
+  }
+
+
+  // ---------- Expand / Collapse ----------
+  toggleExpand(item: Organization | Department) {
+    item.expanded = !item.expanded;
+  }
+
+  // ---------- Add Items ----------
+  addOrganization() {
+    this.organizations.push({
+      name: '',
+      departments: [],
+      expanded: true,
+      isEditing: true,
+      isNew: true,
+      error: '',
+      touched: false
+    });
+  }
+
+  addDepartment(org: Organization) {
+    org.departments.push({
+      name: '',
+      roles: [],
+      expanded: true,
+      isEditing: true,
+      isNew: true,
+      error: '',
+      touched: false
+    });
+    org.expanded = true;
+  }
+
+  addRole(dept: Department) {
+    dept.roles.push({
+      name: '',
+      isEditing: true,
+      isNew: true,
+      error: '',
+      touched: false
+    });
+    dept.expanded = true;
+  }
+
+  // Function to prepare JSON for backend
+// Transform organizations to backend JSON format
+prepareSavePayload(): any[] {
+  return this.organizations.map(org => ({
+    name: org.name.trim(),
+    departments: org.departments.reduce((acc: any, dept) => {
+      acc[dept.name.trim()] = dept.roles.map(role => role.name.trim());
+      return acc;
+    }, {})
+  }));
+}
+
+// Save All Changes with API call
+saveAllChanges() {
+  if (this.hasValidationErrors()) {
+    alert('Please fix all errors before saving.');
+    return;
+  }
+
+  const payload = this.prepareSavePayload();
+  console.log('Payload to send:', payload);
+
+  this.regService.saveOrganizations(payload).subscribe({
+    next: res => {
+      alert('All changes saved successfully!');
+      // Reset states
+      this.organizations.forEach(org => {
+        org.isEditing = false;
+        org.isNew = false;
+        org.touched = false;
+        org.departments.forEach(dept => {
+          dept.isEditing = false;
+          dept.isNew = false;
+          dept.touched = false;
+          dept.roles.forEach(role => {
+            role.isEditing = false;
+            role.isNew = false;
+            role.touched = false;
+          });
+        });
       });
+      this.deletedItems = { orgs: [], depts: [], roles: [] };
+    },
+    error: err => {
+      console.error('Failed to save organizations', err);
+      alert('Failed to save changes. Please try again.');
     }
-  }
-  
-  
+  });
+}
 
-  submitDept() {
-    console.log(`${this.actionType} Dept under`, this.selectedOrg.name, ':', this.nameInput || this.selectedDept);
-  }
-
-  submitRole() {
-    console.log(`${this.actionType} Role under`, this.selectedOrg.name, '>', this.selectedDept, ':', this.nameInput || this.selectedRole);
-  }
-
-  submitLocation() {
-    console.log(`${this.actionType} Role under`, this.selectedOrg.name, '>', this.selectedDept, ':', this.nameInput || this.selectedRole);
-  }
-
-  submitSchedule() {
-    if (this.actionType === 'add') {
-      if (this.schedules.some(s => s.startTime === this.startTime && s.endTime === this.endTime)) {
-        alert('This schedule already exists.');
-        return;
-      }
-      // POST add schedule
-    } else if (this.actionType === 'update') {
-      if (!this.selectedSchedule) {
-        alert('Please select a schedule to update.');
-        return;
-      }
-      // PUT update schedule
-    } else if (this.actionType === 'delete') {
-      if (!this.selectedSchedule) {
-        alert('Please select a schedule to delete.');
-        return;
-      }
-      // DELETE schedule
-    }
-  }
 }

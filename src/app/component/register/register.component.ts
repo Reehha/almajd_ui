@@ -4,6 +4,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RegistrationService } from '../../services/registration.service'
+import { OrganizationService } from '../../services/organization.service';
+
+interface Schedule {
+  scheduleId: string;
+  startTime: string; // e.g., "10:00:00"
+  endTime: string;   // e.g., "17:00:00"
+}
+
+interface Location {
+  locationId: string;
+  locationName: string;
+  travelTime?: number;
+}
+
 
 @Component({
   selector: 'app-register',
@@ -20,7 +34,7 @@ export class RegisterComponent {
   organizations: string[] = [];  // Just names to show in dropdown
   designations: string[] = [];  
   today: string = new Date().toISOString().split('T')[0]; // 'yyyy-mm-dd' format
-  schedules: string[] = [];
+  schedules: { id: string, display: string }[] = [];
   workLocations: string[] = [];
 
 
@@ -45,25 +59,86 @@ export class RegisterComponent {
       error: (err) => console.error('Failed to load organizations', err),
     });    
 // ✅ Schedules
-this.registrationService.getAllSchedules().subscribe({
-  next: (data: any[]) => {
-    this.schedules = data.map(s => s.name); // adjust if your API returns just strings
+this.orgService.getSchedules().subscribe({
+  next: (schedulesData: Schedule[]) => {
+    if (Array.isArray(schedulesData)) {
+      this.schedules = schedulesData.map(s => ({
+        id: s.scheduleId, // value for form
+        display: this.formatTime(s.startTime) + ' - ' + this.formatTime(s.endTime) // what user sees
+      }));
+    } else {
+      console.warn('Unexpected schedules response:', schedulesData);
+      this.schedules = [];
+    }
   },
-  error: (err) => console.error('Failed to load schedules', err),
+  error: (err) => {
+    console.error('Failed to load schedules', err);
+    this.schedules = [];
+  }
 });
 
 // ✅ Locations
-this.registrationService.getAllLocations().subscribe({
-  next: (data: any[]) => {
-    this.workLocations = data.map(l => l.name); // adjust if your API returns just strings
+this.orgService.getLocations().subscribe({
+  next: (locationsData: Location[]) => {
+    if (Array.isArray(locationsData)) {
+      // Map to names for dropdown
+      this.workLocations = locationsData.map(loc => loc.locationName);
+    } else {
+      console.warn('Unexpected locations response:', locationsData);
+      this.workLocations = [];
+    }
   },
-  error: (err) => console.error('Failed to load locations', err),
+  error: (err) => {
+    console.error('Failed to load locations', err);
+    this.workLocations = [];
+  }
 });
   }  
 
+  formatTime(timeStr: string): string {
+    if (!timeStr) return '';
+    const [hourStr, minStr] = timeStr.split(':');
+    let hour = parseInt(hourStr, 10);
+    const minutes = minStr;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12; // 0 becomes 12
+    return `${hour.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+  }
 
 isDateExpired(date: string): boolean {
   return !!date && new Date(date) < new Date(this.today);
+}
+
+onScheduleChange(event: any) {
+  if (event.target.value == 'manage-schedule') {
+    // Reset selection so the dropdown doesn’t stay on "manage"
+    this.employee.schedule = '';
+
+    // Navigate to Manage Schedule page
+    this.router.navigate(['/manage-schedule']);
+  }
+}
+
+goToManage(type: string) {
+  if (type === 'schedule') {
+    this.router.navigate(['/manage-schedule']);
+  } else if (type === 'location') {
+    this.router.navigate(['/manage-location']);
+  }
+}
+
+onLocationChange(event: any) {
+  if (event.target.value === 'manage-location') {
+    this.router.navigate(['/manage-location']);
+    this.employee.workLocation = null;
+  }
+}
+
+isEndDateInvalid(): boolean {
+  if (!this.employee.scheduleStartDate || !this.employee.scheduleEndDate) {
+    return false; // don’t show error if one is missing
+  }
+  return new Date(this.employee.scheduleEndDate) < new Date(this.employee.scheduleStartDate);
 }
 
 isUnder18(dob: string): boolean {
@@ -355,7 +430,7 @@ isUnder18(dob: string): boolean {
     'Zimbabwe',
   ];
 
-  constructor(private http: HttpClient, private router: Router, private registrationService: RegistrationService) { }
+  constructor(private http: HttpClient, private router: Router, private registrationService: RegistrationService, private orgService: OrganizationService) { }
 
 
 
@@ -386,16 +461,26 @@ isUnder18(dob: string): boolean {
   onRegister(registerForm: NgForm) {
     this.submitted = true;
     const { contactNumber, ...backendData } = this.employee;
-
+  
+    // 🔹 Find the selected schedule and location IDs
+    const selectedSchedule = this.schedules.find(s => s.id === this.employee.schedule);
+    const selectedLocation = this.workLocations.find(loc => loc === this.employee.workLocation);
+  
     const formattedData = {
       ...backendData,
       dob: this.formatDateForBackend(this.employee.dob),
       joiningDate: this.formatDateForBackend(this.employee.joiningDate),
       visaExpiry: this.formatDateForBackend(this.employee.visaExpiry),
       emiratesIdExpiry: this.formatDateForBackend(this.employee.emiratesIdExpiry),
-      passportExpiry: this.formatDateForBackend(this.employee.passportExpiry)
+      passportExpiry: this.formatDateForBackend(this.employee.passportExpiry),
+  
+      // 🔹 Add new fields
+      scheduleId: selectedSchedule ? selectedSchedule.id : '',
+      locationId: selectedLocation ? selectedLocation : '',
+      startDate: this.formatDateForBackend(this.employee.scheduleStartDate),
+      endDate: this.formatDateForBackend(this.employee.scheduleEndDate)
     };
-
+  
     this.registrationService.registerEmployee(formattedData).subscribe({
       next: (response) => {
         if (response.status === 200 && response.data) {
@@ -405,23 +490,22 @@ isUnder18(dob: string): boolean {
             `✅ Registration Successful!\n\n` +
             `🆔 Username (Employee ID): ${employeeId}\n` +
             `🔐 Password: ${password}\n\n` +
-            `⚠️ Please save these credentials securely. You won't be able to view them again.`
+            `⚠️ Please save these credentials securely.`
           );
         } else {
           alert('Registration succeeded but unexpected response format.');
         }
       },
       error: (error) => {
-        if (error.status == 409 ){
+        if (error.status == 409) {
           console.error('Registration failed:', error);
           alert('❌ Registration failed. Employee with provided e-mail already exists.');
-        }
-        else{
-        console.error('Registration failed:', error.message);
-        alert('❌ Registration failed. Please try again.');
+        } else {
+          console.error('Registration failed:', error.message);
+          alert('❌ Registration failed. Please try again.');
         }
       }
     });
-  }
+  }  
 
 }

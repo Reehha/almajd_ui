@@ -1,134 +1,101 @@
 <div class="dashboard-container">
-    <div class="filter-panel">
-        <div class="filter-group">
-            
-            <!-- Section Select -->
-            <div class="filter-item">
-                <label>Section</label>
-                <select [(ngModel)]="activeTab" (change)="resetForm()">
-                    <option value="org">Organization</option>
-                    <option value="dept">Department</option>
-                    <option value="role">Designation</option>
-                    <option value="schedule">Schedule</option>
-                    <option value="location">Location</option>
-                </select>
-            </div>
 
-            <!-- Organization dropdown for dept/role sections -->
-            <div class="filter-item" *ngIf="activeTab !== 'org' && activeTab !== 'schedule' && activeTab !== 'location'">
-                <label>Select Organization</label>
-                <select [(ngModel)]="selectedOrg" (change)="resetForm()" [ngModelOptions]="{standalone: true}">
-                    <option [ngValue]="null" disabled selected>Select Organization</option>
-                    <option *ngFor="let org of organizations" [ngValue]="org">{{ org.name }}</option>
-                </select>
-            </div>
+  <!-- Add Organization Button -->
+  <button class="icon-btn apply-btn btn" 
+          (click)="addOrganization()" 
+          title="Add Organization">
+    + Organization
+  </button>
 
-            <!-- Department Selection only for role -->
-            <div class="filter-item" *ngIf="activeTab === 'role' && selectedOrg">
-                <label>Select Department</label>
-                <select [(ngModel)]="selectedDept" (change)="selectedRole = ''">
-                    <option *ngFor="let dept of getDepartments()" [value]="dept">{{ dept }}</option>
-                </select>
-            </div>
+  <div *ngIf="loading" class="selected-info">Loading organizations...</div>
 
-            <!-- Action Type -->
-            <div class="filter-item">
-                <label>Action</label>
-                <select [(ngModel)]="actionType">
-                    <option value="add">Add</option>
-                    <option value="update">Update</option>
-                    <option value="delete">Delete</option>
-                </select>
-            </div>
+  <div *ngFor="let org of organizations" class="org-item">
+    <div class="item-header filter-panel">
+      <button class="expand-btn" (click)="toggleExpand(org)">
+        {{ org.expanded ? '▼' : '▶' }}
+      </button>
 
-            <!-- -------- ORG Section -------- -->
-            <div class="filter-item" *ngIf="activeTab === 'org' && (actionType === 'update' || actionType === 'delete')">
-                <label>Select Organization</label>
-                <select [(ngModel)]="selectedOrg">
-                    <option *ngFor="let org of organizations" [ngValue]="org">{{ org.name }}</option>
-                </select>
-            </div>
+      <input *ngIf="org.isEditing"
+             [(ngModel)]="org.name"
+             (blur)="markTouchedAndValidate(org, organizations)"
+             placeholder="Organization name" />
+      <span *ngIf="!org.isEditing">{{ org.name }}</span>
 
-            <div class="filter-item" *ngIf="activeTab === 'org' && actionType === 'update'">
-                <label>New Name</label>
-                <input type="text" [(ngModel)]="nameInput" placeholder="Enter new name..." />
-            </div>
-
-            <div class="filter-item" *ngIf="activeTab === 'org' && actionType === 'add'">
-                <label>Name</label>
-                <input type="text" [(ngModel)]="nameInput" placeholder="Enter organization name..." />
-            </div>
-
-            <!-- -------- DEPT Section -------- -->
-            <div class="filter-item" *ngIf="activeTab === 'dept' && actionType !== 'add'">
-                <label>Select Department</label>
-                <select [(ngModel)]="selectedDept">
-                    <option *ngFor="let dept of getDepartments()" [value]="dept">{{ dept }}</option>
-                </select>
-            </div>
-
-            <!-- -------- ROLE Section -------- -->
-            <div class="filter-item" *ngIf="activeTab === 'role' && actionType !== 'add' && selectedDept">
-                <label>Select Role</label>
-                <select [(ngModel)]="selectedRole">
-                    <option *ngFor="let role of getRoles()" [value]="role">{{ role }}</option>
-                </select>
-            </div>
-
-            <!-- Name input for add/update on dept/role -->
-            <div class="filter-item"
-                *ngIf="(activeTab === 'dept' || activeTab === 'role') && (actionType === 'add' || actionType === 'update')">
-                <label>{{ actionType === 'add' ? 'Name' : 'New Name' }}</label>
-                <input type="text" [(ngModel)]="nameInput" placeholder="Enter name..." />
-            </div>
-
-            <!-- -------- SCHEDULE Section -------- -->
-            <div class="filter-item" *ngIf="activeTab === 'schedule' && actionType !== 'add'">
-                <label>Select Schedule</label>
-                <select [(ngModel)]="selectedSchedule">
-                    <option *ngFor="let sch of schedules" [ngValue]="sch">{{ sch.startTime }} - {{ sch.endTime }}</option>
-                </select>
-            </div>
-
-            <div class="filter-item" *ngIf="activeTab === 'schedule' && (actionType === 'add' || actionType === 'update')">
-                <label>Start Time</label>
-                <input type="time" [(ngModel)]="startTime" />
-            </div>
-            <div class="filter-item" *ngIf="activeTab === 'schedule' && (actionType === 'add' || actionType === 'update')">
-                <label>End Time</label>
-                <input type="time" [(ngModel)]="endTime" />
-            </div>
-
-            <!-- -------- LOCATION Section -------- -->
-            <div class="filter-item" *ngIf="activeTab === 'location' && actionType !== 'add'">
-                <label>Select Location</label>
-                <select [(ngModel)]="selectedLocation">
-                    <option *ngFor="let loc of locations" [ngValue]="loc">{{ loc.siteLocation }} - {{ loc.travelTime }} mins</option>
-                </select>
-            </div>
-
-            <div class="filter-item" *ngIf="activeTab === 'location' && (actionType === 'add' || actionType === 'update')">
-                <label>Site Location</label>
-                <input type="text" [(ngModel)]="siteLocation" placeholder="Enter site location..." />
-            </div>
-
-            <div class="filter-item" *ngIf="activeTab === 'location' && (actionType === 'add' || actionType === 'update')">
-                <label>Travel Time</label>
-                <select [(ngModel)]="travelTime" (change)="showCustomTravel = (travelTime === 'custom')">
-                    <option *ngFor="let t of travelTimes" [value]="t">{{ t === 'custom' ? 'Custom' : t + ' mins' }}</option>
-                </select>
-                <input *ngIf="showCustomTravel" type="number" [(ngModel)]="customTravelTime" placeholder="Enter minutes" />
-            </div>
-
-            <!-- -------- ACTION BUTTONS -------- -->
-            <div class="filter-item">
-                <button class="btn" *ngIf="activeTab === 'org'" (click)="submitOrg()">Save</button>
-                <button class="btn" *ngIf="activeTab === 'dept'" (click)="submitDept()">Save</button>
-                <button class="btn" *ngIf="activeTab === 'role'" (click)="submitRole()">Save</button>
-                <button class="btn" *ngIf="activeTab === 'schedule'" (click)="submitSchedule()">Save</button>
-                <button class="btn" *ngIf="activeTab === 'location'" (click)="submitLocation()">Save</button>
-            </div>
-
-        </div>
+      <div class="button-group">
+        <button *ngIf="org.isEditing" (click)="saveItem(org, organizations)">✔</button>
+        <button *ngIf="org.isEditing" class="btn-danger" (click)="cancelEdit(org, organizations)">❌</button>
+        <button *ngIf="!org.isEditing" (click)="editItem(org)">✎</button>
+        <button class="btn-danger" (click)="deleteItem(org, organizations,'org')">🗑</button>
+        <!-- Add Department button with tooltip -->
+        <button class="icon-btn add-btn" 
+                (click)="addDepartment(org)" 
+                title="Add Department">＋</button>
+      </div>
     </div>
+
+    <div *ngIf="org.touched && org.error" class="error-message">{{ org.error }}</div>
+
+    <div *ngIf="org.expanded" class="nested">
+      <div *ngFor="let dept of org.departments" class="dept-item">
+        <div class="item-header filter-panel">
+          <button class="expand-btn" (click)="toggleExpand(dept)">
+            {{ dept.expanded ? '▼' : '▶' }}
+          </button>
+
+          <input *ngIf="dept.isEditing"
+                 [(ngModel)]="dept.name"
+                 (blur)="markTouchedAndValidate(dept, org.departments)"
+                 placeholder="Department name" />
+          <span *ngIf="!dept.isEditing">{{ dept.name }}</span>
+
+          <div class="button-group">
+            <button *ngIf="dept.isEditing" (click)="saveItem(dept, org.departments)">✔</button>
+            <button *ngIf="dept.isEditing" class="btn-danger" (click)="cancelEdit(dept, org.departments)">❌</button>
+            <button *ngIf="!dept.isEditing" (click)="editItem(dept)">✎</button>
+            <button class="btn-danger" (click)="deleteItem(dept, org.departments,'dept')">🗑</button>
+            <!-- Add Role button with tooltip -->
+            <button class="icon-btn add-btn" 
+                    (click)="addRole(dept)" 
+                    title="Add Designation">＋</button>
+          </div>
+        </div>
+
+        <div *ngIf="dept.touched && dept.error" class="error-message">{{ dept.error }}</div>
+
+        <div *ngIf="dept.expanded" class="nested">
+          <div *ngFor="let role of dept.roles" class="role-item">
+            <div class="item-header filter-panel">
+              <input *ngIf="role.isEditing"
+                     [(ngModel)]="role.name"
+                     (blur)="markTouchedAndValidate(role, dept.roles)"
+                     placeholder="Designation name" />
+              <span *ngIf="!role.isEditing">{{ role.name }}</span>
+
+              <div class="button-group">
+                <button *ngIf="role.isEditing" (click)="saveItem(role, dept.roles)">✔</button>
+                <button *ngIf="role.isEditing" class="btn-danger" (click)="cancelEdit(role, dept.roles)">❌</button>
+                <button *ngIf="!role.isEditing" (click)="editItem(role)">✎</button>
+                <button class="btn-danger" (click)="deleteItem(role, dept.roles,'role')">🗑</button>
+              </div>
+            </div>
+
+            <div *ngIf="role.touched && role.error" class="error-message">{{ role.error }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="warning-message" *ngIf="hasUnsavedChanges">
+    ⚠️ You have unsaved changes
+  </div>
+
+  <div class="modal-actions">
+    <button class="save-btn export-btn" 
+            [disabled]="!hasUnsavedChanges || hasValidationErrors()"  
+            (click)="saveAllChanges()">Save All</button>
+    <button class="cancel-btn save-btn" 
+            [disabled]="!hasUnsavedChanges"  
+            (click)="confirmDiscard()">Discard</button>
+  </div>
 </div>

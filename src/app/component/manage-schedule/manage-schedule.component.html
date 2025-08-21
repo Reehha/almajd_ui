@@ -1,0 +1,101 @@
+<div class="dashboard-container">
+
+    <div class="filter-panel">
+        <!-- Toggle -->
+        <button *ngIf="!showAddSchedule" class="apply-btn btn add-btn" (click)="toggleAddSchedule()">
+            + Add Schedule
+        </button>
+
+        <!-- Add Schedule Form -->
+        <div *ngIf="showAddSchedule" class="filter-group expand-form">
+            <div class="filter-item">
+                <label class="filter-label">Start Time</label>
+                <input type="time" [(ngModel)]="newSchedule.startTime" placeholder="Start Time" (input)="onAddInput()"
+                    (blur)="onAddBlur('start')" />
+            </div>
+
+            <div class="filter-item">
+                <label class="filter-label">End Time</label>
+                <input type="time" [(ngModel)]="newSchedule.endTime" placeholder="End Time" (input)="onAddInput()"
+                    (blur)="onAddBlur('end')" />
+            </div>
+
+            <button class="export-btn add-btn btn" (click)="addSchedule()" [disabled]="!canAddSchedule()">Save</button>
+
+            <button class="btn btn-danger add-btn" (click)="toggleAddSchedule()">Cancel</button>
+        </div>
+
+        <div *ngIf="error" class="error">{{ error }}</div>
+
+        <!-- 🔹 New Filter Inputs -->
+        <div class="filter-panel-sub">
+            <div class="filter-group">
+                <input [(ngModel)]="filters.scheduleId" (ngModelChange)="applyFilters()"
+                    placeholder="Search by Schedule ID" />
+
+                    <div class="filter-item">
+                        <label class="filter-label">Start Time</label>
+                        <input type="time" [(ngModel)]="filters.startTime" (input)="applyFilters()" />
+                      </div>
+                      
+                      <div class="filter-item">
+                        <label class="filter-label">End Time</label>
+                        <input type="time" [(ngModel)]="filters.endTime" (input)="applyFilters()" />
+                      </div>
+                      
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="table-container">
+        <table class="attendance-table" *ngIf="pagedSchedules.length > 0; else noData">
+            <thead>
+                <tr>
+                    <th>Schedule ID</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let sched of pagedSchedules">
+                    <td data-label="Schedule ID">{{ sched.scheduleId }}</td>
+                    <td data-label="Start Time">
+                      <span *ngIf="!sched.isEditing">{{ formatTime(sched.startTime) }}</span>
+                      <input *ngIf="sched.isEditing" type="time" [(ngModel)]="sched.startTime" (blur)="onEditBlur(sched)" />
+                    </td>
+                    <td data-label="End Time">
+                      <span *ngIf="!sched.isEditing">{{ formatTime(sched.endTime) }}</span>
+                      <input *ngIf="sched.isEditing" type="time" [(ngModel)]="sched.endTime" (blur)="onEditBlur(sched)" />
+                    </td>
+                    <td data-label="Actions">
+                      <div class="button-group">
+                        <button *ngIf="!sched.isEditing" class="icon-btn edit-btn" (click)="editSchedule(sched)">✎</button>
+                        <button *ngIf="sched.isEditing" class="icon-btn"
+                          [disabled]="!hasChanges(sched) || !!error || !sched.startTime || !sched.endTime"
+                          (click)="saveSchedule(sched)">✔</button>
+                        <button class="icon-btn delete-btn" (click)="deleteSchedule(sched.scheduleId)">🗑</button>
+                      </div>
+                    </td>
+                  </tr>                  
+            </tbody>
+        </table>
+
+        <ng-template #noData>
+            <p>No schedules available.</p>
+        </ng-template>
+
+        <!-- PAGINATION -->
+        <div class="pagination-container" *ngIf="totalPages > 1">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+
+            <button *ngFor="let page of pagesArray" (click)="goToPage(page)" [class.active]="page === currentPage">{{
+                page }}</button>
+
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+        </div>
+
+    </div>
+</div>

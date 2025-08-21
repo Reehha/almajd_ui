@@ -61,6 +61,8 @@ export class SidebarComponent {
     { icon: 'building', label: 'Organization', link: '/department-dashboard', visible: () => this.loginService.hasAnyRole(['admin']) && !this.isfirstTimeLogIn,
       subItems:[
         { label: 'Manage organization', link: '/manage-org' },
+        { label: 'Manage location',link: '/manage-location'},
+        { label: 'Manage schedule',link: '/manage-schedule'},
         { label: 'Configure holidays', link: '/under-construction' },
       ]
      },

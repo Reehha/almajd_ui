@@ -28,8 +28,7 @@ export interface AttendanceData {
     punchOut: string | null;
     punchOutUpdated?: string | null;
     status: 'On Time' | 'Short Time' | 'Overtime';
-    overtime?: string | null;      // e.g. "120mins"
-    shortTime?: string | null;     // e.g. "30mins"
+    statusValue?: string | null;
     travelDeduction?: number;
   }
   

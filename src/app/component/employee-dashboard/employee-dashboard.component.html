@@ -78,14 +78,14 @@
             <td data-label="Date">{{ formatDate(row.date) }}</td>
         
             <td data-label="Punch In">
-              <ng-container *ngIf="row.punchInUpdated; else normalIn">
+              <ng-container *ngIf="row.punchInUpdated != row.punchIn; else normalIn">
                 {{ row.punchInUpdated }} <span class="up-arrow">↑</span> [ {{ row.updatedDeduction || '-' }} ]
               </ng-container>
               <ng-template #normalIn>{{ row.punchIn || '-' }}</ng-template>
             </td>
         
             <td data-label="Punch Out">
-              <ng-container *ngIf="row.punchOutUpdated; else normalOut">
+              <ng-container *ngIf="row.punchOutUpdated != row.punchOut; else normalOut">
                 {{ row.punchOutUpdated }} <span class="down-arrow">↓</span> [ {{ row.updatedDeduction || '-' }} ]
               </ng-container>
               <ng-template #normalOut>{{ row.punchOut || '-' }}</ng-template>
@@ -95,8 +95,8 @@
               <strong>
                 <ng-container [ngSwitch]="row.status">
                   <span *ngSwitchCase="'On Time'">On Time</span>
-                  <span *ngSwitchCase="'Overtime'">Over Time <span class="overtime-hours">[ {{ row.overtime || '-' }} ]</span></span>
-                  <span *ngSwitchCase="'Short Time'">Short Time <span class="shorttime-hours">[ {{ row.shortTime || '-' }} ]</span></span>
+                  <span *ngSwitchCase="'Overtime'">Over Time <span class="overtime-hours">[ {{ row.statusValue || '-' }} ]</span></span>
+                  <span *ngSwitchCase="'Short Time'">Short Time <span class="shorttime-hours">[ {{ row.statusValue || '-' }} ]</span></span>
                   <span *ngSwitchDefault>{{ row.status }}</span>
                 </ng-container>
               </strong>

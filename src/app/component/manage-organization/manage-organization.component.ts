@@ -2,130 +2,108 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+// import { InfoTooltipComponent } from '../info-tooltip/info-tooltip.component';
+import { OrganizationService, EmployeeAllocation } from '../../services/organization.service';
 
 @Component({
   selector: 'app-dashboard',
+  standalone:true,
   imports: [FormsModule, CommonModule],
   templateUrl: './manage-organization.component.html',
   styleUrls: ['./manage-organization.component.css'],
 })
 export class ManageOrganizationComponent {
-  constructor(private router: Router) {}
-  employees = [
-    {
-      name: 'John Doe',
-      projectStartTime: new Date('2025-08-10'),
-      siteLocation: 'Site A',
-      department: 'IT',
-      designation: 'Engineer',
-    },
-    {
-      name: 'Jane Smith',
-      projectStartTime: new Date('2025-08-10'),
-      siteLocation: 'Site B',
-      department: 'HR',
-      designation: 'Manager',
-    },
-    {
-      name: 'Alex Lee',
-      projectStartTime: new Date('2025-08-12'),
-      siteLocation: 'Site C',
-      department: 'Finance',
-      designation: 'Analyst',
-    },
-    {
-      name: 'John Doe',
-      projectStartTime: new Date('2025-08-10'),
-      siteLocation: 'Site A',
-      department: 'IT',
-      designation: 'Engineer',
-    },
-    {
-      name: 'Jane Smith',
-      projectStartTime: new Date('2025-08-10'),
-      siteLocation: 'Site B',
-      department: 'HR',
-      designation: 'Manager',
-    },
-    {
-      name: 'Alex Lee',
-      projectStartTime: new Date('2025-08-12'),
-      siteLocation: 'Site C',
-      department: 'Finance',
-      designation: 'Analyst',
-    },
-    {
-      name: 'John Doe',
-      projectStartTime: new Date('2025-08-10'),
-      siteLocation: 'Site A',
-      department: 'IT',
-      designation: 'Engineer',
-    },
-    {
-      name: 'Jane Smith',
-      projectStartTime: new Date('2025-08-10'),
-      siteLocation: 'Site B',
-      department: 'HR',
-      designation: 'Manager',
-    },
-    {
-      name: 'Alex Lee',
-      projectStartTime: new Date('2025-08-12'),
-      siteLocation: 'Site C',
-      department: 'Finance',
-      designation: 'Analyst',
-    },
-    {
-      name: 'John Doe',
-      projectStartTime: new Date('2025-08-10'),
-      siteLocation: 'Site A',
-      department: 'IT',
-      designation: 'Engineer',
-    },
-    {
-      name: 'Jane Smith',
-      projectStartTime: new Date('2025-08-10'),
-      siteLocation: 'Site B',
-      department: 'HR',
-      designation: 'Manager',
-    },
-    {
-      name: 'Alex Lee',
-      projectStartTime: new Date('2025-08-12'),
-      siteLocation: 'Site C',
-      department: 'Finance',
-      designation: 'Analyst',
-    },
-    
-  ];
-
-  filters = { name: '', startTime: '', department: '', designation: '' };
-  filteredEmployees = [...this.employees];
-
-  selectedEmployees: any[] = [];
-  selectAllChecked = false;
+  employees: any[] = []; // will be populated from API
+  filteredEmployees: any[] = [];
   departments: string[] = [];
   designations: string[] = [];
+  selectedEmployees: any[] = [];
+  selectAllChecked = false;
 
   selectedDepartment = '';
   selectedDesignation = '';
+  filters = { name: '', startTime: '', department: '', designation: '' };
 
-  schedules = [
-    { id: 1, name: 'Morning Shift' },
-    { id: 2, name: 'Evening Shift' },
-  ];
-  siteLocations = [
-    { id: 1, name: 'Site A', travelTime: '30 mins' },
-    { id: 2, name: 'Site B', travelTime: '60 mins' },
-  ];
+  constructor(private router: Router, private allocationService: OrganizationService) {}
+
+  ngOnInit() {
+    this.loadEmployees();
+  }
 
   modalData = {
     scheduleId: '',
-    siteLocationId: '',
+    locationId: '',
     travelTime: '',
     startDate: '',
     endDate: '',
   };
+
+  schedules: any[] = [];
+  siteLocations: any[] = [];
+  
+
+  loadEmployees() {
+    this.allocationService.getAllocations().subscribe({
+      next: (res) => {
+        // Assuming your API wraps data in `data` property
+        this.employees = res.data.map((emp: EmployeeAllocation) => ({
+          employeeId: emp.employeeId,
+          name: `${emp.firstName} ${emp.lastName}`,
+          projectStartTime: emp.startDate ? new Date(emp.startDate) : new Date,
+          projectEndTime: emp.endDate ? new Date(emp.endDate) : new Date(),
+          siteLocation: emp.locationName,
+          department: emp.department,
+          designation: emp.designation,
+          schedule: `${this.formatTime12Hr(emp.startTime ?? '')}-${this.formatTime12Hr(emp.endTime ?? '')}`
+        }));
+
+        this.filteredEmployees = [...this.employees];
+        this.generateFilterLists();
+      },
+      error: (err) => {
+        console.error('Error loading employee allocations', err);
+      },
+    });
+  }
+
+  get endDateWarning(): string | null {
+    if (!this.modalData.startDate || this.selectedEmployees.length === 0) return null;
+
+    const newStart = new Date(this.modalData.startDate).getTime();
+  
+    const conflict = this.selectedEmployees.some(emp => 
+      emp.projectEndTime && newStart < new Date(emp.projectEndTime).getTime()
+    );
+  
+    return conflict ? '⚠ Warning: New start date is before current project end date. Proceeding will overwrite the current end date to a day before new start date for chosen employee(s).' : null;
+  }
+  
+
+  loadModalData() {
+    this.allocationService.getSchedules().subscribe({
+      next: (res) => {
+        this.schedules = res.map(sched => ({
+          ...sched,
+          displayName: `${this.formatTime12Hr(sched.startTime)} - ${this.formatTime12Hr(sched.endTime)}`
+        }));
+      },
+      error: (err) => console.error('Error fetching schedules', err)
+    });
+  
+    this.allocationService.getLocations().subscribe({
+      next: (res: any) => {
+        this.siteLocations = res.data; // <-- use res.data, not res
+      },
+      error: (err) => console.error('Error fetching locations', err)
+    });
+    
+  }
+  
+
+  generateFilterLists() {
+    this.departments = [...new Set(this.employees.map(e => e.department))].sort();
+    this.designations = [...new Set(this.employees.map(e => e.designation))].sort();
+  }
   minStartDate = '';
   showModal = false;
   currentPage = 1;
@@ -147,19 +125,22 @@ isScheduleInvalid() {
 }
 
 isLocationInvalid() {
-  return this.touched.siteLocationId && !this.modalData.siteLocationId;
+  return this.touched.siteLocationId && !this.modalData.locationId;
 }
 
 isStartDateInvalid(): boolean {
-  if (!this.modalData.startDate) return false;
-    return this.touched.startDate && new Date(this.modalData.startDate) < new Date(this.minStartDate);
+  if (!this.modalData.startDate) return this.touched.startDate;
+  const selectedStart = new Date(this.modalData.startDate).getTime();
+  const minStart = new Date(this.minStartDate).getTime();
+  return this.touched.startDate && selectedStart < minStart;
 }
 
 isEndDateInvalid(): boolean {
-  if (!this.modalData.endDate || !this.modalData.startDate) return false;
-  return this.touched.endDate && new Date(this.modalData.endDate) < new Date(this.modalData.startDate);
+  if (!this.modalData.endDate || !this.modalData.startDate) return this.touched.endDate;
+  const start = new Date(this.modalData.startDate).getTime();
+  const end = new Date(this.modalData.endDate).getTime();
+  return this.touched.endDate && end < start;
 }
-
 
 filterTable() {
   this.filteredEmployees = this.employees.filter(
@@ -178,19 +159,36 @@ onDesignationChange() {
   this.filterTable();
 }
 
-// isStartDateInvalid(): boolean {
-//   if (!this.modalData.startDate) return false;
-//   return new Date(this.modalData.startDate) < new Date(this.minStartDate);
-// }
+get paginationRange(): (number | string)[] {
+  const total = this.totalPages;
+  const current = this.currentPage;
+  const delta = 2; // number of pages to show around current page
+  const range: (number | string)[] = [];
 
-// isEndDateInvalid(): boolean {
-//   if (!this.modalData.endDate || !this.modalData.startDate) return false;
-//   return new Date(this.modalData.endDate) < new Date(this.modalData.startDate);
-// }
+  if (total <= 5) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const left = Math.max(2, current - delta);
+  const right = Math.min(total - 1, current + delta);
+
+  range.push(1);
+  if (left > 2) range.push('...');
+  for (let i = left; i <= right; i++) range.push(i);
+  if (right < total - 1) range.push('...');
+  range.push(total);
+
+  return range;
+}
+
+isNumber(value: any): value is number {
+  return typeof value === 'number';
+}
+
 
 
 isFormValid(): boolean {
-  if (!this.modalData.scheduleId || !this.modalData.startDate || !this.modalData.endDate || !this.modalData.siteLocationId) {
+  if (!this.modalData.scheduleId || !this.modalData.startDate || !this.modalData.endDate || !this.modalData.locationId) {
     return false;
   }
 
@@ -227,23 +225,7 @@ nextPage() {
 get pageNumbers(): number[] {
   return Array.from({ length: this.totalPages }, (_, i) => i + 1);
 }
-
-
-  ngOnInit() {
-    // Assuming you already have this.employees loaded from your table
-    this.generateFilterLists();
-  }
-
-  generateFilterLists() {
-    this.departments = [
-      ...new Set(this.employees.map((e) => e.department)),
-    ].sort();
-    this.designations = [
-      ...new Set(this.employees.map((e) => e.designation)),
-    ].sort();
-  }
   
-
   resetFilters() {
     this.selectedDepartment = '';
     this.selectedDesignation = '';
@@ -307,33 +289,91 @@ get pageNumbers(): number[] {
     );
   }
 
+  formatTime12Hr(time24: string): string {
+    if (!time24) return '';
+    const [hoursStr, minutes] = time24.split(':');
+    let hours = parseInt(hoursStr, 10);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    return `${hours}:${minutes} ${ampm}`;
+  }
+  
   openScheduleModal() {
     if (this.selectedEmployees.length > 0) {
       const today = new Date();
       const earliestStart = new Date(
         Math.min(...this.selectedEmployees.map(e => new Date(e.projectStartTime).getTime()))
       );
-      // Set minStartDate to the later of today or earliest employee projectStartTime
-      this.minStartDate = new Date(Math.min(today.getTime(), earliestStart.getTime()))
+      this.minStartDate = new Date(
+        Math.min(today.getTime(), earliestStart.getTime()) + 24 * 60 * 60 * 1000
+      )
         .toISOString()
         .split('T')[0];
+      
+  
+      // Fetch schedules and locations
+      this.allocationService.getSchedules().subscribe({
+        next: (res) => {
+          this.schedules = res.map(sched => ({
+            ...sched,
+            schedule: `${this.formatTime12Hr(sched.startTime)} - ${this.formatTime12Hr(sched.endTime)}`
+          }));
+        },
+        error: (err) => console.error('Error fetching schedules', err)
+      });
+  
+      this.allocationService.getLocations().subscribe({
+        next: (res) => this.siteLocations = res,
+        error: (err) => console.error('Error fetching locations', err)
+      });
   
       this.showModal = true;
     }
   }
   
+  
 
   updateTravelTime() {
-    const site = this.siteLocations.find(
-      (s) => s.id === +this.modalData.siteLocationId
+    const selectedSite = this.siteLocations.find(
+      loc => loc.locationId == this.modalData.locationId // match by locationId
     );
-    this.modalData.travelTime = site ? site.travelTime : '';
+    this.modalData.travelTime = selectedSite ? selectedSite.travelTime : '';
   }
 
   saveSchedule() {
-    // TODO: Save to backend
-    this.closeModal();
+    if (!this.isFormValid()) return;
+  
+    // Convert date to dd/MM/yyyy
+    const formatDate = (dateStr: string) => {
+      const d = new Date(dateStr);
+      const day = ('0' + d.getDate()).slice(-2);
+      const month = ('0' + (d.getMonth() + 1)).slice(-2);
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+  
+    const payload = this.selectedEmployees.map(emp => ({
+      employeeId: emp.employeeId,
+      startDate: formatDate(this.modalData.startDate),
+      endDate: formatDate(this.modalData.endDate),
+      scheduleId: this.modalData.scheduleId,
+      locationId: this.modalData.locationId
+    }));
+  
+    this.allocationService.assignSchedules(payload).subscribe({
+      next: (res) => {
+        console.log('Schedules assigned successfully', res);
+        this.closeModal();
+        this.loadEmployees(); // refresh table if needed
+      },
+      error: (err) => {
+        console.error('Error assigning schedules', err);
+      }
+    });
   }
+  
+  
 
   closeModal() {
     this.showModal = false;

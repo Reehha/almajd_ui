@@ -110,7 +110,7 @@
           </div>
           <!-- Expiry warning (non-blocking) -->
           <div *ngIf="isDateExpired(employee.visaExpiry)" class="warning-message">
-            ⚠️ Visa has expired!
+            ⚠️ Warning: Visa has expired!
           </div>          
         </div>
       </div>
@@ -270,10 +270,13 @@
   <div>
     <div class="input-group">
       <label class="top-label">Schedule</label>
-      <select name="schedule" [(ngModel)]="employee.schedule" #schedule="ngModel" required>
+      <select name="schedule" [(ngModel)]="employee.schedule" (change)="onScheduleChange($event)" #schedule="ngModel" required>
         <option value="" disabled selected>Select schedule</option>
-        <option *ngFor="let sched of schedules" [value]="sched">{{ sched }}</option>
-      </select>
+        <option value="manage-schedule"><a class="manage-link" (click)="goToManage('schedule')">+Add new schedule</a></option>
+        <option *ngFor="let sched of schedules" [value]="sched.id">
+          {{ sched.display }}
+        </option>
+      </select>  
     </div>
     <div *ngIf="schedule.invalid && schedule.touched" class="error-message">
       Schedule is required.
@@ -318,6 +321,9 @@
     <div *ngIf="scheduleEndDate.invalid && scheduleEndDate.touched" class="error-message">
       End date is required.
     </div>
+    <div *ngIf="!scheduleEndDate.invalid && isEndDateInvalid()" class="error-message">
+      End date cannot be earlier than start date.
+    </div>  
   </div>
 </div>
 
@@ -326,8 +332,9 @@
       <div>
         <div class="input-group">
           <label class="top-label">Work Location</label>
-          <select name="workLocation" [(ngModel)]="employee.workLocation" #workLocation="ngModel" required>
+          <select name="workLocation" (change)="onLocationChange($event)" [(ngModel)]="employee.workLocation" #workLocation="ngModel" required>
             <option value="" disabled selected>Select work location</option>
+            <option value="manage-location">+Add New Location</option>
             <option *ngFor="let location of workLocations" [value]="location">
               {{ location }}
             </option>

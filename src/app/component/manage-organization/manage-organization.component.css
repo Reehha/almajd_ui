@@ -261,16 +261,8 @@
 
 
 /* === RESPONSIVE === */
+/* === TABLE RESPONSIVE === */
 @media (max-width: 767px) {
-  .filter-group {
-    flex-direction: column;
-  }
-
-  .filter-group input,
-  .filter-group select {
-    width: 100%;
-  }
-
   .attendance-table thead {
     display: none;
   }
@@ -287,19 +279,52 @@
     align-items: center;
     padding: 0.5rem;
     border-bottom: 1px solid #444;
+    white-space: normal;
   }
 
   .attendance-table td:before {
     content: attr(data-label);
     font-weight: bold;
     color: #aaa;
-    margin-right: 1rem;
+    flex: 1;
   }
 
-  .attendance-table td:last-child {
-    border-bottom: none;
+  .attendance-table td br {
+    content: "";
+    display: block;
+    margin: 2px 0;
   }
 }
+
+/* === MODAL RESPONSIVE === */
+@media (max-width: 480px) {
+  .modal {
+    width: 95%;
+    padding: 15px;
+  }
+
+  .modal-fields .filter-item {
+    margin-bottom: 10px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .filter-item{
+    width: 100%;
+  }
+  .btn{
+    width: 100%;
+  }
+}
+
+/* === SCHEDULE COLUMN BREAK === */
+.schedule-column {
+  white-space: normal;
+  line-height: 1.3;
+}
+
 
 .top-bar {
   display: flex;
@@ -377,4 +402,25 @@ input[type="checkbox"]:disabled {
 .error {
   color: red;
   font-size: 12px;
+}
+th, td {
+  position: relative;
+  overflow: visible !important;
+  z-index: auto;
+}
+.tooltip {
+  position: absolute;
+      z-index: 999;
+}
+.tooltip.left {
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.tooltip.right {
+  left: 100%;
+  transform: translateX(0);
+}
+input:disabled{
+  cursor: not-allowed;
 }

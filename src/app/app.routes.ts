@@ -17,6 +17,8 @@ import { QrScannerExitGuard } from './guards/qr-scanner-exit.guard';
 import { EmployeeIdCardComponent } from './component/employee-id-card/employee-id-card.component';
 import { ManageOrganizationComponent } from './component/manage-organization/manage-organization.component';
 import { OrganizationSettingsComponent } from './component/organization-settings/organization-settings.component';
+import { ManageLocationComponent } from './component/manage-location/manage-location.component';
+import { ManageScheduleComponent } from './component/manage-schedule/manage-schedule.component';
 
 export const routes: Routes = [
   /* ---------- Public routes (no authentication) ---------- */
@@ -94,6 +96,18 @@ export const routes: Routes = [
   {
     path: 'org-settings',
     component: OrganizationSettingsComponent,
+    canActivate: [AuthGuard],
+    data: { roles: [ 'admin'] }
+  },
+  {
+    path: 'manage-schedule',
+    component: ManageScheduleComponent,
+    canActivate: [AuthGuard],
+    data: { roles: [ 'admin'] }
+  },
+  {
+    path: 'manage-location',
+    component: ManageLocationComponent,
     canActivate: [AuthGuard],
     data: { roles: [ 'admin'] }
   },

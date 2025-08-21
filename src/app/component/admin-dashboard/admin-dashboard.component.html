@@ -8,9 +8,9 @@
     <div class="dashboard-overview">
       <!-- Chart on the left -->
       <div class="overview-chart">
-        <ng-container *ngIf="filteredData.length > 0 && totalEmployees > 0; else noData">
+        <ng-container *ngIf="paginatedData.length > 0 && totalEmployees > 0; else noData">
           <app-attendance-chart
-            [attendanceData]="filteredData"
+            [attendanceData]="filteredData"   
             [totalEmployees]="totalEmployees"
           ></app-attendance-chart>
         </ng-container>
@@ -30,13 +30,6 @@
         <div class="summary-box total">{{ initialCounts.absent }}<br><div>Absent</div></div>
       </div>
     
-      
-      
-      <!-- Your existing table and filter UI below -->
-      
-    
-
-
 <!-- FILTER PANEL -->
 <div class="filter-panel">
   <div class="filter-group">
@@ -93,7 +86,7 @@
               <td data-label="ID">{{entry.employeeId}}</td>
               <td data-label="Name">{{entry.firstName}} {{entry.lastName}}</td>
               <td data-label="In">
-                <ng-container *ngIf="entry.punchInUpdated; else normalIn">
+                <ng-container *ngIf="entry.punchInUpdated !=entry.punchIn ; else normalIn">
                   {{ entry.punchInUpdated }} 
                   <span class="up-arrow">↑</span> [ {{ entry.updatedDeduction }} ]
                 </ng-container>
@@ -103,7 +96,7 @@
               </td>
               
               <td data-label="Out">
-                <ng-container *ngIf="entry.punchOutUpdated; else normalOut">
+                <ng-container *ngIf="entry.punchOutUpdated!=entry.punchOut; else normalOut">
                   {{ entry.punchOutUpdated }} 
                   <span class="down-arrow">↓</span> [ {{ entry.updatedDeduction }} ]
                 </ng-container>
@@ -125,13 +118,13 @@
                 <!-- Overtime -->
                 <ng-container *ngIf="entry.status === 'Overtime'">
                   {{ entry.status }}
-                  <span class="overtime-hours">[ {{ entry.overtime }} ]</span>
+                  <span class="overtime-hours">[ {{ entry.statusValue }} ]</span>
                 </ng-container>
               
                 <!-- Short Time -->
                 <ng-container *ngIf="entry.status === 'Short Time'">
                   {{ entry.status }}
-                  <span class="shorttime-hours">[ {{ entry.shortTime }} ]</span>
+                  <span class="shorttime-hours">[ {{ entry.statusValue }} ]</span>
                 </ng-container>
               </td>
             </tr>

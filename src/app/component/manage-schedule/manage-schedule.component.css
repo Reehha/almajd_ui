@@ -1,0 +1,249 @@
+/* === DASHBOARD CONTAINER === */
+.dashboard-container {
+    padding: 1rem;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+  
+  /* === FILTER PANEL === */
+  .filter-panel {
+    background-color: #1c1c1e;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .filter-panel-sub {
+    background-color: #1c1c1e;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  button.icon-btn.edit-btn {
+    margin: 1rem;
+}
+  
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+    align-items: flex-end;
+  }
+  
+  .filter-item {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .filter-label {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-bottom: 0.25rem;
+  }
+  
+  .filter-group input,
+  .filter-group select {
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background-color: #2a2a2c;
+    color: #fff;
+    font-size: 0.9rem;
+    min-width: 180px;
+  }
+  
+  .filter-group input::placeholder {
+    color: #aaa;
+  }
+  
+  /* === BUTTONS === */
+  .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  .add-btn {
+    background: linear-gradient(to right, #4e9af1, #3f51b5);
+  }
+  
+  .add-btn:hover {
+    opacity: 0.9;
+  }
+  
+  .btn-danger {
+    background: linear-gradient(to right, #ff512f, #dd2476);
+  }
+  
+  .btn-danger:hover {
+    opacity: 0.9;
+  }
+  
+  .icon-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .icon-btn:hover {
+    opacity: 0.8;
+  }
+  
+  .delete-btn {
+    color: #ff6b6b;
+  }
+  
+  /* === TABLE === */
+  .table-container {
+    background-color: #000;
+    padding: 1rem;
+    border-radius: 1rem;
+    overflow-x: auto;
+    width: 100%;
+  }
+  
+  .attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #222;
+    border-radius: 10px;
+    overflow: hidden;
+    color: white;
+  }
+  
+  .attendance-table th,
+  .attendance-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #333;
+    text-align: left;
+  }
+  
+  .attendance-table th {
+    background-color: #111;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: #aaa;
+  }
+  
+  .attendance-table td {
+    font-size: 0.95rem;
+  }
+  
+  .attendance-table tr:hover {
+    background-color: #2a2a2a;
+  }
+  
+  /* === NO DATA === */
+  .no-records,
+  .table-container p {
+    text-align: center;
+    color: #aaa;
+    padding: 1rem;
+  }
+  
+  /* === PAGINATION === */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .pagination-container button {
+    padding: 6px 12px;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    min-width: 36px;
+    transition: all 0.2s;
+  }
+  
+  .pagination-container button:hover {
+    background-color: #555;
+  }
+  
+  .pagination-container button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  
+  .pagination-container button.active {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  /* === ERROR === */
+  .error {
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+  
+  /* === RESPONSIVE TABLE === */
+  @media (max-width: 767px) {
+    .attendance-table thead {
+      display: none;
+    }
+  
+    .attendance-table,
+    .attendance-table tbody,
+    .attendance-table tr,
+    .attendance-table td {
+      display: block;
+      width: 100%;
+    }
+  
+    .attendance-table tr {
+      margin-bottom: 1rem;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 0.5rem;
+      background: #1e1e1e;
+    }
+  
+    .attendance-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      border-bottom: 1px solid #444;
+      white-space: normal;
+    }
+  
+    .attendance-table td::before {
+      content: attr(data-label);
+      font-weight: bold;
+      color: #aaa;
+      flex: 1;
+      margin-right: 10px;
+    }
+  
+    .attendance-table td:last-child {
+      border-bottom: none;
+    }
+    .filter-panel button,input{
+        width: 100%;
+    }
+  }
+  

@@ -66,26 +66,27 @@ export class MainEmployeeDashboardComponent implements OnInit {
       // Punch In comparison with arrow
       let punchInDisplay = entry.punchIn || '-';
       if (entry.punchInUpdated) {
-        punchInDisplay = `${entry.punchInUpdated} ↑ [${entry.updatedDeduction || '0'}]`;
+        punchInDisplay = `${entry.punchInUpdated} `;
       }
   
       // Punch Out comparison with arrow
       let punchOutDisplay = entry.punchOut || '-';
       if (entry.punchOutUpdated) {
-        punchOutDisplay = `${entry.punchOutUpdated} ↓ [${entry.updatedDeduction || '0'}]`;
+        punchOutDisplay = `${entry.punchOutUpdated} `;
       }
   
       // Overtime / Short Time columns
       let overtimeHours = '';
   
       if (entry.status === 'Overtime') {
-        overtimeHours = entry.overtime || '';
+        overtimeHours = entry.statusValue || '';
       } 
   
       return {
         Date: entry.date,
         'Punch In': punchInDisplay,
         'Punch Out': punchOutDisplay,
+        'Updated Deduction (min)':entry.updatedDeduction,
         Status: entry.status,
         'Overtime Hours': overtimeHours,
       };

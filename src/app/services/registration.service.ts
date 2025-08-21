@@ -51,24 +51,19 @@ export class RegistrationService {
     return this.http.get<any>(`${this.BASE_URL}/auth/employee/managers`, { headers });
   }
 
-  addOrganization(name: string): Observable<any> {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.post<any>(`${this.BASE_URL}/organizations/create`, { name }, { headers });
+  saveOrganizations(payload: any): Observable<any> {
+    const token = localStorage.getItem('accessToken'); // Assuming JWT is stored here
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.post(`${this.BASE_URL}/organizations`, payload, { headers });
   }
+
   
-  updateOrganization(id: number, name: string): Observable<any> {
-    const token = localStorage.getItem('accessToken');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.put<any>(`${this.BASE_URL}/organizations/${id}`, { name }, { headers });
-  }
   
-  deleteOrganization(orgName: string): Observable<any> {
-    const token = localStorage.getItem('accessToken');
-    const headers = { Authorization: `Bearer ${token}` };
-    return this.http.delete(`${this.BASE_URL}/organizations/${orgName}`,{ headers }
-    );
-  }
   
   
 }
