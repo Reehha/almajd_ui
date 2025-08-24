@@ -48,8 +48,8 @@ export class MainEmployeeDashboardComponent implements OnInit {
     this.userInfo.lastName = localStorage.getItem('lastName') || '';
 
     this.attendanceService.getScheduleInfo().subscribe(schedule => {
-      this.todaySchedule.time = `${schedule?.data.startTime} - ${schedule.data.endTime}`;
-      this.todaySchedule.location = schedule.data.site;
+      this.todaySchedule.time = `${this.formatTime(schedule?.data.startTime)} - ${this.formatTime(schedule?.data.endTime)}`;
+      this.todaySchedule.location = schedule.data.locationName;
     });
 
     const today = new Date();
@@ -137,6 +137,21 @@ export class MainEmployeeDashboardComponent implements OnInit {
     const [year, month, day] = date.split('-');
     return `${day}/${month}/${year}`;
   }
+
+  formatTime(time24: string): string {
+    if (!time24) return '';
+    
+    const [hoursStr, minutes] = time24.split(':');
+    let hours = parseInt(hoursStr, 10);
+  
+    if (isNaN(hours)) return '';
+  
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    if (hours === 0) hours = 12; // midnight or noon case
+  
+    return `${hours}:${minutes} ${ampm}`;
+  }  
 
   fetchData() {
     if (this.hasDateError()) return;

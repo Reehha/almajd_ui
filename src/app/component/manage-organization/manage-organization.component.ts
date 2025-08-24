@@ -45,18 +45,42 @@ export class ManageOrganizationComponent {
   loadEmployees() {
     this.allocationService.getAllocations().subscribe({
       next: (res) => {
-        // Assuming your API wraps data in `data` property
+        // Map API response
         this.employees = res.data.map((emp: EmployeeAllocation) => ({
           employeeId: emp.employeeId,
           name: `${emp.firstName} ${emp.lastName}`,
-          projectStartTime: emp.startDate ? new Date(emp.startDate) : new Date,
+          projectStartTime: emp.startDate ? new Date(emp.startDate) : new Date(),
           projectEndTime: emp.endDate ? new Date(emp.endDate) : new Date(),
           siteLocation: emp.locationName,
           department: emp.department,
           designation: emp.designation,
           schedule: `${this.formatTime12Hr(emp.startTime ?? '')}-${this.formatTime12Hr(emp.endTime ?? '')}`
         }));
-
+  
+        // ✅ Sort by employeeId, then by projectStartTime (latest first)
+        this.employees.sort((a, b) => {
+          if (a.employeeId === b.employeeId) {
+            return b.projectStartTime.getTime() - a.projectStartTime.getTime();
+          }
+          return a.employeeId.localeCompare(b.employeeId);
+        });
+  
+        // ✅ Find latest projectStartTime for each employeeId
+        const latestMap = new Map<string, Date>();
+        this.employees.forEach(emp => {
+          if (
+            !latestMap.has(emp.employeeId) || 
+            emp.projectStartTime > (latestMap.get(emp.employeeId) as Date)
+          ) {
+            latestMap.set(emp.employeeId, emp.projectStartTime);
+          }
+        });
+  
+        // ✅ Mark only latest record as selectable
+        this.employees.forEach(emp => {
+          emp.isLatest = emp.projectStartTime.getTime() === latestMap.get(emp.employeeId)?.getTime();
+        });
+  
         this.filteredEmployees = [...this.employees];
         this.generateFilterLists();
       },

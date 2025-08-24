@@ -38,7 +38,8 @@ export interface ScheduleInfo {
         employeeId: string,
         site: string,
         startTime: string,
-        endTime: string
+        endTime: string,
+        locationName: string
     }
 }
 

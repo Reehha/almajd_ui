@@ -66,7 +66,7 @@
           <tr *ngFor="let emp of pagedEmployees">
             <td data-label="Select">
               <input type="checkbox" [checked]="selectedEmployees.includes(emp)" (change)="toggleSelection(emp)"
-                [disabled]="isSelectionDisabled(emp)" />
+                [disabled]="!emp.isLatest" />
             </td>
             <td data-label="Department">{{ emp.department }}</td>
             <td class="schedule-column" data-label="Schedule">
