@@ -51,15 +51,6 @@ export class ManageScheduleComponent implements OnInit {
     this.loadSchedules();
   }
 
-  // loadSchedules(): void {
-  //   this.orgService.getSchedules().subscribe({
-  //     next: (res) => {
-  //       this.schedules = res.map(s => ({ ...s, isEditing: false }));
-  //       this.setupPagination();
-  //     },
-  //     error: () => this.error = 'Failed to fetch schedules'
-  //   });
-  // }
 
   toggleAddSchedule(): void {
     this.showAddSchedule = !this.showAddSchedule;
@@ -123,6 +114,17 @@ export class ManageScheduleComponent implements OnInit {
 
   addSchedule(): void {
     if (!this.canAddSchedule()) { this.updateAddError(); return; }
+
+    if (!this.newSchedule.startTime || !this.newSchedule.endTime) return;
+
+    const formattedStart = this.formatTime(this.newSchedule.startTime);
+    const formattedEnd = this.formatTime(this.newSchedule.endTime);
+    
+
+  // ✅ Confirm before saving
+  if (!confirm(`Add new schedule: ${formattedStart} - ${formattedEnd}?`)) {
+    return;
+  }
   
     this.orgService.createSchedule({
       startTime: this.newSchedule.startTime!,
@@ -179,27 +181,49 @@ export class ManageScheduleComponent implements OnInit {
   }
   
 
-  saveSchedule(schedule: Schedule): void {
-    if (!schedule.startTime || !schedule.endTime) { this.error = 'Start time and End time are required'; return; }
-    if (this.isDuplicate(schedule.startTime, schedule.endTime, schedule.scheduleId)) {
-      this.error = 'A schedule with the same start and end time already exists';
+  saveSchedule(schedule: Schedule): void {  
+    // 2. Ask for confirmation
+    const formattedStart = this.formatTime(schedule.startTime);
+    const formattedEnd = this.formatTime(schedule.endTime);
+
+    if (!this.hasChanges(schedule)) {
+      schedule.isEditing = false;
+      return;
+    }
+    
+    if (!confirm(`Save changes to schedule: ${formattedStart} - ${formattedEnd}?`)) {
+      // If user cancels → exit edit mode without saving
+      schedule.isEditing = false;
       return;
     }
 
+    if(!this.hasChanges){
+      return
+    }
+  
+    // 3. Call API
     this.orgService.updateSchedule(schedule.scheduleId, {
       startTime: schedule.startTime,
       endTime: schedule.endTime
     }).subscribe({
       next: () => {
+        // ✅ Exit edit mode after successful save
         schedule.isEditing = false;
+        (schedule as any).originalStartTime = schedule.startTime;
+        (schedule as any).originalEndTime = schedule.endTime;
         this.error = '';
+  
+        // 🔹 Refresh table so changes show immediately
+        this.applyFilters(false);
       },
       error: (err: HttpErrorResponse) => {
-        if (err.error?.message?.includes('same start and end time')) {
-          this.error = 'A schedule with the same start and end time already exists';
-        } else {
-          this.error = 'Failed to update schedule';
-        }
+        this.error = err.error?.message?.includes('same start and end time')
+          ? 'A schedule with the same start and end time already exists'
+          : 'Failed to update schedule';
+        
+        // ❌ Ensure edit mode is closed even on error if you want
+        // (or keep open so user can fix directly)
+        // schedule.isEditing = false;
       }
     });
   }
@@ -215,29 +239,18 @@ export class ManageScheduleComponent implements OnInit {
     });
   }
 
-  // ---------- Pagination helpers ----------
-  // private setupPagination(): void {
-  //   this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
-  //   this.pagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
-  //   this.goToPage(1);
-  // }
-
-  // goToPage(page: number): void {
-  //   if (page < 1 || page > this.totalPages) return;
-  //   this.currentPage = page;
-  //   const start = (page - 1) * this.itemsPerPage;
-  //   const end = start + this.itemsPerPage;
-  //   this.pagedSchedules = this.schedules.slice(start, end);
-  // }
-
   // ---------- Helpers ----------
   private isDuplicate(startTime: string, endTime: string, excludeId?: string): boolean {
+    // Append ":00" to frontend times for comparison with backend
+    const start = startTime.length === 5 ? `${startTime}:00` : startTime;
+    const end = endTime.length === 5 ? `${endTime}:00` : endTime;
+  
     return this.schedules.some(s =>
-      s.startTime === startTime &&
-      s.endTime === endTime &&
+      s.startTime === start &&
+      s.endTime === end &&
       s.scheduleId !== excludeId
     );
-  }
+  }  
 
   loadSchedules(): void {
     this.orgService.getSchedules().subscribe({

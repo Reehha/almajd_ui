@@ -74,7 +74,6 @@
                       <div class="button-group">
                         <button *ngIf="!sched.isEditing" class="icon-btn edit-btn" (click)="editSchedule(sched)">✎</button>
                         <button *ngIf="sched.isEditing" class="icon-btn"
-                          [disabled]="!hasChanges(sched) || !!error || !sched.startTime || !sched.endTime"
                           (click)="saveSchedule(sched)">✔</button>
                         <button class="icon-btn delete-btn" (click)="deleteSchedule(sched.scheduleId)">🗑</button>
                       </div>

@@ -103,10 +103,16 @@
     color: #fff;
     font-size: 1rem;
     cursor: pointer;
+    margin: 1rem;
   }
   
   .icon-btn:hover {
     opacity: 0.8;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 1rem;
   }
   
   /* === TABLE === */

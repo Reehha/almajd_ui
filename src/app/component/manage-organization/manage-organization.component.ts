@@ -367,6 +367,10 @@ get pageNumbers(): number[] {
 
   saveSchedule() {
     if (!this.isFormValid()) return;
+
+    if (!confirm(`Assign new schedule to ${this.selectedEmployees.length} employee(s)?`)) {
+      return; // cancel if user rejects
+    }
   
     // Convert date to dd/MM/yyyy
     const formatDate = (dateStr: string) => {

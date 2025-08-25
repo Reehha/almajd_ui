@@ -34,7 +34,7 @@
   button.icon-btn.edit-btn {
     margin: 1rem;
 }
-  
+
   .filter-group {
     display: flex;
     flex-wrap: wrap;
@@ -101,6 +101,12 @@
     color: #fff;
     font-size: 1rem;
     cursor: pointer;
+    margin: 1rem;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 1rem;
   }
   
   .icon-btn:hover {

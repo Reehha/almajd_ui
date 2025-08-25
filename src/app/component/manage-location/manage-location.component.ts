@@ -80,7 +80,11 @@ export class ManageLocationComponent implements OnInit {
 
   addLocation(): void {
     if (!this.canAddLocation()) { this.onAddBlur('name'); return; }
-  
+
+    if (!confirm(`Are you sure you want to add location "${this.newLocation.locationName}"?`)) {
+      return;
+    }
+
     const payload = {
       locationName: this.newLocation.locationName.trim(),
       travelTime: this.newLocation.travelTime
@@ -125,8 +129,21 @@ export class ManageLocationComponent implements OnInit {
   saveLocation(loc: Location & { isEditing?: boolean }): void {
     this.onEditBlur(loc);
     if (this.error) return;
-
+  
     const name = loc.locationName.trim();
+  
+    // ✅ check if no changes were made
+    if (
+      name === (loc as any).originalName &&
+      loc.travelTime === (loc as any).originalTravel
+    ) {
+      loc.isEditing = false; // exit edit mode without saving
+      return;
+    }
+  
+    // ✅ confirm only if changes exist
+    if (!confirm(`Save changes to "${name}"?`)) return;
+  
     this.orgService.updateLocation(loc.locationId, { locationName: name, travelTime: loc.travelTime }).subscribe({
       next: () => {
         loc.isEditing = false;
@@ -139,15 +156,28 @@ export class ManageLocationComponent implements OnInit {
   }
 
   deleteLocation(locationId: string): void {
-    if (!confirm('Are you sure you want to delete this location?')) return;
+    const loc = this.locations.find(l => l.locationId === locationId);
+    if (!loc) return;
+  
+    if (!confirm(`Are you sure you want to delete location "${loc.locationName}"?`)) return;
+  
+    // ✅ Optimistic UI update (reflect immediately like Add)
+    const originalLocations = [...this.locations];
+    this.locations = this.locations.filter(l => l.locationId !== locationId);
+    this.applyFilters(false); // keep pagination + filters consistent
+  
     this.orgService.deleteLocation(locationId).subscribe({
       next: () => {
-        this.locations = this.locations.filter(l => l.locationId !== locationId);
-        this.updatePaginatedData();
+        this.error = '';
       },
-      error: () => this.error = 'Failed to delete location'
+      error: () => {
+        this.error = 'Failed to delete location';
+        // ❌ rollback if API fails
+        this.locations = originalLocations;
+        this.applyFilters(false);
+      }
     });
-  }
+  }  
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
