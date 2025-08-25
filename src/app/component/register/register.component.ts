@@ -35,7 +35,7 @@ export class RegisterComponent {
   designations: string[] = [];  
   today: string = new Date().toISOString().split('T')[0]; // 'yyyy-mm-dd' format
   schedules: { id: string, display: string }[] = [];
-  workLocations: string[] = [];
+  workLocations:  { id: string, display: string }[] = [];
 
 
 
@@ -59,12 +59,13 @@ export class RegisterComponent {
       error: (err) => console.error('Failed to load organizations', err),
     });    
 // ✅ Schedules
+// ✅ Schedules
 this.orgService.getSchedules().subscribe({
   next: (schedulesData: Schedule[]) => {
     if (Array.isArray(schedulesData)) {
       this.schedules = schedulesData.map(s => ({
-        id: s.scheduleId, // value for form
-        display: this.formatTime(s.startTime) + ' - ' + this.formatTime(s.endTime) // what user sees
+        id: s.scheduleId,  // pass id
+        display: this.formatTime(s.startTime) + ' - ' + this.formatTime(s.endTime) // show time range
       }));
     } else {
       console.warn('Unexpected schedules response:', schedulesData);
@@ -81,8 +82,10 @@ this.orgService.getSchedules().subscribe({
 this.orgService.getLocations().subscribe({
   next: (locationsData: Location[]) => {
     if (Array.isArray(locationsData)) {
-      // Map to names for dropdown
-      this.workLocations = locationsData.map(loc => loc.locationName);
+      this.workLocations = locationsData.map(loc => ({
+        id: loc.locationId,       // backend ID
+        display: loc.locationName // what user sees
+      }));
     } else {
       console.warn('Unexpected locations response:', locationsData);
       this.workLocations = [];
@@ -475,8 +478,10 @@ isUnder18(dob: string): boolean {
       passportExpiry: this.formatDateForBackend(this.employee.passportExpiry),
   
       // 🔹 Add new fields
-      scheduleId: selectedSchedule ? selectedSchedule.id : '',
-      locationId: selectedLocation ? selectedLocation : '',
+      
+    // ✅ Pass IDs, not names
+      scheduleId: this.employee.schedule || '',
+      locationId: this.employee.workLocation || '',
       startDate: this.formatDateForBackend(this.employee.scheduleStartDate),
       endDate: this.formatDateForBackend(this.employee.scheduleEndDate)
     };

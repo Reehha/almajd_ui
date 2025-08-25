@@ -335,9 +335,9 @@
           <select name="workLocation" (change)="onLocationChange($event)" [(ngModel)]="employee.workLocation" #workLocation="ngModel" required>
             <option value="" disabled selected>Select work location</option>
             <option value="manage-location">+Add New Location</option>
-            <option *ngFor="let location of workLocations" [value]="location">
-              {{ location }}
-            </option>
+            <option *ngFor="let l of workLocations" [value]="l.id">
+              {{ l.display }}
+            </option>            
           </select>
         </div>
         <div *ngIf="workLocation.invalid && workLocation.touched" class="error-message">
