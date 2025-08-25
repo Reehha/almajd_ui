@@ -190,16 +190,16 @@ export class ManageScheduleComponent implements OnInit {
       schedule.isEditing = false;
       return;
     }
-    
-    if (!confirm(`Save changes to schedule: ${formattedStart} - ${formattedEnd}?`)) {
-      // If user cancels → exit edit mode without saving
-      schedule.isEditing = false;
-      return;
-    }
 
-    if(!this.hasChanges){
-      return
-    }
+    // Confirm save
+  if (!confirm(`Save changes to schedule: ${formattedStart} - ${formattedEnd}?`)) {
+    // User cancelled → revert to original values
+    schedule.startTime = (schedule as any).originalStartTime;
+    schedule.endTime = (schedule as any).originalEndTime;
+    schedule.isEditing = false;
+    this.error = '';
+    return;
+  }
   
     // 3. Call API
     this.orgService.updateSchedule(schedule.scheduleId, {
