@@ -1,0 +1,89 @@
+<div class="dashboard-container">
+
+    <div class="filter-panel">
+      <button *ngIf="!showAddLocation" class="apply-btn btn add-btn" (click)="toggleAddLocation()">
+        + Add Location
+      </button>
+  
+      <div *ngIf="showAddLocation" class="filter-group expand-form">
+        <input [(ngModel)]="newLocation.locationName"
+               placeholder="Location Name"
+               (input)="onAddInput()"
+               (blur)="onAddBlur('name')" />
+  
+        <input type="number" [(ngModel)]="newLocation.travelTime"
+               placeholder="Travel Time (min)"
+               (input)="onAddInput()"
+               (blur)="onAddBlur('travel')" />
+  
+        <button class="btn add-btn" (click)="addLocation()" [disabled]="!canAddLocation()">Save</button>
+        <button class="btn btn-danger add-btn" (click)="toggleAddLocation()">Cancel</button>
+      </div>
+  
+      <div *ngIf="error" class="error">{{ error }}</div>
+
+
+<!-- 🔹 New Filter Inputs -->
+<div class="filter-panel-sub">
+    <div class="filter-group">
+      <input [(ngModel)]="filters.locationName" (ngModelChange)="applyFilters()" placeholder="Search by Location Name" />
+      <input [(ngModel)]="filters.locationId" (ngModelChange)="applyFilters()" placeholder="Search by Location ID" />
+    </div>
+  </div>
+
+    </div>
+  
+    <div *ngIf="loading" class="selected-info">Loading locations...</div>
+  
+    <div class="table-container">
+      <table class="attendance-table" *ngIf="paginatedLocations.length > 0; else noData">
+        <thead>
+          <tr>
+            <th>Location ID</th>
+            <th>Name</th>
+            <th>Travel Time (min)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let loc of paginatedLocations">
+              <td data-label="Location ID">{{ loc.locationId }}</td>
+              <td data-label="Name">
+                <span *ngIf="!loc.isEditing">{{ loc.locationName }}</span>
+                <input *ngIf="loc.isEditing" [(ngModel)]="loc.locationName" (blur)="onEditBlur(loc)" />
+              </td>
+              <td data-label="Travel Time (min)">
+                <span *ngIf="!loc.isEditing">{{ loc.travelTime }}</span>
+                <input *ngIf="loc.isEditing" type="number" [(ngModel)]="loc.travelTime" (blur)="onEditBlur(loc)" />
+              </td>
+              <td data-label="Actions">
+                <div class="button-group">
+                  <button *ngIf="!loc.isEditing" class="icon-btn edit-btn" (click)="editLocation(loc)">✎</button>
+                  <button *ngIf="loc.isEditing" class="icon-btn"
+                          [disabled]="!!error || !loc.locationName || loc.travelTime < 0"
+                          (click)="saveLocation(loc)">✔</button>
+                  <button *ngIf="!checkDefaultLocation(loc.locationId)" class="icon-btn delete-btn" (click)="deleteLocation(loc.locationId)">🗑</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>          
+      </table>
+  
+      <ng-template #noData>
+        <p>No locations available.</p>
+      </ng-template>
+    </div>
+  
+    <div class="pagination-container">
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+      
+      <ng-container *ngFor="let p of paginationRange">
+        <button *ngIf="isNumber(p)" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <span *ngIf="!isNumber(p)">...</span>
+      </ng-container>
+  
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  
+  </div>
+  

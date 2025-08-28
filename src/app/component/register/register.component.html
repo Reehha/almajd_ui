@@ -110,7 +110,7 @@
           </div>
           <!-- Expiry warning (non-blocking) -->
           <div *ngIf="isDateExpired(employee.visaExpiry)" class="warning-message">
-            ⚠️ Visa has expired!
+            ⚠️ Warning: Visa has expired!
           </div>          
         </div>
       </div>
@@ -265,7 +265,87 @@
           Designation is required.
         </div>
       </div>
+
+      <!-- Schedule Dropdown -->
+  <div>
+    <div class="input-group">
+      <label class="top-label">Schedule</label>
+      <select name="schedule" [(ngModel)]="employee.schedule" (change)="onScheduleChange($event)" #schedule="ngModel" required>
+        <option value="" disabled selected>Select schedule</option>
+        <option value="manage-schedule"><a class="manage-link" (click)="goToManage('schedule')">+Add new schedule</a></option>
+        <option *ngFor="let sched of schedules" [value]="sched.id">
+          {{ sched.display }}
+        </option>
+      </select>  
     </div>
+    <div *ngIf="schedule.invalid && schedule.touched" class="error-message">
+      Schedule is required.
+    </div>
+  </div>
+    </div>
+
+    <!-- Schedule Work Location -->
+    <div class="form-row">
+
+      <!-- Start & End Dates -->
+<div class="form-row date-row">
+  <div>
+    <div class="input-group date-group">
+      <label class="top-label">Start Date</label>
+      <input
+        type="date"
+        name="scheduleStartDate"
+        [(ngModel)]="employee.scheduleStartDate"
+        #scheduleStartDate="ngModel"
+        required
+        placeholder="yyyy-mm-dd"
+      />
+    </div>
+    <div *ngIf="scheduleStartDate.invalid && scheduleStartDate.touched" class="error-message">
+      Start date is required.
+    </div>
+  </div>
+
+  <div>
+    <div class="input-group date-group">
+      <label class="top-label">End Date</label>
+      <input
+        type="date"
+        name="scheduleEndDate"
+        [(ngModel)]="employee.scheduleEndDate"
+        #scheduleEndDate="ngModel"
+        required
+        placeholder="yyyy-mm-dd"
+      />
+    </div>
+    <div *ngIf="scheduleEndDate.invalid && scheduleEndDate.touched" class="error-message">
+      End date is required.
+    </div>
+    <div *ngIf="!scheduleEndDate.invalid && isEndDateInvalid()" class="error-message">
+      End date cannot be earlier than start date.
+    </div>  
+  </div>
+</div>
+
+    
+      <!-- Work Location Dropdown -->
+      <div>
+        <div class="input-group">
+          <label class="top-label">Work Location</label>
+          <select name="workLocation" (change)="onLocationChange($event)" [(ngModel)]="employee.workLocation" #workLocation="ngModel" required>
+            <option value="" disabled selected>Select work location</option>
+            <option value="manage-location">+Add New Location</option>
+            <option *ngFor="let l of workLocations" [value]="l.id">
+              {{ l.display }}
+            </option>            
+          </select>
+        </div>
+        <div *ngIf="workLocation.invalid && workLocation.touched" class="error-message">
+          Work location is required.
+        </div>
+      </div>
+    </div>
+
   
   
       <!-- Contact Number -->

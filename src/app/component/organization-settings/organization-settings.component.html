@@ -1,0 +1,101 @@
+<div class="dashboard-container">
+
+  <!-- Add Organization Button -->
+  <button class="icon-btn apply-btn btn" 
+          (click)="addOrganization()" 
+          title="Add Organization">
+    + Organization
+  </button>
+
+  <div *ngIf="loading" class="selected-info">Loading organizations...</div>
+
+  <div *ngFor="let org of organizations" class="org-item">
+    <div class="item-header filter-panel">
+      <button class="expand-btn" (click)="toggleExpand(org)">
+        {{ org.expanded ? '▼' : '▶' }}
+      </button>
+
+      <input *ngIf="org.isEditing"
+             [(ngModel)]="org.name"
+             (blur)="markTouchedAndValidate(org, organizations)"
+             placeholder="Organization name" />
+      <span *ngIf="!org.isEditing">{{ org.name }}</span>
+
+      <div class="button-group">
+        <button *ngIf="org.isEditing" (click)="saveItem(org, organizations)">✔</button>
+        <button *ngIf="org.isEditing" class="btn-danger" (click)="cancelEdit(org, organizations)">❌</button>
+        <button *ngIf="!org.isEditing" (click)="editItem(org)">✎</button>
+        <button class="btn-danger" (click)="deleteItem(org, organizations,'org')">🗑</button>
+        <!-- Add Department button with tooltip -->
+        <button class="icon-btn add-btn" 
+                (click)="addDepartment(org)" 
+                title="Add Department">＋</button>
+      </div>
+    </div>
+
+    <div *ngIf="org.touched && org.error" class="error-message">{{ org.error }}</div>
+
+    <div *ngIf="org.expanded" class="nested">
+      <div *ngFor="let dept of org.departments" class="dept-item">
+        <div class="item-header filter-panel">
+          <button class="expand-btn" (click)="toggleExpand(dept)">
+            {{ dept.expanded ? '▼' : '▶' }}
+          </button>
+
+          <input *ngIf="dept.isEditing"
+                 [(ngModel)]="dept.name"
+                 (blur)="markTouchedAndValidate(dept, org.departments)"
+                 placeholder="Department name" />
+          <span *ngIf="!dept.isEditing">{{ dept.name }}</span>
+
+          <div class="button-group">
+            <button *ngIf="dept.isEditing" (click)="saveItem(dept, org.departments)">✔</button>
+            <button *ngIf="dept.isEditing" class="btn-danger" (click)="cancelEdit(dept, org.departments)">❌</button>
+            <button *ngIf="!dept.isEditing" (click)="editItem(dept)">✎</button>
+            <button class="btn-danger" (click)="deleteItem(dept, org.departments,'dept')">🗑</button>
+            <!-- Add Role button with tooltip -->
+            <button class="icon-btn add-btn" 
+                    (click)="addRole(dept)" 
+                    title="Add Designation">＋</button>
+          </div>
+        </div>
+
+        <div *ngIf="dept.touched && dept.error" class="error-message">{{ dept.error }}</div>
+
+        <div *ngIf="dept.expanded" class="nested">
+          <div *ngFor="let role of dept.roles" class="role-item">
+            <div class="item-header filter-panel">
+              <input *ngIf="role.isEditing"
+                     [(ngModel)]="role.name"
+                     (blur)="markTouchedAndValidate(role, dept.roles)"
+                     placeholder="Designation name" />
+              <span *ngIf="!role.isEditing">{{ role.name }}</span>
+
+              <div class="button-group">
+                <button *ngIf="role.isEditing" (click)="saveItem(role, dept.roles)">✔</button>
+                <button *ngIf="role.isEditing" class="btn-danger" (click)="cancelEdit(role, dept.roles)">❌</button>
+                <button *ngIf="!role.isEditing" (click)="editItem(role)">✎</button>
+                <button class="btn-danger" (click)="deleteItem(role, dept.roles,'role')">🗑</button>
+              </div>
+            </div>
+
+            <div *ngIf="role.touched && role.error" class="error-message">{{ role.error }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="warning-message" *ngIf="hasUnsavedChanges">
+    ⚠️ You have unsaved changes
+  </div>
+
+  <div class="modal-actions">
+    <button class="save-btn export-btn" 
+            [disabled]="!hasUnsavedChanges || hasValidationErrors()"  
+            (click)="saveAllChanges()">Save All</button>
+    <button class="cancel-btn save-btn" 
+            [disabled]="!hasUnsavedChanges"  
+            (click)="confirmDiscard()">Discard</button>
+  </div>
+</div>
