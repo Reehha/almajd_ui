@@ -155,6 +155,11 @@ export class ManageLocationComponent implements OnInit {
     });
   }
 
+    // ---------- Check for default schedule ----------
+    checkDefaultLocation(locationId: string ): boolean {
+      return locationId =='default'
+    }
+
   deleteLocation(locationId: string): void {
     const loc = this.locations.find(l => l.locationId === locationId);
     if (!loc) return;

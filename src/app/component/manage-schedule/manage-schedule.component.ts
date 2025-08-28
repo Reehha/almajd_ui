@@ -239,6 +239,12 @@ export class ManageScheduleComponent implements OnInit {
     });
   }
 
+  // ---------- Check for default schedule ----------
+  checkDefaultSchedule(scheduleId: string ): boolean {
+    return scheduleId=='default'
+  }
+
+
   // ---------- Helpers ----------
   private isDuplicate(startTime: string, endTime: string, excludeId?: string): boolean {
     // Append ":00" to frontend times for comparison with backend

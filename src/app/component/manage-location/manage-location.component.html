@@ -62,7 +62,7 @@
                   <button *ngIf="loc.isEditing" class="icon-btn"
                           [disabled]="!!error || !loc.locationName || loc.travelTime < 0"
                           (click)="saveLocation(loc)">✔</button>
-                  <button class="icon-btn delete-btn" (click)="deleteLocation(loc.locationId)">🗑</button>
+                  <button *ngIf="!checkDefaultLocation(loc.locationId)" class="icon-btn delete-btn" (click)="deleteLocation(loc.locationId)">🗑</button>
                 </div>
               </td>
             </tr>

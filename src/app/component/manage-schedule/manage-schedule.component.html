@@ -75,7 +75,7 @@
                         <button *ngIf="!sched.isEditing" class="icon-btn edit-btn" (click)="editSchedule(sched)">✎</button>
                         <button *ngIf="sched.isEditing" class="icon-btn"
                           (click)="saveSchedule(sched)">✔</button>
-                        <button class="icon-btn delete-btn" (click)="deleteSchedule(sched.scheduleId)">🗑</button>
+                        <button *ngIf="!checkDefaultSchedule(sched.scheduleId)" class="icon-btn delete-btn" (click)="deleteSchedule(sched.scheduleId)">🗑</button>
                       </div>
                     </td>
                   </tr>                  
