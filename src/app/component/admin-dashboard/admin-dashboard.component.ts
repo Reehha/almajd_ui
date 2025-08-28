@@ -46,7 +46,7 @@ export class AdminDashboardComponent implements OnInit {
     const exportData = this.filteredData.map(entry => {
       const punchIn = entry.punchInUpdated || entry.punchIn || '-';
       const punchOut = entry.punchOutUpdated || entry.punchOut || '-';
-      const overtimeHours = entry.status === 'Overtime' ? entry.overtime || '' : '';
+      const overtimeHours = entry.status == 'Overtime' ? entry.statusValue || '' : '';
 
       return {
         Date: entry.date,
