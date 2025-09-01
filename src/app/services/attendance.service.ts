@@ -8,8 +8,9 @@ import { CommonService } from './common.service';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
-  private readonly BASE_URL = `${environment.api}/attendance`;
+  private readonly BASE_ATTENDANCE_URL = `${environment.api}/attendance`;
   private readonly SCHEDULE_API_BASE_URL = `${environment.api}/schedule`;
+  private readonly BASE_URL = `${environment.api}`;
 
   constructor(private http: HttpClient, private commonService: CommonService) {}
 
@@ -20,7 +21,7 @@ export class AttendanceService {
     startDate = this.commonService.formatDateForBackend(startDate);
     endDate = this.commonService.formatDateForBackend(endDate);
   
-    return this.http.get<AdminAttendanceData[]>(`${this.BASE_URL}/all?start=${startDate}&end=${endDate}`, { headers });
+    return this.http.get<AdminAttendanceData[]>(`${this.BASE_ATTENDANCE_URL}/all?start=${startDate}&end=${endDate}`, { headers });
   }
 
   getMyAttendanceForDate(startDate: string, endDate: string) {
@@ -30,7 +31,7 @@ export class AttendanceService {
     startDate = this.commonService.formatDateForBackend(startDate);
     endDate = this.commonService.formatDateForBackend(endDate);
   
-    return this.http.get<any[]>(`${this.BASE_URL}?start=${startDate}&end=${endDate}`, { headers });
+    return this.http.get<any[]>(`${this.BASE_ATTENDANCE_URL}?start=${startDate}&end=${endDate}`, { headers });
   }  
 
   getScheduleInfo(): Observable<ScheduleInfo> {
@@ -38,7 +39,7 @@ export class AttendanceService {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
   
      return this.http.get<ScheduleInfo>(
-       `${this.SCHEDULE_API_BASE_URL}`,
+       `${this.BASE_URL}/allocation`,
        { headers }
     );
   }
@@ -49,7 +50,7 @@ export class AttendanceService {
 
     punchDate = this.commonService.formatDateForBackend(punchDate);
 
-    return this.http.get<any>(`${this.BASE_URL}/emp?punchDate=${punchDate}&employeeId=${employeeId}`, { headers });
+    return this.http.get<any>(`${this.BASE_ATTENDANCE_URL}/emp?punchDate=${punchDate}&employeeId=${employeeId}`, { headers });
   }
 
   // Inside attendance.service.ts or employee.service.ts
@@ -123,7 +124,7 @@ getAllEmployeeIds(): Observable<string[]> {
   }
 
   punch(req: PunchRequest): Observable<PunchResponse> {
-    return this.http.post<PunchResponse>(`${this.BASE_URL}/punch`, req).pipe(
+    return this.http.post<PunchResponse>(`${this.BASE_ATTENDANCE_URL}/punch`, req).pipe(
       tap(res => {
       }),
       catchError(err => throwError(() => err))

@@ -60,7 +60,9 @@ export class SidebarComponent {
     { icon: 'search', label: 'Scan QR', link: '/scan-qr', visible: () => this.loginService.hasAnyRole(['qrScanner']) && !this.isfirstTimeLogIn },
     { icon: 'building', label: 'Organization', link: '/department-dashboard', visible: () => this.loginService.hasAnyRole(['admin']) && !this.isfirstTimeLogIn,
       subItems:[
-        { label: 'Manage organization', link: '/under-construction' },
+        { label: 'Manage organization', link: '/manage-org' },
+        { label: 'Manage location',link: '/manage-location'},
+        { label: 'Manage schedule',link: '/manage-schedule'},
         { label: 'Configure holidays', link: '/under-construction' },
       ]
      },

@@ -25,12 +25,12 @@ export class AdminDashboardComponent implements OnInit {
   filteredData: any[] = [];
   departments: string[] = [];
   organizations: string[] = [];
-  extraEmployeeCount = 0;
   totalEmployees = 0;
 
-  initialCounts = { onTime: 0, late: 0, overTime: 0, absent: 0 };
+  initialCounts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0 };
   currentPage = 1;
   itemsPerPage = 10;
+  allEmployeeIds: string[] = [];
 
   constructor(
     private router: Router,
@@ -39,26 +39,53 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.onDateFilter();
+    this.attendanceService.getAllEmployeeIds().subscribe(ids => {
+      this.allEmployeeIds = ids;
+      this.onDateFilter(); 
+    });
   }
 
+  // EXPORT TO EXCEL
   exportToExcel(): void {
-    const exportData = this.filteredData.map(entry => ({
-      Date: entry.date,
-      'Employee ID': entry.employeeId,
-      Name: `${entry.firstName} ${entry.lastName}`,
-      Department: entry.department,
-      Organization: entry.organization,
-      'Punch In': entry.punchIn || '-',
-      'Punch Out': entry.punchOut || '-',
-      Status: entry.status
-    }));
-  
+    const exportData = this.filteredData.map(entry => {
+      const punchIn = entry.punchInUpdated || entry.punchIn || '-';
+      const punchOut = entry.punchOutUpdated || entry.punchOut || '-';
+      const overtimeHours = entry.status == 'Overtime' ? entry.statusValue || '' : '';
+
+      return {
+        Date: entry.date,
+        'Employee ID': entry.employeeId,
+        Name: `${entry.firstName} ${entry.lastName}`,
+        Department: entry.department,
+        Organization: entry.organization,
+        'Punch In': punchIn,
+        'Punch Out': punchOut,
+        'Updated Deduction (mins)': entry.updatedDeduction || '0',
+        Status: entry.status,
+        'Overtime Hours': overtimeHours,
+      };
+    });
+
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook: XLSX.WorkBook = { Sheets: { 'Attendance': worksheet }, SheetNames: ['Attendance'] };
-    XLSX.writeFile(workbook, 'attendance_report.xlsx');
+    worksheet['!cols'] = [
+      { wch: 15 }, // Date
+      { wch: 15 }, // Employee ID
+      { wch: 25 }, // Name
+      { wch: 20 }, // Punch In
+      { wch: 20 }, // Punch Out
+      { wch: 15 }, // Status
+      { wch: 18 }  // Overtime
+    ];
+
+    const workbook: XLSX.WorkBook = {
+      Sheets: { 'Attendance': worksheet },
+      SheetNames: ['Attendance']
+    };
+
+    XLSX.writeFile(workbook, `Attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
   }
-  
+
+  // FETCH DATA
   onDateFilter() {
     this.attendanceService.getAttendanceData(this.startDate, this.endDate).subscribe({
       next: (resp) => {
@@ -66,74 +93,55 @@ export class AdminDashboardComponent implements OnInit {
         this.rawData = data;
         this.applyFilters();
       },
-      error: (err) => {
-        console.error('Failed to fetch attendance data:', err);
-      },
+      error: (err) => console.error('Failed to fetch attendance data:', err),
     });
   }
 
+  // APPLY FILTERS
   applyFilters() {
-    this.filteredData = this.rawData.filter((entry) => {
+    this.filteredData = [...this.rawData.filter((entry) => {
+      const fullName = `${entry.firstName} ${entry.lastName}`.toLowerCase();
       return (
-        (!this.employeeName || (
-          (entry.firstName + ' ' + entry.lastName).toLowerCase().includes(this.employeeName.toLowerCase())
-        ))
-         &&
+        (!this.employeeName || fullName.includes(this.employeeName.toLowerCase())) &&
         (!this.department || entry.department === this.department) &&
         (!this.organization || entry.organization === this.organization)
       );
-    });
+    })];
 
-    this.departments = Array.from(
-      new Set(this.rawData.map((e) => e.department).filter((d) => !!d))
-    );
-    this.organizations = Array.from(
-      new Set(this.rawData.map((e) => e.organization).filter((o) => !!o))
-    );
+    // Update available filters
+    this.departments = Array.from(new Set(this.rawData.map(e => e.department).filter(d => !!d)));
+    this.organizations = Array.from(new Set(this.rawData.map(e => e.organization).filter(o => !!o)));
 
-    this.initialCounts = this.calculateCounts(this.filteredData);
+    // Calculate summary counts
+    this.calculateCounts(this.filteredData);
+
     this.currentPage = 1;
   }
 
-  calculateAbsenteesAndTotal(uniqueEmpIds: Set<string>, counts: { absent: number }) {
-    this.attendanceService.getAllEmployeeIds().subscribe({
-      next: (apiEmployeeIds: string[]) => {
-        const extraIds = apiEmployeeIds.filter(id => !uniqueEmpIds.has(id));
-        counts.absent = extraIds.length;
-        this.totalEmployees = apiEmployeeIds.length;
-        
-      },
-      error: (err) => {
-        console.error('Failed to fetch employee names:', err);
-      }
-    });
-  }
-
-  calculateCounts(data: any[]): { onTime: number; late: number; overTime: number; absent: number } {
-    const counts = { onTime: 0, late: 0, overTime: 0, absent: 0 };
+  // CALCULATE COUNTS INCLUDING ABSENTEES
+  calculateCounts(data: any[]) {
+    const counts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0 };
     const uniqueEmpIds = new Set<string>();
 
-    data.forEach((entry) => {
+    data.forEach(entry => {
       if (!entry.status || !entry.employeeId) return;
       const status = entry.status.toLowerCase();
       switch (status) {
-        case 'on time':
-          counts.onTime++;
-          break;
-        case 'late':
-          counts.late++;
-          break;
-        case 'over time':
-          counts.overTime++;
-          break;
+        case 'on time': counts.onTime++; break;
+        case 'short time': counts.shortTime++; break;
+        case 'overtime': counts.overTime++; break;
       }
       uniqueEmpIds.add(entry.employeeId);
     });
 
-    this.calculateAbsenteesAndTotal(uniqueEmpIds, counts);
-    return counts;
+    // Fetch all employees to calculate absent count
+      // Fetch all employees to calculate absent count
+      counts.absent = this.allEmployeeIds.filter(id => !uniqueEmpIds.has(id)).length;
+      this.totalEmployees = this.allEmployeeIds.length;
+      this.initialCounts = { ...counts };
   }
 
+  // PAGINATION
   get paginatedData(): any[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     return this.filteredData.slice(start, start + this.itemsPerPage);
@@ -144,9 +152,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
   }
 
   isNumber(value: any): value is number {
@@ -156,28 +162,23 @@ export class AdminDashboardComponent implements OnInit {
   formatDate(date: string | Date): string {
     const d = new Date(date);
     if (isNaN(d.getTime())) return '';
-  
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-    const year = d.getFullYear();
-  
-    return `${day}/${month}/${year}`;
-  }  
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
 
   get paginationRange(): (number | string)[] {
-    const totalPages = this.totalPages;
+    const total = this.totalPages;
     const current = this.currentPage;
     const delta = 1;
     const range: (number | string)[] = [];
 
     const left = Math.max(2, current - delta);
-    const right = Math.min(totalPages - 1, current + delta);
+    const right = Math.min(total - 1, current + delta);
 
     range.push(1);
     if (left > 2) range.push('...');
     for (let i = left; i <= right; i++) range.push(i);
-    if (right < totalPages - 1) range.push('...');
-    if (totalPages > 1) range.push(totalPages);
+    if (right < total - 1) range.push('...');
+    if (total > 1) range.push(total);
 
     return range;
   }

@@ -1,0 +1,172 @@
+<div class="dashboard-container">
+  <!-- Filter Panel -->
+  <div class="filter-panel">
+    <div class="filter-group">
+      <div class="filter-item">
+        <label for="filterName">Name</label>
+        <input id="filterName" [(ngModel)]="filters.name" (input)="applyFilters()" placeholder="Search by name" />
+      </div>
+
+      <div class="filter-item">
+        <label for="filterStartTime">Project Start Time</label>
+        <input type="date" id="filterStartTime" [(ngModel)]="filters.startTime" (change)="applyFilters()" />
+      </div>
+
+      <!-- Department Dropdown -->
+      <div class="filter-item">
+        <label>Department</label>
+        <select [(ngModel)]="selectedDepartment" (change)="onDepartmentChange()">
+          <option value="">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+        </select>
+      </div>
+
+      <!-- Designation Dropdown -->
+      <div class="filter-item">
+        <label>Designation</label>
+        <select [(ngModel)]="selectedDesignation" (change)="onDesignationChange()">
+          <option value="">All Designations</option>
+          <option *ngFor="let desg of designations" [value]="desg">{{ desg }}</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn main" (click)="openScheduleModal()" [disabled]="selectedEmployees.length === 0">
+      Assign Schedule/Site
+    </button>
+
+    <button class="btn export-btn" (click)="goToSettings()">Settings</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <div class="table-scroll">
+      <table class="attendance-table">
+        <thead>
+          <tr>
+            <th>
+              <!-- <app-info-tooltip message="The checkbox is enabled only when filtered by date"> -->
+              <input type="checkbox" [checked]="selectAllChecked" (change)="toggleSelectAll($event)"
+                [disabled]="!filters.startTime" />
+              <!-- </app-info-tooltip> -->
+            </th>
+            <th>Department</th>
+            <th>Schedule</th>
+            <th>Employee Name</th>
+            <th>Project Start Time</th>
+            <th>Project End Time</th>
+            <th>Site Location</th>
+            <th>Designation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredEmployees.length === 0">
+            <td colspan="7" class="no-records">No records found</td>
+          </tr>
+          <tr *ngFor="let emp of pagedEmployees">
+            <td data-label="Select">
+              <input type="checkbox" [checked]="selectedEmployees.includes(emp)" (change)="toggleSelection(emp)"
+                [disabled]="!emp.isLatest" />
+            </td>
+            <td data-label="Department">{{ emp.department }}</td>
+            <td class="schedule-column" data-label="Schedule">
+              {{ emp.schedule }}
+            </td>
+            <td data-label="Employee Name">{{ emp.name }}</td>
+            <td data-label="Project Start Time">{{ emp.projectStartTime | date:'dd/MM/yyyy' }}</td>
+            <td data-label="Project End Time">{{ emp.projectEndTime | date:'dd/MM/yyyy' }}</td>
+            <td data-label="Site Location">{{ emp.siteLocation }}</td>
+            <td data-label="Designation">{{ emp.designation }}</td>
+          </tr>
+        </tbody>
+
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button (click)="prevPage()" [disabled]="currentPage === 1">Previous</button>
+
+        <ng-container *ngFor="let page of paginationRange">
+          <button *ngIf="isNumber(page)" (click)="goToPage(page)" [class.active]="currentPage === page">
+            {{ page }}
+          </button>
+          <span *ngIf="!isNumber(page)" class="dots">...</span>
+        </ng-container>
+
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop" *ngIf="showModal">
+    <div class="modal">
+
+      <div class="modal-info">
+        <p>Number of selected employees: {{ selectedEmployees.length }}</p>
+      </div>
+
+      <div class="modal-fields">
+        <!-- Schedule Dropdown -->
+        <div class="filter-item">
+          <label>Schedule</label>
+          <!-- Schedule Dropdown -->
+          <select [(ngModel)]="modalData.scheduleId" (blur)="markTouched('scheduleId')">
+            <option value="">Select Schedule</option>
+            <option *ngFor="let sched of schedules" [value]="sched.id">{{ sched.schedule }}</option>
+          </select>
+
+          <div class="error" *ngIf="isScheduleInvalid()">Schedule is required</div>
+        </div>
+        <!-- Start Date -->
+        <div class="filter-item">
+          <label>Start Date</label>
+          <input type="date" [(ngModel)]="modalData.startDate" [min]="minStartDate" (blur)="markTouched('startDate')" />
+          <div class="error" *ngIf="isStartDateInvalid()">
+            Start date cannot be empty or less than current project start date
+          </div>
+          <div class="warning-message" *ngIf="endDateWarning && !isStartDateInvalid()">
+            {{ endDateWarning }}
+          </div>
+        </div>
+
+        <!-- End Date -->
+        <div class="filter-item">
+          <label>End Date</label>
+          <input type="date" [(ngModel)]="modalData.endDate" [min]="modalData.startDate"
+            (blur)="markTouched('endDate')" />
+          <div class="error" *ngIf="isEndDateInvalid()">
+            End date cannot be empty or before start date
+          </div>
+        </div>
+
+        <!-- Location Dropdown -->
+        <div class="filter-item">
+          <label>Location</label>
+          <!-- Location Dropdown -->
+          <select [(ngModel)]="modalData.locationId" (change)="updateTravelTime()"
+            (blur)="markTouched('siteLocationId')">
+            <option value="">Select Location</option>
+            <option *ngFor="let site of siteLocations" [value]="site.locationId">{{ site.locationName }}</option>
+          </select>
+
+          <div class="error" *ngIf="isLocationInvalid()">Location is required</div>
+        </div>
+
+
+        <!-- Travel Time -->
+        <div class="filter-item">
+          <label>Travel Time</label>
+          <input [value]="modalData.travelTime" disabled />
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="modal-actions">
+        <button class="btn main" (click)="saveSchedule()" [disabled]="!isFormValid()">Save</button>
+        <button class="btn cancel" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
