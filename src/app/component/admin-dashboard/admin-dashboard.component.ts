@@ -30,6 +30,7 @@ export class AdminDashboardComponent implements OnInit {
   initialCounts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0 };
   currentPage = 1;
   itemsPerPage = 10;
+  allEmployeeIds: string[] = [];
 
   constructor(
     private router: Router,
@@ -38,7 +39,10 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.onDateFilter();
+    this.attendanceService.getAllEmployeeIds().subscribe(ids => {
+      this.allEmployeeIds = ids;
+      this.onDateFilter(); 
+    });
   }
 
   // EXPORT TO EXCEL
@@ -131,16 +135,10 @@ export class AdminDashboardComponent implements OnInit {
     });
 
     // Fetch all employees to calculate absent count
-    this.attendanceService.getAllEmployeeIds().subscribe({
-      next: (allIds: string[]) => {
-        counts.absent = allIds.filter(id => !uniqueEmpIds.has(id)).length;
-        this.totalEmployees = allIds.length;
-
-        // Trigger Angular change detection
-        this.initialCounts = { ...counts };
-      },
-      error: (err) => console.error('Failed to fetch employee IDs:', err)
-    });
+      // Fetch all employees to calculate absent count
+      counts.absent = this.allEmployeeIds.filter(id => !uniqueEmpIds.has(id)).length;
+      this.totalEmployees = this.allEmployeeIds.length;
+      this.initialCounts = { ...counts };
   }
 
   // PAGINATION
