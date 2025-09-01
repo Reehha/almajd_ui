@@ -53,6 +53,13 @@
     </div>
 
     <div class="filter-item">
+      <select id="location" [(ngModel)]="locationName" (change)="applyFilters()">
+        <option value="">All Locations</option>
+        <option *ngFor="let loc of locations" [value]="loc">{{ loc }}</option>
+      </select>
+    </div>
+
+    <div class="filter-item">
       <label>Start Date</label>
       <input type="date" lang="en-CA" [(ngModel)]="startDate">
     </div>
@@ -75,6 +82,7 @@
               <th>Punch In</th>
               <th>Punch Out</th>
               <th>Status</th>
+              <th>Site Location</th> 
             </tr>
           </thead>
           <tbody>
@@ -85,7 +93,7 @@
               <td data-label="Date">{{formatDate(entry.date)}}</td>
               <td data-label="ID">{{entry.employeeId}}</td>
               <td data-label="Name">{{entry.firstName}} {{entry.lastName}}</td>
-              <td data-label="In">
+              <td data-label="Punch In">
                 <ng-container *ngIf="entry.punchInUpdated !=entry.punchIn ; else normalIn">
                   {{ entry.punchInUpdated }} 
                   <span class="up-arrow">↑</span> [ {{ entry.updatedDeduction }} ]
@@ -95,7 +103,7 @@
                 </ng-template>
               </td>
               
-              <td data-label="Out">
+              <td data-label="Punch Out">
                 <ng-container *ngIf="entry.punchOutUpdated!=entry.punchOut; else normalOut">
                   {{ entry.punchOutUpdated }} 
                   <span class="down-arrow">↓</span> [ {{ entry.updatedDeduction }} ]
@@ -127,9 +135,53 @@
                   <span class="shorttime-hours">[ {{ entry.statusValue }} ]</span>
                 </ng-container>
               </td>
+              <td data-label="Site Location">
+                {{ entry.locationName }}
+                <button class="icon-btn" (click)="openLocationDialog(entry)">
+                  <ng-container *ngIf="entry.designation?.toLowerCase() === 'driver'; else editBtn">
+                    <i class="fas fa-truck delivery-icon"></i>
+                  </ng-container>
+                  <ng-template #editBtn>
+                    <i class="fas fa-edit edit-icon"></i>
+                  </ng-template>
+                </button>
+              </td>                          
             </tr>
           </tbody>
         </table>
+<!-- Location Modal -->
+<div class="location-modal-backdrop" *ngIf="showLocationDialog">
+  <div class="location-modal">
+
+    <div class="location-modal-info">
+      <p><strong>Employee Name  : </strong> {{ selectedEmployee?.firstName }} {{ selectedEmployee?.lastName }}</p>
+      <p><strong>Punch In  : </strong> {{ selectedEmployee?.punchInUpdated || selectedEmployee?.punchIn || '-' }}</p>
+      <p><strong>Punch Out : </strong> {{ selectedEmployee?.punchOutUpdated || selectedEmployee?.punchOut || '-' }}</p>
+
+    </div>
+
+    <div class="filter-item">
+      <label>Location</label>
+      <select [(ngModel)]="selectedLocation" (change)="onLocationChange($event)">
+        <option *ngFor="let loc of filteredLocations" [value]="loc.locationName">{{ loc.locationName }}</option>
+      </select>
+    </div>
+
+    <div class="filter-item">
+      <label>Travel Time</label>
+      <input [value]="travelTime" disabled />
+    </div>
+
+    <div class="location-modal-actions">
+      <button class="btn main" (click)="submitLocation()">Save</button>
+      <button class="btn cancel" (click)="closeDialog()">Cancel</button>
+    </div>
+
+    <div class="location-message success-msg" *ngIf="successMessage">{{ successMessage }}</div>
+    <div class="location-message error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
+  </div>
+</div>
+
         <div class="pagination">
           <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
         

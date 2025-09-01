@@ -68,6 +68,7 @@
             <th>Punch In</th>
             <th>Punch Out</th>
             <th>Status</th>
+            <th>Site Location</th>
           </tr>
         </thead>
         <tbody>
@@ -100,6 +101,9 @@
                   <span *ngSwitchDefault>{{ row.status }}</span>
                 </ng-container>
               </strong>
+            </td>
+            <td data-label="Site Location">
+              {{ row.locationName || '-' }}
             </td>
           </tr>
         </tbody>        

@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceChartComponent } from '../attendance-chart/attendance-chart.component';
 import * as XLSX from 'xlsx';
+import { OrganizationService } from '../../services/organization.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -27,15 +28,29 @@ export class AdminDashboardComponent implements OnInit {
   organizations: string[] = [];
   totalEmployees = 0;
 
+  locationName: string = '';
+  locations: string[] = [];
+  allEmployeeIds: string[] = [];
+
   initialCounts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0 };
   currentPage = 1;
   itemsPerPage = 10;
-  allEmployeeIds: string[] = [];
+
+  showLocationDialog = false;
+  showConfirmDialog = false;
+  selectedEmployee: any = null;
+  selectedLocation: string = '';
+  filteredLocations: any[] = [];
+  travelTime: string = '';
+
+  successMessage = '';
+  errorMessage = '';
 
   constructor(
     private router: Router,
     private attendanceService: AttendanceService,
-    private registrationService: RegistrationService
+    private registrationService: RegistrationService,
+    private organizationService: OrganizationService,
   ) {}
 
   ngOnInit() {
@@ -57,12 +72,14 @@ export class AdminDashboardComponent implements OnInit {
         'Employee ID': entry.employeeId,
         Name: `${entry.firstName} ${entry.lastName}`,
         Department: entry.department,
+        Designation: entry.designation || '-',
         Organization: entry.organization,
         'Punch In': punchIn,
         'Punch Out': punchOut,
         'Updated Deduction (mins)': entry.updatedDeduction || '0',
         Status: entry.status,
         'Overtime Hours': overtimeHours,
+        'Site Location': entry.locationName || '-',
       };
     });
 
@@ -104,13 +121,15 @@ export class AdminDashboardComponent implements OnInit {
       return (
         (!this.employeeName || fullName.includes(this.employeeName.toLowerCase())) &&
         (!this.department || entry.department === this.department) &&
-        (!this.organization || entry.organization === this.organization)
+        (!this.organization || entry.organization === this.organization) &&
+        (!this.locationName || entry.locationName === this.locationName)
       );
     })];
 
     // Update available filters
     this.departments = Array.from(new Set(this.rawData.map(e => e.department).filter(d => !!d)));
     this.organizations = Array.from(new Set(this.rawData.map(e => e.organization).filter(o => !!o)));
+    this.locations = Array.from(new Set(this.rawData.map(e => e.locationName).filter(l => !!l)));
 
     // Calculate summary counts
     this.calculateCounts(this.filteredData);
@@ -135,11 +154,81 @@ export class AdminDashboardComponent implements OnInit {
     });
 
     // Fetch all employees to calculate absent count
-      // Fetch all employees to calculate absent count
-      counts.absent = this.allEmployeeIds.filter(id => !uniqueEmpIds.has(id)).length;
-      this.totalEmployees = this.allEmployeeIds.length;
-      this.initialCounts = { ...counts };
+    counts.absent = this.allEmployeeIds.filter(id => !uniqueEmpIds.has(id)).length;
+  this.totalEmployees = this.allEmployeeIds.length;
+  this.initialCounts = { ...counts };
   }
+
+  openLocationDialog(entry: any) {
+    this.selectedEmployee = entry;
+    this.selectedLocation = entry.locationName; // default preselected
+    this.showLocationDialog = true;
+  
+    // Fetch locations
+    this.organizationService.getLocations().subscribe({
+      next: (locations: any[]) => {
+        if (entry.designation?.toLowerCase() === 'driver') {
+          this.filteredLocations = locations.filter(
+            loc => loc.locationName.startsWith('TRIP_') || loc.locationId === 'default'
+          );
+        } else {
+          this.filteredLocations = locations.filter(
+            loc => !loc.locationName.startsWith('TRIP_')
+          );
+        }
+      },
+      error: () => this.errorMessage = 'Failed to fetch locations'
+    });
+  }
+
+  onLocationChange(event: any) {
+    const loc = this.filteredLocations.find(l => l.locationName === this.selectedLocation);
+    this.travelTime = loc?.travelTime || '0';
+  }
+  
+  closeDialog() {
+    this.showLocationDialog = false;
+    this.selectedEmployee = null;
+  }
+  
+  confirmLocation() {
+    this.showConfirmDialog = true;
+  }
+  
+  submitLocation() {
+    if (!this.selectedEmployee) return;
+  
+    const confirmed = window.confirm(
+      `Are you sure you want to update the location for ${this.selectedEmployee.firstName} ${this.selectedEmployee.lastName} to ${this.selectedLocation}?`
+    );
+    
+    if (!confirmed) return;
+  
+    // Find the selected location object
+    const selectedLocObj = this.filteredLocations.find(
+      loc => loc.locationName === this.selectedLocation
+    );
+  
+    const locationId = selectedLocObj?.locationId || ''; // ensure correct ID
+  
+    // Send the request with full data
+    this.attendanceService.updateEmployeeLocation(
+      this.selectedEmployee,
+      this.selectedLocation,
+      locationId
+    ).subscribe({
+      next: () => {
+        this.selectedEmployee.locationName = this.selectedLocation;
+        this.successMessage = `Location updated successfully for ${this.selectedEmployee.firstName}`;
+        this.showLocationDialog = false;
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: () => {
+        this.errorMessage = 'Failed to update location';
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }  
 
   // PAGINATION
   get paginatedData(): any[] {

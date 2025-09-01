@@ -357,7 +357,8 @@ td.no-records {
 
   .attendance-table td {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
+    justify-content: flex-start;
     align-items: center;
     padding: 0.5rem;
     border-bottom: 1px solid #444;
@@ -504,3 +505,127 @@ td.no-records {
 .overtime {
   color: yellow;
 }
+
+/* Modal Backdrop */
+.location-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Box */
+.location-modal {
+  background: #1e1e2f;
+  color: #fff;
+  padding: 20px 25px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+/* Modal header info */
+.location-modal-info {
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  opacity: 0.8;
+  p{
+    margin-bottom: .5rem;
+  }
+}
+
+/* Form fields */
+.location-modal .filter-item {
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.location-modal select,
+.location-modal input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2a2a3d;
+  color: white;
+  outline: none;
+}
+
+.location-modal select:focus,
+.location-modal input:focus {
+  border-color: #4cafef;
+}
+
+/* Modal actions */
+.location-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.location-modal-actions .btn.cancel {
+  background: #555;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.location-modal-actions .btn.main {
+  background: #4cafef;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+}
+
+/* Success/Error messages */
+.location-message {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.success-msg {
+  color: #4caf50;
+}
+
+.error-msg {
+  color: #ff6b6b;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;             /* Circle size */
+  height: 24px;
+  border-radius: 50%;       /* Make it circular */
+  background-color: white;  
+  border: none;
+  cursor: pointer;
+  margin-left: 6px;         /* Space from location text */
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.icon-btn i {
+  color: #000;   /* Primary color */
+  font-size: 12px;  /* Adjust icon size */
+}
+

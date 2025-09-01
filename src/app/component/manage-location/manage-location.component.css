@@ -37,7 +37,42 @@
     gap: 1rem;
     width: 100%;
     align-items: center;
+    padding: 1rem;
+    background: #000;
+    border-radius: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
   }
+
+  .filter-panel-sub .filter-group {
+    border-radius: unset;
+    background: unset;
+    /* padding: unset; */
+    flex-direction: row;
+    align-items: center;
+}
+.add-loc{
+  display: flex;
+  gap: 1rem ;
+  align-items: center;
+}
+
+.add-loc input {
+  max-width: 14rem;
+}
+.add-btn:disabled {
+  background: #cccccc;
+  color: #ffff;
+  cursor: not-allowed;
+}
+
+.driver-message {
+  margin-top: 6px;
+  color: #ff9800;  /* amber warning tone */
+  font-size: 0.85rem;
+  /* font-style: italic; */
+  padding-left: 1rem;
+}
   
   .filter-item {
     display: flex;
@@ -158,7 +193,6 @@
   /* === NO DATA === */
   .no-records {
     text-align: center;
-    color: #aaa;
     padding: 1rem;
   }
   
@@ -209,6 +243,7 @@
     color: #ff6b6b;
     font-size: 0.8rem;
     margin-top: 4px;
+    padding-left: 1rem;
   }
   
   /* === RESPONSIVE TABLE === */
@@ -254,7 +289,17 @@
       border-bottom: none;
     }
 
-    input.ng-untouched.ng-pristine.ng-valid ,button{
+    input[type="text"],input[type="number"]{
         width: 100%;
+    }
+    .filter-panel-sub input{
+      width: 100%;
+    }
+    .add-loc {
+      flex-direction: column;
+      width: 100%;
+    }
+    .add-loc input[type="text"], .add-loc button {
+      width: 100%;
     }
   }

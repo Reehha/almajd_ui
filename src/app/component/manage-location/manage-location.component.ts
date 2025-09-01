@@ -3,6 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrganizationService, Location } from '../../services/organization.service';
 
+// Form-only shape that allows blank travel time for placeholder UX
+interface NewLocation {
+  locationName: string;
+  travelTime: number | null;
+}
+
 @Component({
   selector: 'app-manage-location',
   standalone: true,
@@ -12,15 +18,19 @@ import { OrganizationService, Location } from '../../services/organization.servi
 })
 export class ManageLocationComponent implements OnInit {
   locations: (Location & { isEditing?: boolean })[] = [];
-  newLocation = { locationName: '', travelTime: 0 };
-  showAddLocation = false;  // expandable form
+  newLocation: NewLocation = { locationName: '', travelTime: null };
+  showAddLocation = false;
   error = '';
   loading = false;
   filters = { locationName: '', locationId: '' };
   filteredLocations: (Location & { isEditing?: boolean })[] = [];
+  private readonly TRIP_PREFIX = 'TRIP_';
+  driverLocationMessage: string | null = null;
 
   addTouchedName = false;
   addTouchedTravel = false;
+  isDriverLocation = false;
+  editingIsDriverLocation: { [id: string]: boolean } = {};
 
   // Pagination
   currentPage = 1;
@@ -33,18 +43,82 @@ export class ManageLocationComponent implements OnInit {
     this.loadLocations();
   }
 
+  private showSuccess(msg: string): void {
+    alert(msg);
+  }
 
   // ---------- Toggle Add Location ----------
   toggleAddLocation(): void {
     this.showAddLocation = !this.showAddLocation;
     if (!this.showAddLocation) {
-      this.newLocation = { locationName: '', travelTime: 0 };
+      this.newLocation = { locationName: '', travelTime: null }; // reset to placeholder state
       this.error = '';
       this.addTouchedName = this.addTouchedTravel = false;
     }
   }
 
-  // ---------- Add Location ----------
+  // ---------- Reusable Driver Location Logic ----------
+  private enforceDriverLocation(input: any, loc: { locationName: string; travelTime: number | null }): void {
+    // Ensure prefix
+    if (!loc.locationName.startsWith(this.TRIP_PREFIX)) loc.locationName = this.TRIP_PREFIX;
+
+    // Keep only digits after prefix
+    const digits = loc.locationName.replace(/^TRIP_/, '').replace(/\D/g, '');
+    loc.locationName = this.TRIP_PREFIX + digits;
+
+    // Travel time = 0
+    loc.travelTime = 0;
+
+    // Cursor after prefix
+    setTimeout(() => {
+      const inputEl: HTMLInputElement = input;
+      inputEl.setSelectionRange(loc.locationName.length, loc.locationName.length);
+    });
+  }
+
+  // ---------- Add Location Handlers ----------
+  onDriverLocationFocus(event: any): void {
+    if (this.isDriverLocation) this.enforceDriverLocation(event.target, this.newLocation);
+  }
+
+  onDriverLocationInput(event: any): void {
+    if (this.isDriverLocation) this.enforceDriverLocation(event.target, this.newLocation);
+    this.updateAddError();
+  }
+
+  onDriverLocationKeydown(event: KeyboardEvent): void {
+    if (!this.isDriverLocation) return;
+    const inputEl = event.target as HTMLInputElement;
+    if (
+      (event.key === 'Backspace' && inputEl.selectionStart! <= this.TRIP_PREFIX.length) ||
+      (event.key === 'Delete' && inputEl.selectionStart! < this.TRIP_PREFIX.length)
+    ) {
+      event.preventDefault();
+    }
+  }
+
+  allowOnlyNumbers(event: KeyboardEvent): void {
+    if (!this.isDriverLocation) return;
+    const isDigit = /\d/.test(event.key);
+    if (!isDigit && event.key !== 'Backspace' && event.key !== 'Delete') event.preventDefault();
+  }
+
+  onDriverCheckboxChange(): void {
+    if (this.isDriverLocation) {
+      this.driverLocationMessage = 
+        `For driver locations: The location name must start with '<b><i>${this.TRIP_PREFIX}</i></b>' and travel time will be 0.`;
+      this.newLocation.travelTime = 0;
+      if (!this.newLocation.locationName.startsWith(this.TRIP_PREFIX)) 
+        this.newLocation.locationName = this.TRIP_PREFIX;
+    } else {
+      this.driverLocationMessage = null;
+    }
+  }
+  
+  preventCut(event: ClipboardEvent) {
+    event.preventDefault(); // blocks cut
+  }
+
   onAddBlur(field: 'name' | 'travel'): void {
     if (field === 'name') this.addTouchedName = true;
     if (field === 'travel') this.addTouchedTravel = true;
@@ -58,10 +132,22 @@ export class ManageLocationComponent implements OnInit {
   private updateAddError(): void {
     const name = this.newLocation.locationName.trim();
 
-    if (this.addTouchedName && !name) { this.error = 'Location name cannot be empty'; return; }
-    if (this.addTouchedTravel && (this.newLocation.travelTime === null || this.newLocation.travelTime < 0)) { 
-      this.error = 'Travel time must be positive'; return; 
+    if (this.addTouchedName && !name) {
+      this.error = 'Location name cannot be empty';
+      return;
     }
+
+    if (this.isDriverLocation) {
+      if (!name.startsWith(this.TRIP_PREFIX)) { this.error = 'Driver location name must start with TRIP_'; return; }
+      const suffix = name.substring(this.TRIP_PREFIX.length);
+      if (!suffix || isNaN(Number(suffix))) { this.error = 'Driver location name must be in format TRIP_<number>. eg TRIP_1'; return; }
+    }
+
+    if (!this.isDriverLocation && this.addTouchedTravel && (this.newLocation.travelTime === null || this.newLocation.travelTime < 0)) {
+      this.error = 'Travel time must be positive';
+      return;
+    }
+
     if (name && this.locations.some(l => l.locationName.toLowerCase() === name.toLowerCase())) {
       this.error = 'Location name already exists';
       return;
@@ -72,36 +158,44 @@ export class ManageLocationComponent implements OnInit {
 
   canAddLocation(): boolean {
     const name = this.newLocation.locationName.trim();
+    if (this.error) return false;
+
+    if (this.isDriverLocation) {
+      const suffix = name.substring(this.TRIP_PREFIX.length);
+      return this.showAddLocation &&
+             name.startsWith(this.TRIP_PREFIX) &&
+             !!suffix && !isNaN(Number(suffix)) &&
+             !this.locations.some(l => l.locationName.toLowerCase() === name.toLowerCase());
+    }
+
+    // Use ?? 0 to avoid TS error with number|null while keeping previous behavior (blank treated as 0)
+    const travelOk = (this.newLocation.travelTime ?? 0) >= 0;
     return this.showAddLocation &&
            !!name &&
-           this.newLocation.travelTime >= 0 &&
+           travelOk &&
            !this.locations.some(l => l.locationName.toLowerCase() === name.toLowerCase());
   }
 
   addLocation(): void {
     if (!this.canAddLocation()) { this.onAddBlur('name'); return; }
+    if (!confirm(`Are you sure you want to add location "${this.newLocation.locationName}"?`)) return;
 
-    if (!confirm(`Are you sure you want to add location "${this.newLocation.locationName}"?`)) {
-      return;
-    }
-
+    // Normalize null -> 0 for API contract
     const payload = {
       locationName: this.newLocation.locationName.trim(),
-      travelTime: this.newLocation.travelTime
+      travelTime: this.newLocation.travelTime ?? 0
     };
-  
     this.orgService.createLocation(payload).subscribe({
       next: (res) => {
         this.locations.push({ ...res, isEditing: false });
-        this.newLocation = { locationName: '', travelTime: 0 };
+        this.newLocation = { locationName: '', travelTime: null }; // reset to placeholder state
         this.addTouchedName = this.addTouchedTravel = false;
         this.error = '';
         this.showAddLocation = false;
-        this.applyFilters(false); // 🔹 refresh filter + pagination
+        this.applyFilters(false);
+        this.showSuccess(`Location "${payload.locationName}" has been successfully added.`);
       },
-      error: () => {
-        this.error = 'Failed to add location';
-      }
+      error: () => { this.error = 'Failed to add location'; }
     });
   }
 
@@ -110,79 +204,96 @@ export class ManageLocationComponent implements OnInit {
     loc.isEditing = true;
     (loc as any).originalName = loc.locationName;
     (loc as any).originalTravel = loc.travelTime;
+    this.editingIsDriverLocation[loc.locationId] = loc.locationName.startsWith(this.TRIP_PREFIX);
+    if (this.editingIsDriverLocation[loc.locationId]) loc.travelTime = 0;
     this.error = '';
+  }
+
+  onEditDriverLocationFocus(event: any, loc: Location & { isEditing?: boolean }): void {
+    if (this.editingIsDriverLocation[loc.locationId]) this.enforceDriverLocation(event.target, loc);
+  }
+
+  onEditDriverLocationInput(event: any, loc: Location & { isEditing?: boolean }): void {
+    if (this.editingIsDriverLocation[loc.locationId]) this.enforceDriverLocation(event.target, loc);
+    this.onEditBlur(loc);
+  }
+
+  onEditDriverLocationKeydown(event: KeyboardEvent, loc: Location & { isEditing?: boolean }): void {
+    if (!this.editingIsDriverLocation[loc.locationId]) return;
+    const inputEl = event.target as HTMLInputElement;
+    if (
+      (event.key === 'Backspace' && inputEl.selectionStart! <= this.TRIP_PREFIX.length) ||
+      (event.key === 'Delete' && inputEl.selectionStart! < this.TRIP_PREFIX.length)
+    ) {
+      event.preventDefault();
+    }
   }
 
   onEditBlur(loc: Location & { isEditing?: boolean }): void {
     const name = loc.locationName.trim();
+    const isDriver = this.editingIsDriverLocation[loc.locationId];
 
     if (!name) { this.error = 'Location name cannot be empty'; return; }
-    if (loc.travelTime === null || loc.travelTime < 0) { this.error = 'Travel time must be positive'; return; }
-    if (this.locations.some(l => l.locationId !== loc.locationId && l.locationName.toLowerCase() === name.toLowerCase())) {
-      this.error = 'Location name already exists';
-      return;
+    if (isDriver) {
+      if (!name.startsWith(this.TRIP_PREFIX)) { this.error = 'Driver location name must start with TRIP_'; return; }
+      const suffix = name.substring(this.TRIP_PREFIX.length);
+      if (!suffix || isNaN(Number(suffix))) { this.error = 'Driver location name must be in format TRIP_<number>. eg TRIP_1'; return; }
+      loc.travelTime = 0;
+    } else {
+      if ((loc as any).travelTime === null || loc.travelTime < 0) { this.error = 'Travel time must be positive'; return; }
     }
-
+    if (this.locations.some(l => l.locationId !== loc.locationId && l.locationName.toLowerCase() === name.toLowerCase())) {
+      this.error = 'Location name already exists'; return;
+    }
     this.error = '';
   }
 
   saveLocation(loc: Location & { isEditing?: boolean }): void {
     this.onEditBlur(loc);
     if (this.error) return;
-  
+
     const name = loc.locationName.trim();
-  
-    // ✅ check if no changes were made
-    if (
-      name === (loc as any).originalName &&
-      loc.travelTime === (loc as any).originalTravel
-    ) {
-      loc.isEditing = false; // exit edit mode without saving
-      return;
-    }
-  
-    // ✅ confirm only if changes exist
-    if (!confirm(`Save changes to "${name}"?`)) return;
-  
-    this.orgService.updateLocation(loc.locationId, { locationName: name, travelTime: loc.travelTime }).subscribe({
+    if (name === (loc as any).originalName && loc.travelTime === (loc as any).originalTravel) { loc.isEditing = false; return; }
+    if (!confirm(`Are you sure to you want to save changes to this location?`)) return;
+
+    // Normalize in case anything came through as null (defensive)
+    this.orgService.updateLocation(loc.locationId, {
+      locationName: name,
+      travelTime: (loc as any).travelTime ?? 0
+    }).subscribe({
       next: () => {
         loc.isEditing = false;
         loc.locationName = name;
         this.error = '';
         this.updatePaginatedData();
+        this.showSuccess(`Location "${name}" has been successfully updated.`);
       },
       error: () => this.error = 'Failed to update location'
     });
   }
 
-    // ---------- Check for default schedule ----------
-    checkDefaultLocation(locationId: string ): boolean {
-      return locationId =='default'
-    }
+  checkDefaultLocation(locationId: string): boolean {
+    return locationId == 'default';
+  }
 
   deleteLocation(locationId: string): void {
     const loc = this.locations.find(l => l.locationId === locationId);
     if (!loc) return;
-  
     if (!confirm(`Are you sure you want to delete location "${loc.locationName}"?`)) return;
-  
-    // ✅ Optimistic UI update (reflect immediately like Add)
+
     const originalLocations = [...this.locations];
     this.locations = this.locations.filter(l => l.locationId !== locationId);
-    this.applyFilters(false); // keep pagination + filters consistent
-  
+    this.applyFilters(false);
+
     this.orgService.deleteLocation(locationId).subscribe({
-      next: () => {
-        this.error = '';
-      },
+      next: () => { this.error = ''; },
       error: () => {
         this.error = 'Failed to delete location';
-        // ❌ rollback if API fails
         this.locations = originalLocations;
         this.applyFilters(false);
       }
     });
-  }  
+  }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
@@ -195,7 +306,6 @@ export class ManageLocationComponent implements OnInit {
     const total = this.totalPages;
     const current = this.currentPage;
     const range: (number | string)[] = [];
-
     if (total <= 5) {
       for (let i = 1; i <= total; i++) range.push(i);
     } else {
@@ -207,20 +317,17 @@ export class ManageLocationComponent implements OnInit {
       if (current < total - 2) range.push('...');
       range.push(total);
     }
-
     return range;
   }
 
-  isNumber(value: any): value is number {
-    return typeof value === 'number';
-  }
+  isNumber(value: any): value is number { return typeof value === 'number'; }
 
   loadLocations(): void {
     this.loading = true;
     this.orgService.getLocations().subscribe({
       next: (res) => {
         this.locations = res.map(l => ({ ...l, isEditing: false }));
-        this.applyFilters(false); // initialize with all data
+        this.applyFilters(false);
         this.loading = false;
       },
       error: () => {
@@ -230,25 +337,19 @@ export class ManageLocationComponent implements OnInit {
     });
   }
 
-  // ---------- 🔹 Apply Filters ----------
   applyFilters(resetPage = true): void {
     if (resetPage) this.currentPage = 1;
-
     this.filteredLocations = this.locations.filter(loc =>
       (!this.filters.locationName || loc.locationName.toLowerCase().includes(this.filters.locationName.toLowerCase())) &&
       (!this.filters.locationId || String(loc.locationId).includes(this.filters.locationId))
     );
-
     this.updatePaginatedData();
   }
 
-  // ---------- Pagination Helpers ----------
   updatePaginatedData(): void {
     const start = (this.currentPage - 1) * this.pageSize;
     this.paginatedLocations = this.filteredLocations.slice(start, start + this.pageSize);
   }
 
-  get totalPages(): number {
-    return Math.ceil(this.filteredLocations.length / this.pageSize);
-  }
+  get totalPages(): number { return Math.ceil(this.filteredLocations.length / this.pageSize); }
 }

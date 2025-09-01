@@ -30,6 +30,7 @@ export interface AttendanceData {
     status: 'On Time' | 'Short Time' | 'Overtime';
     statusValue?: string | null;
     travelDeduction?: number;
+    locationName?: string;
   }
   
 

@@ -89,6 +89,7 @@ export class MainEmployeeDashboardComponent implements OnInit {
         'Updated Deduction (min)':entry.updatedDeduction,
         Status: entry.status,
         'Overtime Hours': overtimeHours,
+        'Site Location': entry.locationName
       };
     });
   

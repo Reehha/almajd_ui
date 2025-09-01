@@ -22,6 +22,7 @@ export class AttendanceService {
     endDate = this.commonService.formatDateForBackend(endDate);
   
     return this.http.get<AdminAttendanceData[]>(`${this.BASE_ATTENDANCE_URL}/all?start=${startDate}&end=${endDate}`, { headers });
+    // return this.http.get<AdminAttendanceData[]>(`https://mocki.io/v1/a77290a3-d1cd-4c7e-86f0-d8fb04725ccd`);
   }
 
   getMyAttendanceForDate(startDate: string, endDate: string) {
@@ -130,4 +131,31 @@ getAllEmployeeIds(): Observable<string[]> {
       catchError(err => throwError(() => err))
     );
   }
-}
+
+  updateEmployeeLocation(employee: any, newLocationName: string, locationId: string): Observable<any> {
+    const body = {
+      employeeId: employee.employeeId,
+      locationName: newLocationName,
+      locationId: locationId,  // send the correct ID
+      date: employee.date,
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      department: employee.department,
+      designation: employee.designation,
+      punchIn: employee.punchIn,
+      punchOut: employee.punchOut,
+      punchInUpdated: employee.punchInUpdated || employee.punchIn,
+      punchOutUpdated: employee.punchOutUpdated || employee.punchOut,
+      updatedDeduction: employee.updatedDeduction || 0,
+      status: employee.status,
+      statusValue: employee.statusValue || ''
+    };
+  
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      'Content-Type': 'application/json'
+    });
+  
+    return this.http.post(`${this.BASE_ATTENDANCE_URL}/update`, body, { headers });
+  }
+}  

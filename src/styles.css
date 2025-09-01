@@ -106,3 +106,7 @@ td[data-label]::before {
   justify-content: center;
   display: flex;
 }
+
+input:disabled {
+  cursor: not-allowed;
+}
