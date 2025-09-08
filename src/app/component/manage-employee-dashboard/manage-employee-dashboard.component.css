@@ -189,6 +189,8 @@ td[data-label="View"] {
   }
   .dashboard-container{
     border-radius: unset;
+    margin-top: 4rem;
+  
   }
   .dashboard-header {
     flex-direction: column;
@@ -225,7 +227,7 @@ td[data-label="View"] {
   .attendance-table td {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 0.5rem;
     border-bottom: 1px solid #444;
   }

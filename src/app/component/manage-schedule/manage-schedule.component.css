@@ -251,5 +251,8 @@
     .filter-panel button,input{
         width: 100%;
     }
+    .dashboard-container {
+      margin-top: 4rem;
+    }
   }
   

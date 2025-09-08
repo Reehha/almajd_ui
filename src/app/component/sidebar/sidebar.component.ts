@@ -24,6 +24,7 @@ interface NavItem {
 export class SidebarComponent {
 
   isfirstTimeLogIn: boolean = false;
+  menuOpen = false;
 
   constructor(
     public readonly router: Router,
@@ -42,6 +43,10 @@ export class SidebarComponent {
     ).subscribe(() => this.cd.markForCheck());
   }
 
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+  
   navItems: NavItem[] = [
     { icon: 'home', label: 'Home', link: '/admin-dashboard', visible: () => this.loginService.hasAnyRole(['admin']) },
     { icon: 'home', label: 'Home', link: '/employee-dashboard', visible: () => this.loginService.hasAnyRole(['employee']) },
@@ -68,7 +73,7 @@ export class SidebarComponent {
      },
     { icon: 'calendar-minus', label: 'Leave', link: '/under-construction', visible: () => this.loginService.hasAnyRole(['employee']) && !this.isfirstTimeLogIn },
     { icon: 'calendar-check', label: 'Mark attendance', link: '/log-attendance', visible: () => this.loginService.hasAnyRole(['employee']) && !this.isfirstTimeLogIn },
-    { icon: 'sign-out-alt', label: 'Logout', action: () => this.logout(), visible: () => true }
+    // { icon: 'sign-out-alt', label: 'Logout', action: () => this.logout(), visible: () => true }
   ];
 
   public get visibleNavItems(): NavItem[] {
@@ -80,7 +85,27 @@ export class SidebarComponent {
     this.router.navigate([cleanLink]);
   }
 
-  private logout(): void {
+  // Add at the top of the class
+openSubmenus = new Set<number>();
+
+toggleSubmenu(index: number, hasSubItems: number | undefined, item: NavItem) {
+  if (hasSubItems) {
+    // toggle submenu for mobile
+    if (this.openSubmenus.has(index)) {
+      this.openSubmenus.delete(index);
+    } else {
+      this.openSubmenus.clear(); // close others
+      this.openSubmenus.add(index);
+    }
+  } else if (item.link) {
+    // if no subItems, navigate directly
+    this.navigateTo(item.link);
+  } else if (item.action) {
+    item.action();
+  }
+}
+
+  public logout(): void {
     const confirmed = window.confirm('Are you sure you want to logout?');
     if (!confirmed) {
       return; // Cancel logout
@@ -89,4 +114,10 @@ export class SidebarComponent {
       this.router.navigate(['/login']).then(() => this.cd.markForCheck());
     });
   }
+  onSubmenuClick(link: string) {
+    this.navigateTo(link);       // navigate to link
+    this.menuOpen = false;       // close the mobile menu
+    this.openSubmenus.clear();   // close all submenus
+  }
+  
 }

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AttendanceService } from '../../services/attendance.service';
-import { RegistrationService } from '../../services/registration.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceChartComponent } from '../attendance-chart/attendance-chart.component';
@@ -49,17 +48,21 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private router: Router,
     private attendanceService: AttendanceService,
-    private registrationService: RegistrationService,
     private organizationService: OrganizationService,
   ) {}
 
   ngOnInit() {
-    this.attendanceService.getAllEmployeeIds().subscribe(ids => {
-      this.allEmployeeIds = ids;
-      this.onDateFilter(); 
+    this.attendanceService.getAllEmployeeIds().subscribe((employees: any[]) => {
+      console.log(employees)
+      this.allEmployeeIds = employees
+        .filter(e => (e.designation?.toLowerCase() !== 'test_admin'))
+        .map(e => e.employeeId);
+        console.log(this.allEmployeeIds)
+  
+      this.onDateFilter();
     });
   }
-
+  
   // EXPORT TO EXCEL
   exportToExcel(): void {
     const exportData = this.filteredData.map(entry => {
@@ -76,7 +79,11 @@ export class AdminDashboardComponent implements OnInit {
         Organization: entry.organization,
         'Punch In': punchIn,
         'Punch Out': punchOut,
-        'Updated Deduction (mins)': entry.updatedDeduction || '0',
+        'Updated Deduction (mins)': entry.updatedDeduction
+          ? `${
+              (parseInt(entry.updatedDeduction.replace(/\D/g, ''), 10) || 0) * 2
+            } mins`
+          : '0',
         Status: entry.status,
         'Overtime Hours': overtimeHours,
         'Site Location': entry.locationName || '-',
@@ -107,12 +114,17 @@ export class AdminDashboardComponent implements OnInit {
     this.attendanceService.getAttendanceData(this.startDate, this.endDate).subscribe({
       next: (resp) => {
         const data = (resp as any).data ?? resp;
-        this.rawData = data;
+  
+        // Filter out test_admin entries
+        this.rawData = data.filter((entry: any) => 
+          (entry.designation || '').toLowerCase() !== 'test_admin'
+        );
+  
         this.applyFilters();
       },
       error: (err) => console.error('Failed to fetch attendance data:', err),
     });
-  }
+  }  
 
   // APPLY FILTERS
   applyFilters() {
@@ -140,24 +152,42 @@ export class AdminDashboardComponent implements OnInit {
   // CALCULATE COUNTS INCLUDING ABSENTEES
   calculateCounts(data: any[]) {
     const counts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0 };
-    const uniqueEmpIds = new Set<string>();
-
+    const empStatusMap = new Map<string, string>();
+  
+    // Aggregate the latest status per employee, ignoring test_admin
     data.forEach(entry => {
-      if (!entry.status || !entry.employeeId) return;
-      const status = entry.status.toLowerCase();
-      switch (status) {
-        case 'on time': counts.onTime++; break;
-        case 'short time': counts.shortTime++; break;
-        case 'overtime': counts.overTime++; break;
+      if (!entry.employeeId) return;
+  
+      const designation = (entry.designation || '').toLowerCase();
+      if (designation === 'test_admin') return; // skip test_admin
+  
+      // Keep latest status for employee
+      if (entry.status) {
+        empStatusMap.set(entry.employeeId, entry.status.toLowerCase());
       }
-      uniqueEmpIds.add(entry.employeeId);
     });
-
-    // Fetch all employees to calculate absent count
-    counts.absent = this.allEmployeeIds.filter(id => !uniqueEmpIds.has(id)).length;
-  this.totalEmployees = this.allEmployeeIds.length;
-  this.initialCounts = { ...counts };
-  }
+  
+    // Count attendance categories
+    empStatusMap.forEach(status => {
+      switch (status) {
+        case 'on time':
+          counts.onTime++;
+          break;
+        case 'short time':
+          counts.shortTime++;
+          break;
+        case 'overtime':
+          counts.overTime++;
+          break;
+      }
+    });
+  
+    // Absent = allEmployeeIds minus employees who have any attendance
+    counts.absent = this.allEmployeeIds.filter(id => !empStatusMap.has(id)).length;
+  
+    this.totalEmployees = this.allEmployeeIds.length;
+    this.initialCounts = { ...counts };
+  }  
 
   openLocationDialog(entry: any) {
     this.selectedEmployee = entry;

@@ -42,7 +42,7 @@ export class ManageEmployeeDashboardComponent implements OnInit, OnDestroy {
     this.loadPersistedState();
 
     this.employeeService.getAllEmployees().subscribe((res) => {
-      this.employees = res.data;
+      this.employees = res.data.filter((emp: { designation: string }) => emp.designation !== 'Test_admin');
       this.filterDepartment();
       this.filterRoles();
 

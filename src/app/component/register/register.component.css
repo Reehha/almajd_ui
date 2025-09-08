@@ -6,6 +6,7 @@
     max-width: 800px;
     margin: 0 auto;
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    margin-top: 4rem;
   }
   
   .register-title {
@@ -133,6 +134,7 @@
   @media (max-width:480px) {
     .register-container{
       border-radius: unset;
+      margin-top: 4rem;
     }
 
   }

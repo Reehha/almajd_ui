@@ -302,4 +302,7 @@
     .add-loc input[type="text"], .add-loc button {
       width: 100%;
     }
+    .dashboard-container {
+      margin-top: 4rem;
+    }
   }

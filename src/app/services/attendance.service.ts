@@ -61,7 +61,7 @@ getAllEmployeeIds(): Observable<string[]> {
   const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
   return this.http.get<any>(`${environment.api}/employee/names`, { headers }).pipe(
-    map(response => (response.data || []).map((emp: any) => emp.employeeId))
+    map(response => response.data || [])
   );
 }
 

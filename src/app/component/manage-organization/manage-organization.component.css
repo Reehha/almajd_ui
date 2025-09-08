@@ -317,6 +317,9 @@
   .btn{
     width: 100%;
   }
+  .dashboard-container {
+    margin-top: 4rem;
+}
 }
 
 /* === SCHEDULE COLUMN BREAK === */

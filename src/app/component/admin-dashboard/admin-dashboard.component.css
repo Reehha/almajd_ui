@@ -11,7 +11,7 @@ html, body {
 
 /* === CONTAINER === */
 .dashboard-container {
-  padding: 1rem;
+  padding: 2rem;
   background-color: #1a1a1a;
   border-radius: 10px;
   max-width: 1200px;
@@ -138,7 +138,7 @@ html, body {
 /* --- Consistent filter panel styling --- */
 .filter-panel {
   background-color: #1c1c1e;
-  padding: 1rem;
+  /* padding: 1rem; */
   border-radius: 10px;
   margin-bottom: 1rem;
   display: flex;
@@ -326,6 +326,9 @@ td.no-records {
     flex-direction: column;
   }
 
+  .dashboard-container {
+    margin-top: 4rem;
+  }
   .scan-btn,
   .filter-btn,
   .filter-item button {

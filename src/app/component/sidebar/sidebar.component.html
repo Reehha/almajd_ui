@@ -1,30 +1,45 @@
-<nav class="sidebar">
-  <ul class="nav-list">
-    <ng-container *ngFor="let item of visibleNavItems">
-      <li
-        class="nav-item"
-        [ngClass]="{
-          'has-submenu': item.subItems?.length,
-          'scan-qr-style': item.label === 'Scan QR'
-        }"
-        (click)="item.link && !item.subItems?.length ? navigateTo(item.link) : item.action?.()"
-      >
-        <div class="nav-icon">
-          <i [class]="'fas fa-' + item.icon"></i>
+<nav class="topbar">
+  <!-- Logo -->
+  <div class="logo" (click)="navigateTo('/')">
+    <img src="../../../assets/img/almajd-no-bg.png" alt="Logo" />
+  </div>
+
+  <!-- Hamburger (mobile only) -->
+  <div class="hamburger" (click)="toggleMenu()">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <!-- Navigation items -->
+  <ul class="nav-list" [class.open]="menuOpen">
+    <ng-container *ngFor="let item of visibleNavItems; let i = index">
+      <li class="nav-item" [ngClass]="{'has-submenu': item.subItems?.length}">
+        <div class="nav-main" 
+             (click)="toggleSubmenu(i, item.subItems?.length, item)">
+          <div class="nav-icon"><i [class]="'fas fa-' + item.icon"></i></div>
+          <span class="nav-label">{{ item.label }}</span>
+          <i *ngIf="item.subItems?.length" 
+             class="fas" 
+             [ngClass]="openSubmenus.has(i) ? 'fa-chevron-up' : 'fa-chevron-down'">
+          </i>
         </div>
-        <span class="nav-label">{{ item.label }}</span>
 
         <!-- Submenu -->
-        <ul *ngIf="item.subItems?.length" class="submenu" [ngClass]="item.label.toLowerCase()" >
-          <li
-            *ngFor="let sub of item.subItems"
-            (click)="navigateTo(sub.link); $event.stopPropagation()" 
-          >
+        <ul *ngIf="item.subItems?.length && openSubmenus.has(i)" class="submenu">
+          <li *ngFor="let sub of item.subItems" 
+              (click)="onSubmenuClick(sub.link)">
             {{ sub.label }}
           </li>
         </ul>
       </li>
     </ng-container>
   </ul>
+
+  <!-- Settings / Logout -->
+  <div class="settings">
+    <i class="fas fa-cog"></i>
+    <ul class="settings-menu">
+      <li (click)="navigateTo('/under-construction')">Settings</li>
+      <li (click)="logout()">Logout</li>
+    </ul>
+  </div>
 </nav>
-  
