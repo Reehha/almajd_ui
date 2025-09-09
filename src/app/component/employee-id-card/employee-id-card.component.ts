@@ -18,6 +18,7 @@ export class EmployeeIdCardComponent implements OnInit {
     id: '',
     firstname: '',
     lastname: '',
+    organization: '',
     employeePhotoUrl: '../../../assets/img/upload_profile.png'
   };
 
@@ -27,6 +28,7 @@ export class EmployeeIdCardComponent implements OnInit {
   qrData = '';
   employeePhotoUrl: string = ''; // Base64 or uploaded image URL
   imageBase64: string = '../../../assets/img/upload_profile.png';
+  companyLogo: string = '';
 
   onPhotoSelected(event: Event): void {
     const fileInput = event.target as HTMLInputElement;
@@ -69,6 +71,9 @@ export class EmployeeIdCardComponent implements OnInit {
       this.employee.id = params.get('employeeId') || '';
       this.employee.firstname = decodeURIComponent(params.get('firstName') || '');
       this.employee.lastname = decodeURIComponent(params.get('lastName') || '');
+      this.employee.organization = decodeURIComponent(params.get('organization') || '');
+
+      this.setCompanyLogo(); 
     });
     if (this.employee?.id) {
       this.qrData = await this.qrService.generateQRCode(this.employee.id);
@@ -94,6 +99,16 @@ export class EmployeeIdCardComponent implements OnInit {
     }
   }
 
+  setCompanyLogo(): void {
+    const org = (this.employee.organization || '').toLowerCase().trim();
+  
+    if (org === 'build max building maintenance llc') {
+      this.companyLogo = '../../../assets/img/build-max-logo.jpg';
+    } else {
+      this.companyLogo = '../../../assets/img/almajd.jpg';
+    }
+  }  
+  
   downloadBothAsPdf(): void {
     const frontCard = document.querySelectorAll('.id-card')[0] as HTMLElement;
     const backCard = document.querySelectorAll('.id-card')[1] as HTMLElement;

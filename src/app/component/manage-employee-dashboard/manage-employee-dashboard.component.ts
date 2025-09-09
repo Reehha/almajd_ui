@@ -212,13 +212,14 @@ export class ManageEmployeeDashboardComponent implements OnInit, OnDestroy {
   }
 
   generateIdCard(employee: any): void {
-    const { employeeId, firstName, lastName } = employee;
+    const { employeeId, firstName, lastName, organization } = employee;
 
     this.router.navigate([
       '/employee-id-card',
       employeeId,
       encodeURIComponent(firstName),
-      encodeURIComponent(lastName)
+      encodeURIComponent(lastName),
+      encodeURIComponent(organization)
     ]);
   }
 }

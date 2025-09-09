@@ -53,11 +53,9 @@ export class AdminDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.attendanceService.getAllEmployeeIds().subscribe((employees: any[]) => {
-      console.log(employees)
       this.allEmployeeIds = employees
         .filter(e => (e.designation?.toLowerCase() !== 'test_admin'))
         .map(e => e.employeeId);
-        console.log(this.allEmployeeIds)
   
       this.onDateFilter();
     });

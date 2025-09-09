@@ -82,7 +82,7 @@ export const routes: Routes = [
     data: { roles: ['admin','employee'] }
   },
   {
-    path: 'employee-id-card/:employeeId/:firstName/:lastName',
+    path: 'employee-id-card/:employeeId/:firstName/:lastName/:organization',
     component: EmployeeIdCardComponent,
     canActivate: [AuthGuard],
     data: { roles: ['admin'] }
