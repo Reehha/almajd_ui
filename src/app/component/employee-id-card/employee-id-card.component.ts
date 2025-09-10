@@ -101,13 +101,24 @@ export class EmployeeIdCardComponent implements OnInit {
 
   setCompanyLogo(): void {
     const org = (this.employee.organization || '').toLowerCase().trim();
+    let logoPath = '';
   
     if (org === 'build max building maintenance llc') {
-      this.companyLogo = '../../../assets/img/build-max-logo.jpg';
+      logoPath = '../../../assets/img/build-max-logo.jpg';
     } else {
-      this.companyLogo = '../../../assets/img/almajd.jpg';
+      logoPath = '../../../assets/img/almajd.jpg';
     }
-  }  
+  
+    // Convert logo to base64 so html2canvas can capture it
+    fetchImageAsBase64(logoPath)
+      .then((base64) => {
+        this.companyLogo = base64;
+      })
+      .catch((err) => {
+        console.error('Error loading company logo:', err);
+        this.companyLogo = logoPath; // fallback
+      });
+  } 
   
   downloadBothAsPdf(): void {
     const frontCard = document.querySelectorAll('.id-card')[0] as HTMLElement;
