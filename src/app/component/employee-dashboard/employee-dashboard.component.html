@@ -27,7 +27,7 @@
       </div>
     <div class="overview-chart">
       <!-- <h3>Attendance Chart</h3> -->
-        <div *ngIf="!noData; else noDataTemplate " style="padding: 0 5rem;">
+        <div *ngIf="!noData; else noDataTemplate " >
           <canvas id="attendanceChart"></canvas>
         </div>
       
@@ -67,53 +67,86 @@
             <th>Date</th>
             <th>Punch In</th>
             <th>Punch Out</th>
+            <th>Work Hours</th>
             <th>Status</th>
             <th>Site Location</th>
+            <th>Info</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="filteredData.length === 0">
-            <td colspan="4" class="no-records">No records found</td>
+            <td colspan="6" class="no-records">No records found</td>
           </tr>
-          <tr *ngFor="let row of filteredData">
-            <td data-label="Date">{{ formatDate(row.date) }}</td>
         
-            <td data-label="Punch In">
-              <ng-container *ngIf="row.punchInUpdated != row.punchIn; else normalIn">
-                {{ row.punchInUpdated }} <span class="up-arrow">↑</span> [ {{ row.updatedDeduction || '-' }} ]
-              </ng-container>
-              <ng-template #normalIn>{{ row.punchIn || '-' }}</ng-template>
-            </td>
-        
-            <td data-label="Punch Out">
-              <ng-container *ngIf="row.punchOutUpdated != row.punchOut; else normalOut">
-                {{ row.punchOutUpdated }} <span class="down-arrow">↓</span> [ {{ row.updatedDeduction || '-' }} ]
-              </ng-container>
-              <ng-template #normalOut>{{ row.punchOut || '-' }}</ng-template>
-            </td>
-        
-            <td data-label="Status" [ngStyle]="getColor(row.status)">
-              <strong>
-                <ng-container [ngSwitch]="row.status">
-                  <span *ngSwitchCase="'On Time'">On Time</span>
-                  <span *ngSwitchCase="'Overtime'">Over Time <span class="overtime-hours">[ {{ row.statusValue || '-' }} ]</span></span>
-                  <span *ngSwitchCase="'Short Time'">Short Time <span class="shorttime-hours">[ {{ row.statusValue || '-' }} ]</span></span>
-                  <span *ngSwitchDefault>{{ row.status }}</span>
-                </ng-container>
-              </strong>
-            </td>
-            <td data-label="Site Location">
-              {{ row.locationName || '-' }}
-            </td>
-          </tr>
-        </tbody>        
-        <ng-template #noRecords>
-          <tbody>
+          <ng-container *ngFor="let row of filteredData; let i = index">
+            <!-- Main row -->
             <tr>
-              <td colspan="4" class="no-records">No attendance records found</td>
+              <td data-label="Date">{{ formatDate(row.date) }}</td>
+        
+              <td data-label="Punch In">
+                <ng-container *ngIf="row.punchInUpdated != row.punchIn; else normalIn">
+                  {{ row.punchInUpdated }} <span class="up-arrow">↑</span> [ {{ row.updatedDeduction || '-' }} ]
+                </ng-container>
+                <ng-template #normalIn>{{ row.punchIn || '-' }}</ng-template>
+              </td>
+        
+              <td data-label="Punch Out">
+                <ng-container *ngIf="row.punchOutUpdated != row.punchOut; else normalOut">
+                  {{ row.punchOutUpdated }} <span class="down-arrow">↓</span> [ {{ row.updatedDeduction || '-' }} ]
+                </ng-container>
+                <ng-template #normalOut>{{ row.punchOut || '-' }}</ng-template>
+              </td>
+              <td data-label="Work Hours">{{ row.workHours }}</td>
+        
+              <td data-label="Status">
+                <span class="status-tag" [ngClass]="getStatusClass(row.status)">
+                  {{ row.status }}<br>
+                  <span *ngIf="row.statusValue" class="status-value">
+                    {{ row.statusValue }}
+                  </span>
+                </span>
+              </td>                   
+        
+              <td data-label="Site Location">
+                {{ row.locationName || '-' }}
+              </td>
+        
+              <!-- Expand button -->
+              <td data-label="more-info">
+                <button
+                  class="icon-btn expand-btn"
+                  (click)="toggleExpand(i)"
+                  [attr.aria-expanded]="expandedRow === i"
+                  title="View punch details">
+                  <i class="fas" [ngClass]="expandedRow === i ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </button>
+              </td>
             </tr>
-          </tbody>
-        </ng-template>
+        
+            <!-- Expanded row (new row with breaks) -->
+            <tr *ngIf="expandedRow === i" class="expanded-row">
+              <td colspan="6">
+                <div class="expanded-content">
+                  <ng-container *ngIf="row.breaks && getBreakKeys(row.breaks).length > 0; else noBreaks">
+                    <ul>
+                      <li><strong>PUNCH DETAILS</strong></li>
+                      <ul>
+                        <li *ngFor="let key of getBreakKeys(row.breaks)">
+                          {{ row.breaks[key].startTime }} → {{ row.breaks[key].endTime }}
+                        </li>
+                      </ul>
+                    </ul>
+                  </ng-container>
+                  <ng-template #noBreaks>
+                    <p class="no-records">No extra punches recorded</p>
+                  </ng-template>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+        
+        <!-- </ng-template> -->
       </table>
     </div>
 

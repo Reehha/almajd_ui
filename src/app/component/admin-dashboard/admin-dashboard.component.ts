@@ -45,6 +45,18 @@ export class AdminDashboardComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
+  expandedEntryKey: string | null = null;
+
+  statusClassMap: Record<string, string> = {
+    'On Time': 'ontime',
+    'Overtime': 'overtime',
+    'Short Time': 'shorttime'
+  };
+  
+  getStatusClass(status: string): string {
+    return this.statusClassMap[status] || 'unknown';
+  }  
+
   constructor(
     private router: Router,
     private attendanceService: AttendanceService,
@@ -59,6 +71,19 @@ export class AdminDashboardComponent implements OnInit {
   
       this.onDateFilter();
     });
+  }
+  uniqueKey(entry: any): string {
+    return `${entry.employeeId}_${entry.date}`;
+  }
+  
+  toggleBreaks(entry: any) {
+    const key = this.uniqueKey(entry);
+    this.expandedEntryKey = this.expandedEntryKey === key ? null : key;
+  }
+  
+  // helper to iterate object keys in template
+  getBreakKeys(breaks: any): string[] {
+    return breaks ? Object.keys(breaks) : [];
   }
   
   // EXPORT TO EXCEL
@@ -77,6 +102,7 @@ export class AdminDashboardComponent implements OnInit {
         Organization: entry.organization,
         'Punch In': punchIn,
         'Punch Out': punchOut,
+        'Work Hours': entry.workHours || '-',
         'Updated Deduction (mins)': entry.updatedDeduction
           ? `${
               (parseInt(entry.updatedDeduction.replace(/\D/g, ''), 10) || 0) * 2

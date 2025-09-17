@@ -22,7 +22,7 @@ export class AttendanceService {
     endDate = this.commonService.formatDateForBackend(endDate);
   
     return this.http.get<AdminAttendanceData[]>(`${this.BASE_ATTENDANCE_URL}/all?start=${startDate}&end=${endDate}`, { headers });
-    // return this.http.get<AdminAttendanceData[]>(`https://mocki.io/v1/a77290a3-d1cd-4c7e-86f0-d8fb04725ccd`);
+    // return this.http.get<AdminAttendanceData[]>(`https://mocki.io/v1/a3a3bf91-1b4b-4f7d-b395-0c34c8fd0ed4`);
   }
 
   getMyAttendanceForDate(startDate: string, endDate: string) {
@@ -33,6 +33,7 @@ export class AttendanceService {
     endDate = this.commonService.formatDateForBackend(endDate);
   
     return this.http.get<any[]>(`${this.BASE_ATTENDANCE_URL}?start=${startDate}&end=${endDate}`, { headers });
+    // return this.http.get<AdminAttendanceData[]>(`https://mocki.io/v1/a3a3bf91-1b4b-4f7d-b395-0c34c8fd0ed4`);
   }  
 
   getScheduleInfo(): Observable<ScheduleInfo> {

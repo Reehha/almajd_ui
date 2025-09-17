@@ -31,6 +31,13 @@ export interface AttendanceData {
     statusValue?: string | null;
     travelDeduction?: number;
     locationName?: string;
+    breaks?: {
+        [key: string]: {
+          startTime: string;
+          endTime: string;
+        };
+      };
+      workHours:string | 0;
   }
   
 

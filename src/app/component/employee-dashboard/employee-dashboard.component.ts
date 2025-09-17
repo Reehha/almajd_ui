@@ -28,6 +28,7 @@ export class MainEmployeeDashboardComponent implements OnInit {
   chart: any;
   today: string = '';
   dateError: string = '';
+  expandedRow: number | null = null;
 
   userInfo = {
     firstName: '',
@@ -42,6 +43,12 @@ export class MainEmployeeDashboardComponent implements OnInit {
   constructor(private attendanceService: AttendanceService) {
     this.employeeId = localStorage.getItem('employeeId');
   }
+
+  statusClassMap: Record<string, string> = {
+    'On Time': 'ontime',
+    'Overtime': 'overtime',
+    'Short Time': 'shorttime'
+  };
 
   ngOnInit() {
     this.userInfo.firstName = localStorage.getItem('firstName') || '';
@@ -88,6 +95,7 @@ export class MainEmployeeDashboardComponent implements OnInit {
         'Punch Out': punchOutDisplay,
         'Updated Deduction (min)':entry.updatedDeduction,
         Status: entry.status,
+        'Work Hours':entry.workHours,
         'Overtime Hours': overtimeHours,
         'Site Location': entry.locationName
       };
@@ -113,6 +121,15 @@ export class MainEmployeeDashboardComponent implements OnInit {
   
     // Save Excel file
     XLSX.writeFile(workbook, `Attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
+  }
+
+
+  toggleExpand(i: number) {
+    this.expandedRow = this.expandedRow === i ? null : i;
+  }
+
+  getBreakKeys(breaks: any): string[] {
+    return breaks ? Object.keys(breaks) : [];
   }
 
   hasDateError(): boolean {
@@ -292,5 +309,9 @@ export class MainEmployeeDashboardComponent implements OnInit {
         },
       },
     });
+  }
+  
+  getStatusClass(status: string): string {
+    return this.statusClassMap[status] || 'unknown';
   }
 }

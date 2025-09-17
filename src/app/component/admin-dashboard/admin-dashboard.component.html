@@ -77,77 +77,108 @@
           <thead>
             <tr>
               <th>Date</th>
-              <th>EMPLOYEE ID</th>
+              <!-- <th>EMPLOYEE ID</th> -->
               <th>EMPLOYEE Name</th>
               <th>Punch In</th>
               <th>Punch Out</th>
+              <th>Work hours</th>
               <th>Status</th>
-              <th>Site Location</th> 
+              <th>Site Location</th>
+              <th>Info</th> 
             </tr>
           </thead>
           <tbody>
             <tr *ngIf="paginatedData.length === 0">
-              <td colspan="6" class="no-records">No records found</td>
+              <td colspan="8" class="no-records">No records found</td>
             </tr>
-            <tr *ngFor="let entry of paginatedData">
-              <td data-label="Date">{{formatDate(entry.date)}}</td>
-              <td data-label="ID">{{entry.employeeId}}</td>
-              <td data-label="Name">{{entry.firstName}} {{entry.lastName}}</td>
-              <td data-label="Punch In">
-                <ng-container *ngIf="entry.punchInUpdated !=entry.punchIn ; else normalIn">
-                  {{ entry.punchInUpdated }} 
-                  <span class="up-arrow">↑</span> [ {{ entry.updatedDeduction }} ]
-                </ng-container>
-                <ng-template #normalIn>
-                  {{ entry.punchIn || '-' }}
-                </ng-template>
-              </td>
-              
-              <td data-label="Punch Out">
-                <ng-container *ngIf="entry.punchOutUpdated!=entry.punchOut; else normalOut">
-                  {{ entry.punchOutUpdated }} 
-                  <span class="down-arrow">↓</span> [ {{ entry.updatedDeduction }} ]
-                </ng-container>
-                <ng-template #normalOut>
-                  {{ entry.punchOut || '-' }}
-                </ng-template>
-              </td>              
-              <td data-label="Status" [ngClass]="{
-                    'present': entry.status === 'On Time',
-                    'short-time': entry.status === 'Short Time',
-                    'overtime': entry.status === 'Overtime'
-                  }">
-              
-                <!-- On Time -->
-                <ng-container *ngIf="entry.status === 'On Time'">
-                  {{ entry.status }}
-                </ng-container>
-              
-                <!-- Overtime -->
-                <ng-container *ngIf="entry.status === 'Overtime'">
-                  {{ entry.status }}
-                  <span class="overtime-hours">[ {{ entry.statusValue }} ]</span>
-                </ng-container>
-              
-                <!-- Short Time -->
-                <ng-container *ngIf="entry.status === 'Short Time'">
-                  {{ entry.status }}
-                  <span class="shorttime-hours">[ {{ entry.statusValue }} ]</span>
-                </ng-container>
-              </td>
-              <td data-label="Site Location">
-                {{ entry.locationName }}
-                <button class="icon-btn" (click)="openLocationDialog(entry)">
-                  <ng-container *ngIf="entry.designation?.toLowerCase() === 'driver'; else editBtn">
-                    <i class="fas fa-truck delivery-icon"></i>
+          
+            <ng-container *ngFor="let entry of paginatedData; let i = index">
+              <!-- Main row -->
+              <tr>
+                <td data-label="Date">{{formatDate(entry.date)}}</td>
+                <td data-label="Name">{{entry.firstName}}, {{entry.lastName.charAt(0)}}</td>
+          
+                <td data-label="Punch In">
+                  <ng-container *ngIf="entry.punchInUpdated != entry.punchIn; else normalIn">
+                    {{ entry.punchInUpdated }}
+                    <span class="up-arrow">↑</span> [ {{ entry.updatedDeduction }} ]
                   </ng-container>
-                  <ng-template #editBtn>
-                    <i class="fas fa-edit edit-icon"></i>
+                  <ng-template #normalIn>
+                    {{ entry.punchIn || '-' }}
                   </ng-template>
-                </button>
-              </td>                          
-            </tr>
+                </td>
+          
+                <td data-label="Punch Out">
+                  <ng-container *ngIf="entry.punchOutUpdated != entry.punchOut; else normalOut">
+                    {{ entry.punchOutUpdated }}
+                    <span class="down-arrow">↓</span> [ {{ entry.updatedDeduction }} ]
+                  </ng-container>
+                  <ng-template #normalOut>
+                    {{ entry.punchOut || '-' }}
+                  </ng-template>
+                </td>
+          
+                <td>{{ entry.workHours || '-' }}</td>
+          
+                <td data-label="Status">
+                  <span class="status-tag" [ngClass]="getStatusClass(entry.status)">
+                    {{ entry.status }}
+                    <br *ngIf="entry.statusValue" />
+                    <span *ngIf="entry.statusValue" class="status-time">
+                      {{ entry.statusValue }}
+                    </span>
+                  </span>
+                </td>
+                
+          
+                <td data-label="Site Location">
+                  {{ entry.locationName }}
+                  <button class="icon-btn" (click)="openLocationDialog(entry)">
+                    <ng-container *ngIf="entry.designation?.toLowerCase() === 'driver'; else editBtn">
+                      <i class="fas fa-truck delivery-icon"></i>
+                    </ng-container>
+                    <ng-template #editBtn>
+                      <i class="fas fa-edit edit-icon"></i>
+                    </ng-template>
+                  </button>
+                </td>
+          
+                <!-- Expand button -->
+                <td data-label="more-info">
+                  <button
+                    class="icon-btn expand-btn"
+                    (click)="toggleBreaks(entry)"
+                    [attr.aria-expanded]="expandedEntryKey === uniqueKey(entry)"
+                    title="View Punch details">
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                </td>
+              </tr>
+          
+              <!-- Expanded row (new row) -->
+              <tr *ngIf="expandedEntryKey === uniqueKey(entry)" class="expanded-row">
+                <td colspan="8">
+                  <div class="breaks-container">
+                    <ng-container *ngIf="entry.punches && getBreakKeys(entry.punches).length > 0; else noBreaks">
+                      <ul>
+                        <li><strong>PUNCH DETAILS</strong></li>
+                        <ul>
+                          <li *ngFor="let key of getBreakKeys(entry.punches)">
+                            {{ entry.punches[key].startTime }} → {{ entry.punches[key].endTime }}
+                           </li>
+                        </ul>
+                      </ul>
+                    </ng-container>
+                    <ng-template #noBreaks>
+                      <p class="no-records">No extra punches recorded</p>
+                    </ng-template>
+                  </div>
+                </td>
+              </tr>
+          
+            </ng-container>
           </tbody>
+          
         </table>
 <!-- Location Modal -->
 <div class="location-modal-backdrop" *ngIf="showLocationDialog">
