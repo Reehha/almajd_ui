@@ -24,11 +24,53 @@
        <!-- Summary blocks on the right -->
     
        <div class="box-container">
-        <div class="summary-box present"> {{ initialCounts.onTime }} <br><div>On Time</div></div>
-        <div class="summary-box shortTime">{{ initialCounts.shortTime }}<br><div>shortTime</div></div>
-        <div class="summary-box absent">{{ initialCounts.overTime }}<br><div>Over Time</div></div>
-        <div class="summary-box total">{{ initialCounts.absent }}<br><div>Absent</div></div>
-      </div>
+
+        <!-- Present Box -->
+        <div class="summary-box present"
+             (click)="toggleExpand('present')"
+             [class.expanded]="expandedBox === 'present'">
+             
+          <div class="box-header">
+            {{ totalPresent }} <br>
+            <div>Present</div>
+            <span class="chevron" [class.rotate]="expandedBox === 'present'">▼</span>
+          </div>
+      
+          <div class="sub-boxes">
+            <div class="sub-box ontime">
+              {{ initialCounts.onTime }} <br> On Time
+            </div>
+            <div class="sub-box overtime">
+              {{ initialCounts.overTime }} <br> Overtime
+            </div>
+            <div class="sub-box shorttime">
+              {{ initialCounts.shortTime }} <br> Short Time
+            </div>
+          </div>
+        </div>
+      
+        <!-- Absent Box -->
+        <div class="summary-box absent"
+             (click)="toggleExpand('absent')"
+             [class.expanded]="expandedBox === 'absent'">
+      
+          <div class="box-header">
+            {{ initialCounts.absent }} <br>
+            <div>Absent</div>
+            <span class="chevron" [class.rotate]="expandedBox === 'absent'">▼</span>
+          </div>
+      
+          <div class="sub-boxes">
+            <div class="sub-box leave">
+              0<br> On Leave
+            </div>
+            <div class="sub-box uninformed">
+              {{ initialCounts.absent }} <br> Uninformed
+            </div>
+          </div>
+        </div>
+      
+      </div>      
     
 <!-- FILTER PANEL -->
 <div class="filter-panel">
@@ -68,6 +110,15 @@
       <label>End Date</label>
       <input type="date" lang="en-CA" [(ngModel)]="endDate">
     </div>
+    <div class="checkbox-wrapper">
+      <input 
+        type="checkbox" 
+        id="absentOnly" 
+        [(ngModel)]="showAbsentOnly" 
+        (change)="onAbsentToggle()" 
+      />
+      <label for="absentOnly">Show Only Absent</label>
+    </div>
       <div class="filter-apply">
         <button (click)="onDateFilter()" class="btn">Apply</button>
         <button (click)="exportToExcel()" class="btn export-btn">Export Excel</button>
@@ -83,8 +134,9 @@
               <th>Punch Out</th>
               <th>Work hours</th>
               <th>Status</th>
-              <th>Site Location</th>
-              <th>Info</th> 
+              <th *ngIf="!showAbsentOnly">Site Location</th>
+              <th *ngIf="!showAbsentOnly">Info</th>
+
             </tr>
           </thead>
           <tbody>
@@ -118,20 +170,20 @@
                   </ng-template>
                 </td>
           
-                <td>{{ entry.workHours || '-' }}</td>
+                <td data-label="Work Hours">{{ entry.workHours || '-' }}</td>
           
                 <td data-label="Status">
                   <span class="status-tag" [ngClass]="getStatusClass(entry.status)">
                     {{ entry.status }}
                     <br *ngIf="entry.statusValue" />
-                    <span *ngIf="entry.statusValue" class="status-time">
+                    <span *ngIf="entry.statusValue && (entry.status === 'Short Time' || entry.status === 'Overtime')" class="status-time">
                       {{ entry.statusValue }}
                     </span>
                   </span>
                 </td>
                 
           
-                <td data-label="Site Location">
+                <td *ngIf="!showAbsentOnly" data-label="Site Location">
                   {{ entry.locationName }}
                   <button class="icon-btn" (click)="openLocationDialog(entry)">
                     <ng-container *ngIf="entry.designation?.toLowerCase() === 'driver'; else editBtn">
@@ -142,17 +194,13 @@
                     </ng-template>
                   </button>
                 </td>
-          
-                <!-- Expand button -->
-                <td data-label="more-info">
-                  <button
-                    class="icon-btn expand-btn"
-                    (click)="toggleBreaks(entry)"
-                    [attr.aria-expanded]="expandedEntryKey === uniqueKey(entry)"
-                    title="View Punch details">
+                
+                <td *ngIf="!showAbsentOnly" data-label="more-info">
+                  <button class="icon-btn expand-btn" (click)="toggleBreaks(entry)" 
+                          [attr.aria-expanded]="expandedEntryKey === uniqueKey(entry)">
                     <i class="fas fa-chevron-down"></i>
                   </button>
-                </td>
+                </td>             
               </tr>
           
               <!-- Expanded row (new row) -->

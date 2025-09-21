@@ -1,0 +1,29 @@
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .tooltip-box {
+    position: absolute;
+    z-index: 9999; /* stays above everything */
+    background: #333;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  
+  .tooltip-box.visible {
+    opacity: 1;
+  }
+  
+  /* Positions */
+  .tooltip-box.top    { bottom: 100%; left: 50%; transform: translateX(-50%) translateY(-5px); }
+  .tooltip-box.bottom { top: 100%; left: 50%; transform: translateX(-50%) translateY(5px); }
+  .tooltip-box.left   { right: 100%; top: 50%; transform: translateX(-5px) translateY(-50%); }
+  .tooltip-box.right  { left: 100%; top: 50%; transform: translateX(5px) translateY(-50%); }
+  

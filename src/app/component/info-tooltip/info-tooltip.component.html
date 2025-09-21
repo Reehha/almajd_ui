@@ -1,0 +1,12 @@
+<div class="tooltip-container">
+    <ng-content></ng-content>
+    <div class="tooltip-box" 
+         [class.visible]="visible" 
+         [class.top]="position === 'top'"
+         [class.bottom]="position === 'bottom'"
+         [class.left]="position === 'left'"
+         [class.right]="position === 'right'">
+      {{ text }}
+    </div>
+  </div>
+  

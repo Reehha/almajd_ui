@@ -2,13 +2,13 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-// import { InfoTooltipComponent } from '../info-tooltip/info-tooltip.component';
+import { InfoTooltipComponent } from '../info-tooltip/info-tooltip.component';
 import { OrganizationService, EmployeeAllocation } from '../../services/organization.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone:true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule,InfoTooltipComponent],
   templateUrl: './manage-organization.component.html',
   styleUrls: ['./manage-organization.component.css'],
 })
@@ -306,12 +306,17 @@ get pageNumbers(): number[] {
   }
 
   isSelectionDisabled(emp: any) {
+    // Disable if not the latest project
+    if (!emp.isLatest) return true;
+  
+    // Disable if already selected employees have a different start date
     return (
       this.selectedEmployees.length > 0 &&
       emp.projectStartTime.getTime() !==
         this.selectedEmployees[0].projectStartTime.getTime()
     );
   }
+  
 
   formatTime12Hr(time24: string): string {
     if (!time24) return '';
@@ -322,6 +327,7 @@ get pageNumbers(): number[] {
     if (hours === 0) hours = 12;
     return `${hours}:${minutes} ${ampm}`;
   }
+  
   
   openScheduleModal() {
     if (this.selectedEmployees.length > 0) {

@@ -45,11 +45,23 @@
         <thead>
           <tr>
             <th>
-              <!-- <app-info-tooltip message="The checkbox is enabled only when filtered by date"> -->
-              <input type="checkbox" [checked]="selectAllChecked" (change)="toggleSelectAll($event)"
-                [disabled]="!filters.startTime" />
-              <!-- </app-info-tooltip> -->
-            </th>
+              <ng-container *ngIf="!filters.startTime; else enabledSelectAll">
+                <info-tooltip text="This feature is enabled only when filtered by date." position="right">
+                  <input 
+                    type="checkbox" 
+                    [checked]="selectAllChecked" 
+                    (change)="toggleSelectAll($event)" 
+                    disabled />
+                </info-tooltip>
+              </ng-container>
+            
+              <ng-template #enabledSelectAll>
+                <input 
+                  type="checkbox" 
+                  [checked]="selectAllChecked" 
+                  (change)="toggleSelectAll($event)" />
+              </ng-template>
+            </th>                       
             <th>Department</th>
             <th>Schedule</th>
             <th>Employee Name</th>
@@ -65,9 +77,26 @@
           </tr>
           <tr *ngFor="let emp of pagedEmployees">
             <td data-label="Select">
-              <input type="checkbox" [checked]="selectedEmployees.includes(emp)" (change)="toggleSelection(emp)"
-                [disabled]="!emp.isLatest" />
+              <ng-container *ngIf="isSelectionDisabled(emp) || !emp.isLatest; else enabledCheckbox">
+                <info-tooltip 
+                  [text]="!emp.isLatest ? 'Select the recent project of the employee to assign new project.' : 'Project start date differs from other selected employees.'" 
+                  position="right">
+                  <input 
+                    type="checkbox" 
+                    [checked]="selectedEmployees.includes(emp)" 
+                    (change)="toggleSelection(emp)" 
+                    disabled />
+                </info-tooltip>
+              </ng-container>
+            
+              <ng-template #enabledCheckbox>
+                <input 
+                  type="checkbox" 
+                  [checked]="selectedEmployees.includes(emp)" 
+                  (change)="toggleSelection(emp)" />
+              </ng-template>
             </td>
+            
             <td data-label="Department">{{ emp.department }}</td>
             <td class="schedule-column" data-label="Schedule">
               {{ emp.schedule }}

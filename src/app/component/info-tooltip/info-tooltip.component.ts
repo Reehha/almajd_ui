@@ -1,72 +1,66 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-info-tooltip',
+  selector: 'info-tooltip',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <span class="tooltip-container">
-      <ng-content></ng-content>
-      <span class="tooltip-text">{{ message }}</span>
-    </span>
-  `,
-  styles: [`
-    .tooltip-container {
-      position: relative;
-      display: inline-flex; /* changed from inline-block to inline-flex */
-      align-items: center; /* vertically center if checkbox */
-    }
-
-  
-.tooltip.left {
-  left: 0;
-  transform: translateX(-100%);
-}
-
-.tooltip.right {
-  left: 100%;
-  transform: translateX(0);
-}
-    .tooltip-text {
-      visibility: hidden;
-      width: max-content;
-      max-width: 250px;
-      background-color: #333;
-      color: #fff;
-      text-align: left;
-      border-radius: 4px;
-      padding: 6px 10px;
-      position: absolute;
-      z-index: 100;
-      bottom: 125%; /* above the checkbox */
-      left: 50%;
-      transform: translateX(-50%);
-      opacity: 0;
-      font-size: 12px;
-      line-height: 1.4;
-      transition: opacity 0.3s;
-      pointer-events: none; /* avoid interfering with hover */
-      white-space: nowrap; /* prevent wrapping */
-    }
-
-    .tooltip-container:hover .tooltip-text {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    .tooltip-text::after {
-      content: "";
-      position: absolute;
-      top: 100%; /* arrow pointing down */
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: #333 transparent transparent transparent;
-    }
-  `]
+  template: `<ng-content></ng-content>`,
 })
-export class InfoTooltipComponent {
-  @Input() message: string = '';
+export class InfoTooltipComponent implements OnInit, OnDestroy {
+  @Input() text: string = '';
+  @Input() position: 'top' | 'bottom' | 'left' | 'right' = 'top';
+
+  private tooltipEl!: HTMLElement;
+
+  constructor(private host: ElementRef) {}
+
+  ngOnInit(): void {
+    // Create tooltip element
+    this.tooltipEl = document.createElement('div');
+    this.tooltipEl.className = 'global-tooltip';
+    this.tooltipEl.innerText = this.text;
+    document.body.appendChild(this.tooltipEl);
+  }
+
+  @HostListener('mouseenter')
+show() {
+  const hostRect = this.host.nativeElement.getBoundingClientRect();
+  this.tooltipEl.classList.add('show');
+  this.tooltipEl.setAttribute('data-position', this.position);
+
+  const margin = 10; // more spacing
+  switch (this.position) {
+    case 'top':
+      this.tooltipEl.style.left = `${hostRect.left + hostRect.width / 2}px`;
+      this.tooltipEl.style.top = `${hostRect.top - margin}px`;
+      this.tooltipEl.style.transform = 'translate(-50%, -100%)';
+      break;
+    case 'bottom':
+      this.tooltipEl.style.left = `${hostRect.left + hostRect.width / 2}px`;
+      this.tooltipEl.style.top = `${hostRect.bottom + margin}px`;
+      this.tooltipEl.style.transform = 'translate(-50%, 0)';
+      break;
+    case 'left':
+      this.tooltipEl.style.left = `${hostRect.left - margin}px`;
+      this.tooltipEl.style.top = `${hostRect.top + hostRect.height / 2}px`;
+      this.tooltipEl.style.transform = 'translate(-100%, -50%)';
+      break;
+    case 'right':
+      this.tooltipEl.style.left = `${hostRect.right + margin}px`;
+      this.tooltipEl.style.top = `${hostRect.top + hostRect.height / 2}px`;
+      this.tooltipEl.style.transform = 'translate(0, -50%)';
+      break;
+  }
+}
+
+@HostListener('mouseleave')
+hide() {
+  this.tooltipEl.classList.remove('show');
+}
+
+
+  ngOnDestroy(): void {
+    if (this.tooltipEl && document.body.contains(this.tooltipEl)) {
+      document.body.removeChild(this.tooltipEl);
+    }
+  }
 }
