@@ -36,9 +36,9 @@ export const routes: Routes = [
   {
     path: 'scan-qr',
     component: QrScannerComponent,
-    canActivate: [AuthGuard],
-    canDeactivate: [QrScannerExitGuard],
-    data: { roles: [ 'qrScanner'] }
+    // canActivate: [AuthGuard],
+    // canDeactivate: [QrScannerExitGuard],
+    // data: { roles: [ 'qrScanner'] }
   },
   {
     path: 'employee-dashboard',
