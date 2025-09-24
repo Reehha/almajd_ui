@@ -78,8 +78,7 @@ export class AttendanceService {
   punch(req: PunchRequest): Observable<PunchResponse> {
     return this.http.post<PunchResponse>(
       `${this.BASE_ATTENDANCE_URL}/punch`,
-      req,
-      { headers: this.getAuthHeaders() }
+      req
     ).pipe(
       tap(() => {}),
       catchError(err => throwError(() => err))
