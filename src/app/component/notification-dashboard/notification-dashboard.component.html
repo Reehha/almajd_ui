@@ -1,0 +1,118 @@
+<div class="dashboard-container notification-dashboard">
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="send-btn-container" *ngIf="isAdmin">
+      <button class="btn main send-btn" (click)="goToCreateNotification()">Send Notification</button>
+    </div>
+
+    <!-- Filter Panel (Admins only) -->
+<div class="filter-panel" *ngIf="isAdmin && activeTab=='sent'">
+  <!-- <div class="filter-note warning-message">Filters apply to Sent notifications only</div> -->
+  <div class="filter-group">
+
+    <div class="filter-item">
+      <label>Organization</label>
+      <select [(ngModel)]="filters.organization" (ngModelChange)="onFilterChange()">
+        <option value="">All</option>
+        <option *ngFor="let org of dropdowns.organizations" [value]="org">{{ org }}</option>
+      </select>
+    </div>
+    
+    <div class="filter-item">
+      <label>Department</label>
+      <select [(ngModel)]="filters.department" (ngModelChange)="onFilterChange()">
+        <option value="">All</option>
+        <option *ngFor="let dept of dropdowns.departments" [value]="dept">{{ dept }}</option>
+      </select>
+    </div>
+    
+    <div class="filter-item">
+      <label>Designation</label>
+      <select [(ngModel)]="filters.designation" (ngModelChange)="onFilterChange()">
+        <option value="">All</option>
+        <option *ngFor="let desig of dropdowns.designations" [value]="desig">{{ desig }}</option>
+      </select>
+    </div>
+    
+
+  </div>
+</div>
+
+    <div class="search-refresh-container">
+      <input type="text" placeholder="Search notifications..." [(ngModel)]="searchQuery" class="search-bar"/>
+      <button class="refresh-btn" (click)="refreshNotifications()" title="Refresh">
+        <i class="fa fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar button-group">
+    <button [class.active]="activeTab==='all'" (click)="setTab('all')">All</button>
+    <button [class.active]="activeTab==='read'" (click)="setTab('read')">Read</button>
+    <button [class.active]="activeTab==='unread'" (click)="setTab('unread')">Unread</button>
+    <button *ngIf="isAdmin" [class.active]="activeTab==='sent'" (click)="setTab('sent')">Sent</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading notifications...</div>
+
+  <!-- Notification list -->
+  <div class="notification-list">
+    <div class="notification-card"
+         *ngFor="let n of paginatedNotifications"
+         [class.expanded]="expandedId===n.notificationId"
+         (click)="onExpandNotification(n)">
+
+      <!-- Card header -->
+      <div class="card-header">
+        <h4>
+          <span class="notification-icon">{{ n.icon }}</span>
+          {{ n.title }}
+        </h4>
+        <div class="card-actions">
+          <span class="status-dot" *ngIf="!normalizeRead(n.read)" title="Unread"></span>
+        </div>
+      </div>
+
+      <!-- Expanded content -->
+      <div *ngIf="expandedId===n.notificationId" class="card-body">
+        <pre>{{ n.message }}</pre>
+        <br>
+        <!-- Received -->
+        <small *ngIf="!isSent(n)">
+          Sent by {{ getSourceName(n) }} on {{ n.createdAt | date:'dd/MM/yyyy hh:mm a' }}
+        </small>
+        <!-- Sent -->
+        <small *ngIf="isSent(n)">
+          Sent to {{ getRecipientCount(n) }} recipients on {{ n.createdAt | date:'dd/MM/yyyy hh:mm a' }}
+
+        </small>
+
+        <!-- Trash for received -->
+        <span *ngIf="!isSent(n) && n.persistent == false" class="trash-icon" title="Delete" (click)="onDeleteNotification(n, $event)">
+          🗑️
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+       Prev
+    </button>
+  
+    <ng-container *ngFor="let p of visiblePages">
+      <button *ngIf="p !== -1"
+              (click)="goToPage(p)"
+              [class.active]="currentPage === p">
+        {{ p }}
+      </button>
+      <span *ngIf="p === -1">…</span>
+    </ng-container>
+  
+    <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+      Next 
+    </button>
+  </div>
+   
+</div>

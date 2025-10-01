@@ -94,7 +94,7 @@
     </div>
   
     <div class="pagination-container">
-      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
       
       <ng-container *ngFor="let p of paginationRange">
         <button *ngIf="isNumber(p)" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>

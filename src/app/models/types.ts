@@ -65,3 +65,58 @@ export interface AdminAttendanceData {
         status: string
     }
 }
+
+export interface NotificationsApiResponse {
+    status: 'success' | 'error';
+    message?: string;
+    timestamp: string; // ISO 8601
+    data: {
+      notificationReceived: NotificationReceivedItem[];
+      notificationSent: NotificationSentItem[];
+    };
+  }
+  
+  export interface NotificationReceivedItem {
+    notificationId: string;
+    type: string;
+    title: string;
+    message: string;
+    read: boolean | string; // backend may send boolean or string "true"/"false"
+    createdAt: string; // ISO 8601
+    persistent: boolean;
+    source: { id: string; name: string };
+    targetData?: any[] | null;
+    recipients :null;
+    icon?: string;  
+  }
+  
+  export interface NotificationRecipient {
+    id?: string;              
+    employeeId?: string;
+    name?: string;
+    organization?: string;
+    department?: string;
+    designation?: string;
+    status?: string;          
+  }
+  
+  export interface NotificationSentItem {
+    notificationId: string;
+    type: string;
+    title: string;
+    message: string;
+    createdAt: string;
+    persistent: boolean;
+    source: { id: string; name: string };
+    read?: boolean | string;
+    recipients?: NotificationRecipient[];
+    targetData?: any | null;
+    icon?: string;    
+  }
+  
+
+  export type NotificationType = 'received' | 'sent';
+  export interface NotificationItem {
+    data: NotificationReceivedItem | NotificationSentItem;
+    type: NotificationType;
+  }

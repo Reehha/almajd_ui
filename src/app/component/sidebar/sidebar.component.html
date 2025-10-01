@@ -34,6 +34,11 @@
     </ng-container>
   </ul>
 
+  <div class="notification" (click)="navigateTo('/notification')"   *ngIf="isLoggedIn" >
+    <i class="fas fa-bell"></i>
+    <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+  </div>
+
   <!-- Settings / Logout -->
   <div class="settings">
     <i class="fas fa-cog"></i>

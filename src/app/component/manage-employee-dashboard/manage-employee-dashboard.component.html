@@ -6,7 +6,7 @@
   <div class="filter-panel">
     <div class="filter-group">
       <input [(ngModel)]="filters.name" (ngModelChange)="applyFilters()" placeholder="Search by Name" />
-      <input [(ngModel)]="filters.employeeId" (ngModelChange)="applyFilters()" placeholder="Employee ID" />
+      <input [(ngModel)]="filters.employeeId" (ngModelChange)="applyFilters()" placeholder="Search by Employee ID" />
       <select [(ngModel)]="filters.department" (ngModelChange)="applyFilters()">
         <option value="">All Departments</option>
         <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
@@ -51,7 +51,7 @@
   </div>
 
   <div class="pagination-container">
-    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
     
     <ng-container *ngFor="let p of paginationRange">
       <button 

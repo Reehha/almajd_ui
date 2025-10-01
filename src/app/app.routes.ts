@@ -19,6 +19,8 @@ import { ManageOrganizationComponent } from './component/manage-organization/man
 import { OrganizationSettingsComponent } from './component/organization-settings/organization-settings.component';
 import { ManageLocationComponent } from './component/manage-location/manage-location.component';
 import { ManageScheduleComponent } from './component/manage-schedule/manage-schedule.component';
+import { NotificationDashboardComponent } from './component/notification-dashboard/notification-dashboard.component';
+import { CreateNotificationComponent } from './component/create-notification/create-notification.component';
 
 export const routes: Routes = [
   /* ---------- Public routes (no authentication) ---------- */
@@ -36,9 +38,6 @@ export const routes: Routes = [
   {
     path: 'scan-qr',
     component: QrScannerComponent,
-    // canActivate: [AuthGuard],
-    // canDeactivate: [QrScannerExitGuard],
-    // data: { roles: [ 'qrScanner'] }
   },
   {
     path: 'employee-dashboard',
@@ -108,6 +107,18 @@ export const routes: Routes = [
   {
     path: 'manage-location',
     component: ManageLocationComponent,
+    canActivate: [AuthGuard],
+    data: { roles: [ 'admin'] }
+  },
+  {
+    path: 'notification',
+    component: NotificationDashboardComponent,
+    canActivate: [AuthGuard],
+    data: { roles: [ 'admin','employee'] }
+  },
+  {
+    path: 'create-notification',
+    component: CreateNotificationComponent,
     canActivate: [AuthGuard],
     data: { roles: [ 'admin'] }
   },

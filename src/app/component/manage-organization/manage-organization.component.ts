@@ -55,7 +55,9 @@ export class ManageOrganizationComponent {
           department: emp.department,
           designation: emp.designation,
           schedule: `${this.formatTime12Hr(emp.startTime ?? '')}-${this.formatTime12Hr(emp.endTime ?? '')}`
-        }));
+          }))
+          // ✅ Exclude Test_admin records
+          .filter((emp: { designation: string; }) => emp.designation !== 'Test_admin');
   
         // ✅ Sort by employeeId, then by projectStartTime (latest first)
         this.employees.sort((a, b) => {

@@ -1,0 +1,509 @@
+/* === CONTAINER === */
+.notification-dashboard {
+  padding: 2rem;
+  background-color: #1a1a1a;
+  border-radius: 10px;
+  width: 100%;
+  min-width: 45rem;
+  box-sizing: border-box;
+}
+
+/* === Top bar === */
+.top-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Search bar full width */
+.search-bar {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #2a2a2c;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.search-bar::placeholder {
+  color: #aaa;
+}
+
+/* Send Notification Button below search bar */
+.send-btn-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Header icons container */
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Delete / Trash button */
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #ff6b6b;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  color: #ff3b3b;
+}
+
+.send-btn {
+  margin-bottom: 2rem;
+  width: auto;
+  color: #fff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+.send-btn:hover {
+  opacity: 0.9;
+}
+
+/* === Tab Bar / Switch Buttons === */
+.tab-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+  border: 1px solid #444;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #2a2a2c;
+}
+
+.tab-bar button {
+  flex: 1;
+  padding: 0.5rem 0.8rem;
+  border: none;
+  background: transparent;
+  color: #aaa;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-bar button:hover {
+  background-color: #3a3a3c;
+}
+
+.tab-bar button.active {
+  background-color: #4e9af1;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* === Notification Cards === */
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-card {
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #1e1e1e;
+}
+
+.notification-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Card Header: Title left, dot right */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header.unread h4 {
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Notification Card */
+.notification-card {
+  background-color: #1f1f1f; /* dark card */
+  border-radius: 6px;
+  /* margin-bottom: 0.8rem; */
+  padding: 0.8rem 1rem;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-card:hover {
+  background-color: #2a2a2a; /* slightly lighter on hover */
+  transform: translateY(-1px); /* subtle lift */
+}
+
+/* Card Header Title */
+.card-header h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* space between icon and text */
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+/* Notification Icon */
+.notification-icon {
+  font-size: 1.1rem; /* aligns with title */
+  display: inline-flex;
+  align-items: center;
+}
+
+
+/* Card Body */
+.card-body {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  color: #ddd;
+  pre {
+    white-space: pre-wrap;       /* preserves line breaks but wraps long lines */
+  font-family: 'Arial', sans-serif; /* clean, normal font */
+  font-size: 14px;             /* adjust as needed */
+  line-height: 1.5;            /* spacing between lines */
+  margin: 0;                   /* remove default margins */
+  padding: 0;                  /* optional padding inside pre */
+  tab-size: 2;
+  }
+}
+
+.card-body small {
+  font-style: italic;
+}
+
+.notification-card.expanded {
+  background-color: #292929;
+}
+
+/* === Status Dot === */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 8px;
+  background-color: #007bff; /* Blue for unread */
+}
+
+.trash-icon {
+  cursor: pointer;
+  float: right;
+  margin-left: 10px;
+  color: #888;
+}
+
+.trash-icon:hover {
+  color: red;
+}
+
+.search-refresh-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* space between search and refresh */
+  width: 100%;
+}
+
+.search-bar {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.refresh-btn {
+  background: #1e90ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.refresh-btn:hover {
+  background: #006ad1;
+}
+
+/* === Sent Recipients List === */
+.notification-card ul {
+  margin-top: 5px;
+  padding-left: 15px;
+}
+
+.notification-card li {
+  font-size: 0.85rem;
+  color: #bbb;
+}
+
+/* === Loading === */
+.loading {
+  text-align: center;
+  padding: 1rem;
+  color: #aaa;
+}
+
+/* === Responsive === */
+@media (max-width: 767px) {
+  .tab-bar {
+    flex-wrap: wrap;
+  }
+
+  .tab-bar button {
+    flex: 1 1 45%;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .send-btn {
+    width: 100%;
+  }
+}
+@media (max-width: 767px) {
+  .notification-dashboard {
+    width: 100%;
+    min-width: 0;
+    border-radius: 0;
+    height: 100vh;
+    /* padding: 4rem;       */
+    box-sizing: border-box;
+    overflow-y: auto;
+    margin-top: 4.5rem;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;         /* smaller gap */
+    margin-bottom: 0.5rem; /* reduce bottom space */
+  }
+
+  .search-refresh-container {
+    flex-direction: column;
+    gap: 4px;              /* tighter spacing */
+  }
+
+  .search-bar,
+  .refresh-btn,
+  .send-btn {
+    width: 100%;
+    margin: 0;             /* remove any default margin */
+  }
+
+  .tab-bar {
+    flex-wrap: wrap;
+    border-radius: 0;
+    margin-bottom: 0.5rem; /* reduce spacing below tabs */
+  }
+
+  .tab-bar button {
+    flex: 1 1 50%;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.5rem; /* smaller buttons */
+    margin: 0;                /* remove default spacing */
+  }
+
+  .notification-list {
+    gap: 6px;                 /* smaller gap between cards */
+  }
+
+  .notification-card {
+    padding: 0.5rem;           /* smaller card padding */
+    margin: 0;                 /* remove extra margins */
+  }
+
+  .card-body {
+    margin-top: 0.4rem;       /* reduce spacing */
+    font-size: 0.85rem;
+  }
+
+  .card-header h4 {
+    font-size: 0.9rem;
+  }
+
+  .notification-card ul {
+    padding-left: 12px;
+    margin-top: 3px;
+  }
+
+  .notification-card li {
+    font-size: 0.75rem;
+  }
+}
+/* Pagination Container */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 1rem;
+}
+
+/* Pagination Buttons */
+.pagination button {
+  padding: 6px 12px;
+  border: 1px solid #4e9af1;
+  border-radius: 5px;
+  background-color: transparent;
+  color: #4e9af1;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #4e9af1;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* Active Page */
+.pagination button.active {
+  background-color: #4e9af1;
+  color: #fff;
+  border-color: #4e9af1;
+  font-weight: 600;
+}
+
+/* Disabled Buttons */
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: default;
+  color: #aaa;
+  border-color: #555;
+}
+
+/* Ellipsis */
+.pagination span {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  color: #aaa;
+  font-weight: 500;
+}
+
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+  color: #555;
+}
+/* === FILTER PANEL MATCHING DASHBOARD === */
+.filter-panel {
+  background-color: #1a1a1a; /* slightly lighter than pure black to match dashboard */
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  border: 1px solid #333; /* subtle border to separate panel */
+}
+
+/* Indicate the tab this filter applies to */
+.filter-note {
+  width: 100%;
+  font-size: 12px;
+  /* color: #aaa; */
+  margin-bottom: 0.5rem;
+}
+
+/* Filter items */
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+  align-items: flex-end;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-item label {
+  font-size: 13px;
+  color: #ccc;
+  margin-bottom: 4px;
+}
+
+.filter-item input,
+.filter-item select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #2b2b2b; /* matches dashboard cards */
+  color: #fff;
+  font-size: 0.9rem;
+  min-width: 180px;
+}
+
+.filter-item input::placeholder {
+  color: #aaa;
+}
+
+/* Buttons */
+.filter-panel .btn {
+  margin-top: 1.2rem;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.filter-panel .btn.main {
+  background: linear-gradient(to right, #4e9af1, #3f51b5);
+  color: #fff;
+  border: none;
+}
+
+.filter-panel .btn.cancel {
+  background: linear-gradient(to right, #ff512f, #dd2476);
+  color: #fff;
+  border: none;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .filter-item {
+      width: 100%;
+  }
+  .filter-group {
+      flex-direction: column;
+      gap: 0.75rem;
+  }
+}
+@media((max-width: 1024px)) {
+ .notification-dashboard {
+  margin-top: 4.5rem;
+ }
+}

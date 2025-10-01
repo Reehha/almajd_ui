@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LoginService } from '../../services/login.service';
 import { filter } from 'rxjs/operators';
+import { NotificationService } from '../../services/notification.service';
 
 interface NavItem {
   icon: string;
@@ -25,11 +26,13 @@ export class SidebarComponent {
 
   isfirstTimeLogIn: boolean = false;
   menuOpen = false;
+  unreadCount: number = 0; // Example, can be updated via API
 
   constructor(
     public readonly router: Router,
     private readonly loginService: LoginService,
-    private readonly cd: ChangeDetectorRef
+    private readonly cd: ChangeDetectorRef,
+    private readonly notificationService: NotificationService,
   ) {
     const store = typeof window !== 'undefined' ? window.localStorage : null;
     this.isfirstTimeLogIn = store?.getItem('mustResetPassword') === 'true';
@@ -43,6 +46,12 @@ export class SidebarComponent {
     ).subscribe(() => this.cd.markForCheck());
   }
 
+  ngOnInit(): void {
+    if (this.loginService.isLoggedIn()) {
+      this.fetchUnreadNotificationsCount();
+    }
+  }
+  
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
   }
@@ -118,6 +127,24 @@ toggleSubmenu(index: number, hasSubItems: number | undefined, item: NavItem) {
     this.navigateTo(link);       // navigate to link
     this.menuOpen = false;       // close the mobile menu
     this.openSubmenus.clear();   // close all submenus
+  }
+
+  fetchUnreadNotificationsCount(): void {
+    this.notificationService.getUnreadCount().subscribe({
+      next: (count: number) => {
+        this.unreadCount = count;
+        this.cd.markForCheck(); // if using OnPush
+      },
+      error: (err) => {
+        console.error('Failed to fetch unread notifications', err);
+        this.unreadCount = 0;
+        this.cd.markForCheck();
+      }
+    });
+  }   
+
+  get isLoggedIn(): boolean {
+    return this.loginService.isLoggedIn();
   }
   
 }

@@ -6,9 +6,9 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class SessionMonitorService {
-  private lastActivityTime: number = Date.now();
   private intervalId: any = null;
-  private readonly REFRESH_INTERVAL = 8 * 60 * 1000; // 7 minutes (set to 7min, not 1min)
+  private activityDetected: boolean = false;
+  private readonly INTERVAL = 8 * 60 * 1000; // 8 minutes
   private excludedRoutes = ['/scan-qr'];
 
   constructor(
@@ -18,51 +18,37 @@ export class SessionMonitorService {
   ) {}
 
   startMonitoring() {
-    this.lastActivityTime = Date.now();
     this.setupListeners();
-
-    this.zone.runOutsideAngular(() => {
-      if (this.intervalId) clearInterval(this.intervalId);
-      this.intervalId = setInterval(() => this.checkAndRefreshOrLogout(), this.REFRESH_INTERVAL);
-    });
+    this.startInterval();
   }
 
   private setupListeners() {
-    const resetActivity = () => this.lastActivityTime = Date.now();
+    const markActivity = () => this.activityDetected = true;
     ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(event =>
-      window.addEventListener(event, resetActivity)
+      window.addEventListener(event, markActivity)
     );
   }
 
-  private checkAndRefreshOrLogout() {
-    const now = Date.now();
+  private startInterval() {
+    if (this.intervalId) clearInterval(this.intervalId);
+
+    this.zone.runOutsideAngular(() => {
+      this.intervalId = setInterval(() => this.checkActivity(), this.INTERVAL);
+    });
+  }
+
+  private checkActivity() {
     const currentRoute = this.router.url;
-    const inactiveDuration = now - this.lastActivityTime;
+    if (this.excludedRoutes.includes(currentRoute)) return;
 
-    if (this.excludedRoutes.includes(currentRoute)) {
-      // Skip refresh/logout on excluded routes
-      return;
-    }
-
-    if (inactiveDuration >= this.REFRESH_INTERVAL) {
-      // No activity detected during interval → logout
-      this.zone.run(() => {
-        alert('Session timed out!');
-        this.loginService.logout().subscribe(() => {
-          this.stopMonitoring();
-          this.router.navigateByUrl('/login');
-        });
-      });
-    } else {
-      // User was active → refresh token
+    if (this.activityDetected) {
+      // Activity detected → refresh token and reset for next interval
       this.loginService.refreshToken().subscribe({
         next: () => {
-          // reset timer after successful refresh
-          this.lastActivityTime = Date.now();
+          this.activityDetected = false; // reset for next interval
         },
         error: (err) => {
           console.error('Error refreshing token', err);
-          // Optional: logout if refresh fails
           this.zone.run(() => {
             this.loginService.logout().subscribe(() => {
               this.stopMonitoring();
@@ -70,6 +56,11 @@ export class SessionMonitorService {
             });
           });
         }
+      });
+    } else {
+      // No activity → logout
+      this.zone.run(() => {
+        alert('Session timed out!');
       });
     }
   }

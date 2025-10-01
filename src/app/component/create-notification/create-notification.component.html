@@ -1,0 +1,120 @@
+<div class="dashboard-container">
+
+  <!-- Notification Creation Form -->
+  <div class="notification-form">
+    <div class="notification-info">
+      Selected Employees: {{ selectedEmployees.length }}
+    </div>
+
+    <form #notifForm="ngForm" novalidate>
+      <div class="form-item">
+        <label>Title</label>
+        <input [(ngModel)]="notificationData.title" name="title" #titleRef="ngModel"
+          placeholder="Enter notification title" maxlength="50" required />
+        <div class="error-message" *ngIf="titleRef.invalid && titleRef.touched">
+          {{ errorMessages.title }}
+        </div>
+      </div>
+
+      <div class="form-item">
+        <label>Message</label>
+        <textarea [(ngModel)]="notificationData.message" name="message" #msgRef="ngModel"
+          placeholder="Enter notification message" maxlength="180" required></textarea>
+        <div class="error-message" *ngIf="msgRef.invalid && msgRef.touched">
+          {{ errorMessages.message }}
+        </div>
+      </div>
+
+      <div class="form-item">
+        <label>Expiry</label>
+        <input type="date" [(ngModel)]="notificationData.expiry" (blur)="expiryTouched = true" name="expiry" />
+        <div class="error-message" *ngIf="expiryTouched && isExpiryInvalid()">
+          {{ errorMessages.expiry }}
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Filter Panel -->
+  <div class="filter-panel">
+    <div class="filter-group">
+      <div class="filter-item">
+        <input [(ngModel)]="filters.id" [ngModelOptions]="{standalone: true}" (input)="applyFilters()"
+          placeholder="Search by employee ID" />
+      </div>
+      <div class="filter-item">
+        <input [(ngModel)]="filters.name" [ngModelOptions]="{standalone: true}" (input)="applyFilters()"
+          placeholder="Search by Name" />
+      </div>
+      <div class="filter-item">
+        <label>Organization</label>
+        <select [(ngModel)]="filters.organization" [ngModelOptions]="{standalone: true}" (change)="applyFilters()">
+          <option value="">All</option>
+          <option *ngFor="let org of dropdowns.organizations" [value]="org">{{ org }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Department</label>
+        <select [(ngModel)]="filters.department" [ngModelOptions]="{standalone: true}" (change)="applyFilters()">
+          <option value="">All</option>
+          <option *ngFor="let dept of dropdowns.departments" [value]="dept">{{ dept }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Designation</label>
+        <select [(ngModel)]="filters.designation" [ngModelOptions]="{standalone: true}" (change)="applyFilters()">
+          <option value="">All</option>
+          <option *ngFor="let desig of dropdowns.designations" [value]="desig">{{ desig }}</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn main" (click)="sendNotification(notifForm)" [disabled]="!canSendNotification()">
+      Send Notification
+    </button>
+    <button class="btn cancel" (click)="clearFilters()">Clear Filters</button>
+  </div>
+
+  <!-- Employee Table -->
+  <div class="table-container">
+    <table class="attendance-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" [checked]="selectAllChecked" (change)="toggleSelectAll($event)" /></th>
+          <th>Employee ID</th>
+          <th>Name</th>
+          <th>Organization</th>
+          <th>Department</th>
+          <th>Designation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="paginatedEmployees.length === 0">
+          <td colspan="6" class="no-records">No records found</td>
+        </tr>
+        <tr *ngFor="let emp of paginatedEmployees">
+          <td data-label="Select">
+            <input type="checkbox" [checked]="selectedEmployees.includes(emp)" (change)="toggleSelection(emp)" />
+          </td>
+          <td data-label="Employee ID">{{ emp.id }}</td>
+          <td data-label="Name">{{ emp.name }}</td>
+          <td data-label="Organization">{{ emp.organization }}</td>
+          <td data-label="Department">{{ emp.department }}</td>
+          <td data-label="Designation">{{ emp.designation }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+
+    <ng-container *ngFor="let p of paginationRange">
+      <button *ngIf="isNumber(p)" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+      <span *ngIf="!isNumber(p)">...</span>
+    </ng-container>
+
+    <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+  </div>
+</div>
