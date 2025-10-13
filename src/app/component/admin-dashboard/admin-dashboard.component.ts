@@ -4,8 +4,8 @@ import { AttendanceService } from '../../services/attendance.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceChartComponent } from '../attendance-chart/attendance-chart.component';
-import * as XLSX from 'xlsx';
-import * as XLSXStyle from 'xlsx-js-style';
+// import * as XLSX from 'xlsx';
+// import * as XLSXStyle from 'xlsx-js-style';
 import { OrganizationService } from '../../services/organization.service';
 
 @Component({
@@ -102,93 +102,77 @@ export class AdminDashboardComponent implements OnInit {
   }
   
 
-exportToExcel(): void {
-  const exportData = this.filteredData.map(entry => {
-    const punchIn = entry.punchInUpdated || entry.punchIn || '-';
-    const punchOut = entry.punchOutUpdated || entry.punchOut || '-';
-    const dateObj = new Date(entry.date);
-    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-
-    // Convert statusValue minutes -> decimal hours
-    let shortTimeHr = '';
-    let overtimeHr = '';
-
-    if (entry.status === 'Overtime') {
-      overtimeHr = ((parseFloat(entry.statusValue || '0') || 0) / 60).toFixed(2);
-    } else if (entry.status === 'Short Time') {
-      shortTimeHr = ((parseFloat(entry.statusValue || '0') || 0) / 60).toFixed(2);
-    }
-
-    return {
-      Date: entry.date,
-      'Day Name': dayName,
-      'Employee ID': entry.employeeId,
-      Name: `${entry.firstName} ${entry.lastName}`,
-      Department: entry.department,
-      Designation: entry.designation || '-',
-      Organization: entry.organization,
-      'Punch In': punchIn,
-      'Punch Out': punchOut,
-      'Work Hours': entry.workHours || '-',
-      'Short Time (hr)': shortTimeHr,
-      Status: entry.status,
-      'Overtime (hr)': overtimeHr,
-      'Site Location': entry.locationName || '-',
-    };
-  });
-
-  // Create worksheet
-  const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
-
-  // Set column widths
-  worksheet['!cols'] = [
-    { wch: 15 }, // Date
-    { wch: 12 }, // Day Name
-    { wch: 15 }, // Employee ID
-    { wch: 25 }, // Name
-    { wch: 20 }, // Department
-    { wch: 20 }, // Designation
-    { wch: 20 }, // Organization
-    { wch: 15 }, // Punch In
-    { wch: 15 }, // Punch Out
-    { wch: 15 }, // Work Hours
-    { wch: 18 }, // Short Time (hr)
-    { wch: 15 }, // Status
-    { wch: 18 }, // Overtime (hr)
-    { wch: 20 }, // Site Location
-  ];
-
-  // Highlight Sunday rows
-  const range = XLSX.utils.decode_range(worksheet['!ref']!);
-  for (let R = range.s.r + 1; R <= range.e.r; R++) {
-    const dayCellRef = XLSX.utils.encode_cell({ r: R, c: 1 }); // Day Name column (B)
-    const dayCell = worksheet[dayCellRef];
-    if (dayCell && dayCell.v === 'Sunday') {
-      // Apply background color for Sundays
-      const totalCols = worksheet['!cols']!.length;
-      for (let C = 0; C < totalCols; C++) {
-        const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
-        if (worksheet[cellRef]) {
-          worksheet[cellRef].s = {
-            fill: { fgColor: { rgb: 'FFF2CC' } }, // light yellow
-            font: { bold: true, color: { rgb: '7F6000' } }, // dark gold text
-          };
+  async exportToExcel(): Promise<void> {
+    const XLSXStyleModule = await import('xlsx-js-style');
+    const XLSX = XLSXStyleModule.default || XLSXStyleModule;
+  
+    const exportData = this.filteredData.map(entry => {
+      const punchIn = entry.punchInUpdated || entry.punchIn || '-';
+      const punchOut = entry.punchOutUpdated || entry.punchOut || '-';
+      const dayName = new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long' });
+  
+      const status = (entry.status || '').toLowerCase();
+      const minutes =
+        parseFloat((entry.statusValue || '0').toString().replace(/\D/g, '')) || 0;
+  
+      let shortTimeHr = '';
+      let overtimeHr = '';
+  
+      if (status === 'overtime') {
+        overtimeHr = (minutes / 60).toFixed(2);
+      } else if (status === 'short time') {
+        shortTimeHr = (minutes / 60).toFixed(2);
+      }
+  
+      return {
+        Date: entry.date,
+        'Day Name': dayName,
+        'Employee ID': entry.employeeId,
+        Name: `${entry.firstName} ${entry.lastName}`,
+        Department: entry.department,
+        Designation: entry.designation || '-',
+        Organization: entry.organization,
+        'Punch In': punchIn,
+        'Punch Out': punchOut,
+        'Work Hours': entry.workHours || '-',
+        'Short Time (hr)': shortTimeHr,
+        Status: entry.status,
+        'Overtime (hr)': overtimeHr,
+        'Site Location': entry.locationName || '-',
+      };
+    });
+  
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    worksheet['!cols'] = [
+      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 25 }, { wch: 20 },
+      { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+      { wch: 18 }, { wch: 15 }, { wch: 18 }, { wch: 20 }
+    ];
+  
+    const range = XLSX.utils.decode_range(worksheet['!ref']!);
+    for (let R = range.s.r + 1; R <= range.e.r; R++) {
+      const dayCellRef = XLSX.utils.encode_cell({ r: R, c: 1 });
+      if (worksheet[dayCellRef]?.v === 'Sunday') {
+        for (let C = 0; C < worksheet['!cols']!.length; C++) {
+          const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+          if (worksheet[cellRef]) {
+            worksheet[cellRef].s = {
+              fill: { fgColor: { rgb: 'FFFF00' } },
+              font: { bold: true }
+            };
+          }
         }
       }
     }
+  
+    const workbook: any = {
+      Sheets: { Attendance: worksheet },
+      SheetNames: ['Attendance'],
+    };
+  
+    XLSX.writeFile(workbook, `Attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
   }
-
-  // Create workbook and write file
-  const workbook: XLSX.WorkBook = {
-    Sheets: { Attendance: worksheet },
-    SheetNames: ['Attendance'],
-  };
-
-  XLSXStyle.writeFile(
-    workbook,
-    `Attendance_${new Date().toISOString().split('T')[0]}.xlsx`
-  );
-}
+  
 
 
   onAbsentToggle() {
