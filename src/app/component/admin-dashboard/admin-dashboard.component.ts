@@ -55,6 +55,8 @@ export class AdminDashboardComponent implements OnInit {
     'Overtime': 'overtime',
     'Short Time': 'shorttime'
   };
+
+  activeTab: 'present' | 'absent' | 'all' = 'present';
   
   getStatusClass(status: string): string {
     return this.statusClassMap[status] || 'unknown';
@@ -134,6 +136,11 @@ export class AdminDashboardComponent implements OnInit {
         Organization: entry.organization,
         'Punch In': punchIn,
         'Punch Out': punchOut,
+        'Updated Deduction (mins)': entry.updatedDeduction
+          ? `${
+              (parseInt(entry.updatedDeduction.replace(/\D/g, ''), 10) || 0) * 2
+            } mins`
+          : '0',
         'Work Hours': entry.workHours || '-',
         'Short Time (hr)': shortTimeHr,
         Status: entry.status,
@@ -194,98 +201,81 @@ export class AdminDashboardComponent implements OnInit {
 
   // FETCH DATA
   onDateFilter() {
-    const fetch$ = this.showAbsentOnly
-      ? this.attendanceService.getAbsentData(this.startDate, this.endDate)  // <-- call absent API
-      : this.attendanceService.getAttendanceData(this.startDate, this.endDate); // normal
-
-    fetch$.subscribe({
-      next: (resp: any) => {
-        const data = (resp as any).data ?? resp;
-
-        this.rawData = data.filter(
-          (entry: any) => (entry.designation || '').toLowerCase() !== 'test_admin'
-        );
-
-        this.applyFilters();
-      },
-      error: (err: any) => console.error('Failed to fetch attendance data:', err),
-    });
-  }  
+    this.attendanceService.getAttendanceData(this.startDate, this.endDate)
+      .subscribe({
+        next: (resp: any) => {
+          const data = (resp as any).data ?? resp;
+          this.rawData = data.filter(
+            (entry: any) => (entry.designation || '').toLowerCase() !== 'test_admin'
+          );
+          this.applyFilters();
+        },
+        error: (err: any) => console.error('Failed to fetch attendance data:', err),
+      });
+  }    
 
   // APPLY FILTERS
   applyFilters() {
     this.filteredData = [...this.rawData.filter((entry) => {
       const fullName = `${entry.firstName} ${entry.lastName}`.toLowerCase();
-      return (
+      const matchesFilters =
         (!this.employeeName || fullName.includes(this.employeeName.toLowerCase())) &&
         (!this.department || entry.department === this.department) &&
         (!this.organization || entry.organization === this.organization) &&
-        (!this.locationName || entry.locationName === this.locationName)
-      );
+        (!this.locationName || entry.locationName === this.locationName);
+  
+      // Filter based on active tab
+      if (this.activeTab === 'present') {
+        return matchesFilters && entry.status && entry.status.toLowerCase() !== 'absent';
+      } else if (this.activeTab === 'absent') {
+        return matchesFilters && (!entry.status || entry.status.toLowerCase() === 'absent');
+      } else {
+        return matchesFilters; // 'all' tab
+      }
     })];
-
-    // Update available filters
-    this.departments = Array.from(new Set(this.rawData.map(e => e.department).filter(d => !!d)));
-    this.organizations = Array.from(new Set(this.rawData.map(e => e.organization).filter(o => !!o)));
-    this.locations = Array.from(new Set(this.rawData.map(e => e.locationName).filter(l => !!l)));
-
-    // Calculate summary counts
+  
+    this.departments = Array.from(new Set(this.rawData.map(e => e.department).filter(Boolean)));
+    this.organizations = Array.from(new Set(this.rawData.map(e => e.organization).filter(Boolean)));
+    this.locations = Array.from(new Set(this.rawData.map(e => e.locationName).filter(Boolean)));
+  
     this.calculateCounts(this.filteredData);
-
     this.currentPage = 1;
   }
+  
+  switchTab(tab: 'present' | 'absent' | 'all') {
+    this.activeTab = tab;
+    this.applyFilters();
+  }
+  
 
   // CALCULATE COUNTS INCLUDING ABSENTEES
   calculateCounts(data: any[]) {
     const counts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0, present: 0 };
-  
-    if (this.showAbsentOnly) {
-      // When showing absent data only, count all records as absent
-      counts.absent = data.length;
-      counts.onTime = 0;
-      counts.shortTime = 0;
-      counts.overTime = 0;
-      counts.present = 0;
-    } else {
-      const empStatusMap = new Map<string, string>();
-  
-      // Aggregate latest status per employee, ignoring test_admin
-      data.forEach(entry => {
-        if (!entry.employeeId) return;
-  
-        const designation = (entry.designation || '').toLowerCase();
-        if (designation === 'test_admin') return; // skip test_admin
-  
-        if (entry.status) {
-          empStatusMap.set(entry.employeeId, entry.status.toLowerCase());
-        }
-      });
-  
-      // Count attendance categories
-      empStatusMap.forEach(status => {
-        switch (status) {
-          case 'on time':
-            counts.onTime++;
-            break;
-          case 'short time':
-            counts.shortTime++;
-            break;
-          case 'overtime':
-            counts.overTime++;
-            break;
-          case 'present':
-            counts.present++;
-            break;
-        }
-      });
-  
-      // Absent = allEmployeeIds minus employees who have any attendance
-      counts.absent = this.allEmployeeIds.filter(id => !empStatusMap.has(id)).length;
-    }
-  
+
+    data.forEach(entry => {
+      const status = (entry.status || '').toLowerCase();
+      switch (status) {
+        case 'on time':
+          counts.onTime++;
+          break;
+        case 'short time':
+          counts.shortTime++;
+          break;
+        case 'overtime':
+          counts.overTime++;
+          break;
+        case 'present':
+          counts.present++;
+          break;
+        case 'absent':
+          counts.absent++;
+          break;
+      }
+    });
+
     this.totalEmployees = this.allEmployeeIds.length;
     this.initialCounts = { ...counts };
-  }  
+  }
 
   canExpand(entry: any): boolean {
     return !!entry.breaks && Object.keys(entry.breaks).length > 0;

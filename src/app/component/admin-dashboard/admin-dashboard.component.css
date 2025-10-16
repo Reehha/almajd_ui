@@ -851,3 +851,57 @@ td.no-records {
   color: #ddd; /* adjust if light theme */
   cursor: pointer;
 }
+
+/* === Attendance Tab Bar === */
+.attendance-tab {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+  border: 1px solid #444;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #2a2a2c;
+  width: 100%;
+  position: sticky;
+  top: 0; /* sticks below the filter panel */
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.attendance-tab button {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: none;
+  background: transparent;
+  color: #aaa;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.attendance-tab button:hover {
+  background-color: #3a3a3c;
+  color: #fff;
+}
+
+.attendance-tab button.active {
+  background-color: #4e9af1;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* === Mobile view === */
+@media (max-width: 767px) {
+  .attendance-tab {
+    flex-wrap: wrap;
+    border-radius: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .attendance-tab button {
+    flex: 1 1 30%;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.5rem;
+  }
+}
