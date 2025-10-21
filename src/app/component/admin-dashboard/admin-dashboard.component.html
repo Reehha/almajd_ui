@@ -195,16 +195,26 @@
                   </button>
                 </td>
                 
-                <td *ngIf="!showAbsentOnly" data-label="more-info">
-                  <button class="icon-btn expand-btn" (click)="toggleBreaks(entry)" 
-                          [attr.aria-expanded]="expandedEntryKey === uniqueKey(entry)">
+                <td *ngIf="!showAbsentOnly" data-label="Actions" class="actions-cell">
+                  <div class="action-menu">
+                    <button class="icon-btn menu-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                
+                    <div class="dropdown-menu">
+                      <button (click)="openScheduleDialog(entry)">Change Schedule</button>
+                      <!-- add more options here -->
+                    </div>
+                  </div>
+                
+                  <button class="icon-btn expand-btn" (click)="toggleBreaks(entry)" [attr.aria-expanded]="expandedEntryKey === entry">
                     <i class="fas fa-chevron-down"></i>
                   </button>
                 </td>             
               </tr>
           
               <!-- Expanded row (new row) -->
-              <tr *ngIf="expandedEntryKey === uniqueKey(entry)" class="expanded-row">
+              <tr *ngIf="expandedEntryKey === entry" class="expanded-row">
                 <td colspan="8">
                   <div class="breaks-container">
                     <ng-container *ngIf="entry.punches && getBreakKeys(entry.punches).length > 0; else noBreaks">
@@ -260,6 +270,33 @@
     <div class="location-message error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
   </div>
 </div>
+
+<!-- Schedule Change Modal -->
+<div class="location-modal-backdrop" *ngIf="showScheduleDialog">
+  <div class="location-modal">
+    <div class="location-modal-info">
+      <p><strong>Employee Name:</strong> {{ selectedEmployee?.firstName }} {{ selectedEmployee?.lastName }}</p>
+      <p><strong>Current Schedule:</strong> {{ selectedEmployee?.scheduleDisplayTime || '-' }}</p>
+    </div>
+
+    <div class="filter-item">
+      <label>Choose New Schedule</label>
+      <select [(ngModel)]="selectedScheduleId">
+        <option value="" disabled>Select Schedule</option>
+        <option *ngFor="let sch of schedules" [value]="sch.scheduleId">{{ sch.displayTime }}</option>
+      </select>
+    </div>
+
+    <div class="location-modal-actions">
+      <button class="btn main" (click)="submitSchedule()">Save</button>
+      <button class="btn cancel" (click)="closeDialog()">Cancel</button>
+    </div>
+
+    <div class="location-message success-msg" *ngIf="successMessage">{{ successMessage }}</div>
+    <div class="location-message error-msg" *ngIf="errorMessage">{{ errorMessage }}</div>
+  </div>
+</div>
+
 
         <div class="pagination">
           <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>

@@ -851,3 +851,73 @@ td.no-records {
   color: #ddd; /* adjust if light theme */
   cursor: pointer;
 }
+/* --- Fix alignment for actions column --- */
+.actions-cell {
+  text-align: center;
+  vertical-align: middle !important;
+  white-space: nowrap;
+  position: relative;
+  padding: 0.3rem 0.5rem;
+}
+
+.actions-cell .action-menu {
+  display: inline-flex;
+  margin-right: .3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  position: relative;
+}
+
+.actions-cell .menu-btn,
+.actions-cell .expand-btn {
+  color: #fff;
+  cursor: pointer;
+  padding: 0.4rem;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actions-cell .menu-btn:hover,
+.actions-cell .expand-btn:hover {
+  color: #4e9af1;
+}
+
+.actions-cell .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #2a2a2a;
+  border-radius: 6px;
+  display: none;
+  flex-direction: column;
+  min-width: 150px;
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.actions-cell .dropdown-menu button {
+  background: none;
+  border: none;
+  color: #fff;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.actions-cell .dropdown-menu button:hover {
+  background-color: #3a3a3a;
+}
+
+/* Optional: show menu on hover */
+.actions-cell .menu-btn:hover + .dropdown-menu,
+.actions-cell .dropdown-menu:hover {
+  display: flex;
+}
+
+.attendance-table tbody tr:last-child .dropdown-menu {
+  bottom: 100%; /* position above the button */
+  top: auto;
+}

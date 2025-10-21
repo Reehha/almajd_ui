@@ -49,6 +49,11 @@ export class AdminDashboardComponent implements OnInit {
   expandedBox: string | null = null;
   showAbsentOnly: boolean = false;
 
+  openMenuIndex: number | null = null;
+  showScheduleDialog = false;
+  selectedScheduleId: string = '';
+  schedules: any[] = []; 
+
   statusClassMap: Record<string, string> = {
     'On Time': 'ontime',
     'Overtime': 'overtime',
@@ -90,10 +95,16 @@ export class AdminDashboardComponent implements OnInit {
     return `${entry.employeeId}_${entry.date}`;
   }
   
-  toggleBreaks(entry: any) {
-    const key = this.uniqueKey(entry);
-    this.expandedEntryKey = this.expandedEntryKey === key ? null : key;
+  employeeDateKey(entry: any): string {
+    return `${entry.employeeId}_${entry.date}`;
   }
+  
+  // Instead of using employeeDateKey, use the object reference itself
+toggleBreaks(entry: any) {
+  // If this row is already expanded, collapse it
+  this.expandedEntryKey = this.expandedEntryKey === entry ? null : entry;
+}
+
   
   // helper to iterate object keys in template
   getBreakKeys(breaks: any): string[] {
@@ -268,35 +279,10 @@ export class AdminDashboardComponent implements OnInit {
   }
   
 
-  openLocationDialog(entry: any) {
-    this.selectedEmployee = entry;
-    this.selectedLocation = entry.locationName; // default preselected
-    this.showLocationDialog = true;
-  
-    // Fetch locations
-    this.organizationService.getLocations().subscribe({
-      next: (locations: any[]) => {
-        if (entry.designation?.toLowerCase() === 'driver') {
-          this.filteredLocations = locations.filter(
-            loc => loc.locationName.startsWith('TRIP_') || loc.locationId === 'default'
-          );
-        } else {
-          this.filteredLocations = locations.filter(
-            loc => !loc.locationName.startsWith('TRIP_')
-          );
-        }
-      },
-      error: () => this.errorMessage = 'Failed to fetch locations'
-    });
-  }
-
-  onLocationChange(event: any) {
-    const loc = this.filteredLocations.find(l => l.locationName === this.selectedLocation);
-    this.travelTime = loc?.travelTime || '0';
-  }
   
   closeDialog() {
     this.showLocationDialog = false;
+    this.showScheduleDialog = false;
     this.selectedEmployee = null;
   }
   
@@ -304,41 +290,7 @@ export class AdminDashboardComponent implements OnInit {
     this.showConfirmDialog = true;
   }
   
-  submitLocation() {
-    if (!this.selectedEmployee) return;
-  
-    const confirmed = window.confirm(
-      `Are you sure you want to update the location for ${this.selectedEmployee.firstName} ${this.selectedEmployee.lastName} to ${this.selectedLocation}?`
-    );
-    
-    if (!confirmed) return;
-  
-    // Find the selected location object
-    const selectedLocObj = this.filteredLocations.find(
-      loc => loc.locationName === this.selectedLocation
-    );
-  
-    const locationId = selectedLocObj?.locationId || ''; // ensure correct ID
-  
-    // Send the request with full data
-    this.attendanceService.updateEmployeeLocation(
-      this.selectedEmployee,
-      this.selectedLocation,
-      locationId
-    ).subscribe({
-      next: () => {
-        this.selectedEmployee.locationName = this.selectedLocation;
-        this.successMessage = `Location updated successfully for ${this.selectedEmployee.firstName}`;
-        this.showLocationDialog = false;
-        setTimeout(() => this.successMessage = '', 3000);
-      },
-      error: () => {
-        this.errorMessage = 'Failed to update location';
-        setTimeout(() => this.errorMessage = '', 3000);
-      }
-    });
-  }  
-
+ 
   // PAGINATION
   get paginatedData(): any[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
@@ -384,4 +336,154 @@ export class AdminDashboardComponent implements OnInit {
   scanQR() {
     this.router.navigate(['/scan-qr']);
   }
+  openLocationDialog(entry: any) {
+    this.selectedEmployee = { ...entry }; // make a copy
+    this.selectedLocation = entry.locationName; 
+    this.showLocationDialog = true;
+  
+    this.organizationService.getLocations().subscribe({
+      next: (locations: any[]) => {
+        if (entry.designation?.toLowerCase() === 'driver') {
+          this.filteredLocations = locations.filter(
+            loc => loc.locationName.startsWith('TRIP_') || loc.locationId === 'default'
+          );
+        } else {
+          this.filteredLocations = locations.filter(
+            loc => !loc.locationName.startsWith('TRIP_')
+          );
+        }
+      },
+      error: () => (this.errorMessage = 'Failed to fetch locations')
+    });
+  }
+  
+  onLocationChange(event: any) {
+    const loc = this.filteredLocations.find(l => l.locationName === this.selectedLocation);
+    this.travelTime = loc?.travelTime || '0';
+  }
+  
+  hasLocationChanged(): boolean {
+    return (
+      this.selectedEmployee &&
+      this.selectedLocation &&
+      this.selectedLocation !== this.selectedEmployee.locationName
+    );
+  }
+  
+  submitLocation() {
+    if (!this.selectedEmployee || !this.selectedLocation) return;
+  
+    const selectedLocObj = this.filteredLocations.find(
+      loc => loc.locationName === this.selectedLocation
+    );
+  
+    const locationId = this.hasLocationChanged() ? selectedLocObj?.locationId : undefined;
+  
+    const payload = {
+      ...this.selectedEmployee,
+      punches: this.selectedEmployee.punches || {},
+      locationId: locationId ?? this.selectedEmployee.locationId,
+      locationName: this.selectedLocation,
+    };
+  
+    this.attendanceService.updateEmployeeLocationOrScheduleData(payload, locationId).subscribe({
+      next: () => {
+        this.selectedEmployee.locationName = this.selectedLocation;
+        this.successMessage = `Location updated successfully for ${this.selectedEmployee.firstName}`;
+        this.showLocationDialog = false;
+        setTimeout(() => (this.successMessage = ''), 3000);
+      },
+      error: () => {
+        this.errorMessage = 'Failed to update location';
+        setTimeout(() => (this.errorMessage = ''), 3000);
+      }
+    });
+  }
+  
+  // ------------------------- SCHEDULE -------------------------
+  
+  openScheduleDialog(entry: any) {
+    this.selectedEmployee = { ...entry }; // copy
+    this.selectedScheduleId = entry.scheduleId || '';
+    this.showScheduleDialog = true;
+    this.openMenuIndex = null;
+  
+    this.organizationService.getSchedules().subscribe({
+      next: (res: any[]) => {
+        // Map schedules with readable display but keep ID intact
+        this.schedules = res.map(sch => ({
+          scheduleId: sch.scheduleId,
+          startTime: sch.startTime,
+          endTime: sch.endTime,
+          displayTime: this.formatScheduleTime(sch.startTime, sch.endTime)
+        }));
+  
+        // ✅ Match employee’s current schedule by ID (not display text)
+        const currentSchedule = this.schedules.find(
+          sch => sch.scheduleId === this.selectedScheduleId
+        );
+  
+        this.selectedEmployee.scheduleDisplayTime = currentSchedule
+          ? currentSchedule.displayTime
+          : '';
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load schedules';
+        setTimeout(() => (this.errorMessage = ''), 3000);
+      }
+    });
+  }
+  
+  formatScheduleTime(startTime: string, endTime: string): string {
+    const formatToAmPm = (time: string) => {
+      if (!time) return '';
+      const [h, m] = time.split(':').map(Number);
+      const suffix = h >= 12 ? 'PM' : 'AM';
+      const hour = ((h + 11) % 12 + 1);
+      return `${hour}:${m.toString().padStart(2, '0')} ${suffix}`;
+    };
+    return `${formatToAmPm(startTime)} - ${formatToAmPm(endTime)}`;
+  }
+  
+  hasScheduleChanged(): boolean {
+    return (
+      this.selectedEmployee &&
+      this.selectedScheduleId &&
+      this.selectedScheduleId !== this.selectedEmployee.scheduleId
+    );
+  }
+  
+  submitSchedule() {
+    if (!this.selectedEmployee || !this.selectedScheduleId) {
+      this.errorMessage = 'Please select a schedule.';
+      setTimeout(() => (this.errorMessage = ''), 2000);
+      return;
+    }
+  
+    const payload = {
+      ...this.selectedEmployee,
+      punches: this.selectedEmployee.punches || {},
+      scheduleId: this.selectedScheduleId,
+      previousScheduleId: this.selectedEmployee.scheduleId // ✅ old ID before change
+    };
+  
+    this.attendanceService
+      .updateEmployeeLocationOrScheduleData(payload, undefined, this.selectedScheduleId)
+      .subscribe({
+        next: () => {
+          const sch = this.schedules.find(s => s.scheduleId === this.selectedScheduleId);
+          this.selectedEmployee.scheduleId = this.selectedScheduleId;
+          this.selectedEmployee.scheduleDisplayTime = sch ? sch.displayTime : '';
+  
+          this.successMessage = `Schedule updated successfully for ${this.selectedEmployee.firstName}`;
+          this.showScheduleDialog = false;
+          setTimeout(() => (this.successMessage = ''), 3000);
+        },
+        error: () => {
+          this.errorMessage = 'Failed to update schedule.';
+          setTimeout(() => (this.errorMessage = ''), 3000);
+        }
+      });
+  }  
+  
 }

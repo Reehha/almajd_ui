@@ -85,29 +85,41 @@ export class AttendanceService {
     );
   }
 
-  updateEmployeeLocation(employee: any, newLocationName: string, locationId: string): Observable<any> {
-    const body = {
+  updateEmployeeLocationOrScheduleData(
+    employee: any,
+    locationId?: string,
+    scheduleId?: string
+  ): Observable<any> {
+    const body: any = {
       employeeId: employee.employeeId,
-      locationName: newLocationName,
-      locationId: locationId,
       date: employee.date,
       firstName: employee.firstName,
       lastName: employee.lastName,
       department: employee.department,
       designation: employee.designation,
+  
+      // 🟩 Use updated or existing values properly
+      locationId: locationId ?? employee.locationId,
+      scheduleId: scheduleId ?? employee.scheduleId,
+      locationName: employee.locationName,
+      previousScheduleId: employee.previousScheduleId ?? employee.scheduleId, // only set if provided
+  
       punchIn: employee.punchIn,
       punchOut: employee.punchOut,
       punchInUpdated: employee.punchInUpdated || employee.punchIn,
       punchOutUpdated: employee.punchOutUpdated || employee.punchOut,
       updatedDeduction: employee.updatedDeduction || 0,
       status: employee.status,
-      statusValue: employee.statusValue || ''
+      statusValue: employee.statusValue || '',
+      punches: employee.punches
     };
+  
+    console.log('🟢 Update API Body:', body); // <— Add this temporarily to verify
   
     return this.http.post(
       `${this.BASE_ATTENDANCE_URL}/update`,
       body,
       { headers: this.getAuthHeaders() }
     );
-  }
+  }  
 }

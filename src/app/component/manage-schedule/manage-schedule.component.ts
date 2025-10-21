@@ -92,10 +92,10 @@ export class ManageScheduleComponent implements OnInit {
     }
   
     if (this.newSchedule.startTime && this.newSchedule.endTime) {
-      if (this.newSchedule.endTime <= this.newSchedule.startTime) {
-        this.error = 'End time cannot be earlier than Start time';
-        return;
-      }
+      // if (this.newSchedule.endTime <= this.newSchedule.startTime) {
+      //   this.error = 'End time cannot be earlier than Start time';
+      //   return;
+      // }
   
       if (this.isDuplicate(this.newSchedule.startTime, this.newSchedule.endTime)) {
         this.error = 'A schedule with the same start and end time already exists';
@@ -167,10 +167,10 @@ export class ManageScheduleComponent implements OnInit {
       return;
     }
   
-    if (schedule.endTime <= schedule.startTime) {
-      this.error = 'End time cannot be earlier or same as Start time';
-      return;
-    }
+    // if (schedule.endTime <= schedule.startTime) {
+    //   this.error = 'End time cannot be earlier or same as Start time';
+    //   return;
+    // }
   
     if (this.isDuplicate(schedule.startTime, schedule.endTime, schedule.scheduleId)) {
       this.error = 'A schedule with the same start and end time already exists';
