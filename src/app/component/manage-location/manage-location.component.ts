@@ -63,8 +63,8 @@ export class ManageLocationComponent implements OnInit {
     if (!loc.locationName.startsWith(this.TRIP_PREFIX)) loc.locationName = this.TRIP_PREFIX;
 
     // Keep only digits after prefix
-    const digits = loc.locationName.replace(/^TRIP_/, '').replace(/\D/g, '');
-    loc.locationName = this.TRIP_PREFIX + digits;
+    // const digits = loc.locationName.replace(/^TRIP_/, '').replace(/\D/g, '');
+    // loc.locationName = this.TRIP_PREFIX + digits;
 
     // Travel time = 0
     loc.travelTime = 0;
@@ -97,11 +97,11 @@ export class ManageLocationComponent implements OnInit {
     }
   }
 
-  allowOnlyNumbers(event: KeyboardEvent): void {
-    if (!this.isDriverLocation) return;
-    const isDigit = /\d/.test(event.key);
-    if (!isDigit && event.key !== 'Backspace' && event.key !== 'Delete') event.preventDefault();
-  }
+  // allowOnlyNumbers(event: KeyboardEvent): void {
+  //   if (!this.isDriverLocation) return;
+  //   const isDigit = /\d/.test(event.key);
+  //   if (!isDigit && event.key !== 'Backspace' && event.key !== 'Delete') event.preventDefault();
+  // }
 
   onDriverCheckboxChange(): void {
     if (this.isDriverLocation) {
@@ -138,10 +138,16 @@ export class ManageLocationComponent implements OnInit {
     }
 
     if (this.isDriverLocation) {
-      if (!name.startsWith(this.TRIP_PREFIX)) { this.error = 'Driver location name must start with TRIP_'; return; }
+      if (!name.startsWith(this.TRIP_PREFIX)) {
+        this.error = 'Driver location name must start with TRIP_';
+        return;
+      }
       const suffix = name.substring(this.TRIP_PREFIX.length);
-      if (!suffix || isNaN(Number(suffix))) { this.error = 'Driver location name must be in format TRIP_<number>. eg TRIP_1'; return; }
-    }
+      if (!suffix.match(/^[a-zA-Z0-9]+$/)) { // allow alphanumeric only
+        this.error = 'Driver location name must have alphanumeric characters after TRIP_';
+        return;
+      }
+    }    
 
     if (!this.isDriverLocation && this.addTouchedTravel && (this.newLocation.travelTime === null || this.newLocation.travelTime < 0)) {
       this.error = 'Travel time must be positive';
@@ -164,7 +170,8 @@ export class ManageLocationComponent implements OnInit {
       const suffix = name.substring(this.TRIP_PREFIX.length);
       return this.showAddLocation &&
              name.startsWith(this.TRIP_PREFIX) &&
-             !!suffix && !isNaN(Number(suffix)) &&
+             !!suffix &&
+             /^[a-zA-Z0-9]+$/.test(suffix) &&
              !this.locations.some(l => l.locationName.toLowerCase() === name.toLowerCase());
     }
 
@@ -235,11 +242,13 @@ export class ManageLocationComponent implements OnInit {
 
     if (!name) { this.error = 'Location name cannot be empty'; return; }
     if (isDriver) {
-      if (!name.startsWith(this.TRIP_PREFIX)) { this.error = 'Driver location name must start with TRIP_'; return; }
       const suffix = name.substring(this.TRIP_PREFIX.length);
-      if (!suffix || isNaN(Number(suffix))) { this.error = 'Driver location name must be in format TRIP_<number>. eg TRIP_1'; return; }
+      if (!suffix.match(/^[a-zA-Z0-9]+$/)) {
+        this.error = 'Driver location name must have alphanumeric characters after TRIP_';
+        return;
+      }
       loc.travelTime = 0;
-    } else {
+    }     else {
       if ((loc as any).travelTime === null || loc.travelTime < 0) { this.error = 'Travel time must be positive'; return; }
     }
     if (this.locations.some(l => l.locationId !== loc.locationId && l.locationName.toLowerCase() === name.toLowerCase())) {

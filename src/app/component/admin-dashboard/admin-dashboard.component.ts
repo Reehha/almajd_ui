@@ -4,7 +4,8 @@ import { AttendanceService } from '../../services/attendance.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceChartComponent } from '../attendance-chart/attendance-chart.component';
-import * as XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
+// import * as XLSXStyle from 'xlsx-js-style';
 import { OrganizationService } from '../../services/organization.service';
 
 @Component({
@@ -59,6 +60,8 @@ export class AdminDashboardComponent implements OnInit {
     'Overtime': 'overtime',
     'Short Time': 'shorttime'
   };
+
+  activeTab: 'present' | 'absent' | 'all' = 'present';
   
   getStatusClass(status: string): string {
     return this.statusClassMap[status] || 'unknown';
@@ -111,15 +114,32 @@ toggleBreaks(entry: any) {
     return breaks ? Object.keys(breaks) : [];
   }
   
-  // EXPORT TO EXCEL
-  exportToExcel(): void {
+
+  async exportToExcel(): Promise<void> {
+    const XLSXStyleModule = await import('xlsx-js-style');
+    const XLSX = XLSXStyleModule.default || XLSXStyleModule;
+  
     const exportData = this.filteredData.map(entry => {
       const punchIn = entry.punchInUpdated || entry.punchIn || '-';
       const punchOut = entry.punchOutUpdated || entry.punchOut || '-';
-      const overtimeHours = entry.status == 'Overtime' ? entry.statusValue || '' : '';
-
+      const dayName = new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long' });
+  
+      const status = (entry.status || '').toLowerCase();
+      const minutes =
+        parseFloat((entry.statusValue || '0').toString().replace(/\D/g, '')) || 0;
+  
+      let shortTimeHr = '';
+      let overtimeHr = '';
+  
+      if (status === 'overtime') {
+        overtimeHr = (minutes / 60).toFixed(2);
+      } else if (status === 'short time') {
+        shortTimeHr = (minutes / 60).toFixed(2);
+      }
+  
       return {
         Date: entry.date,
+        'Day Name': dayName,
         'Employee ID': entry.employeeId,
         Name: `${entry.firstName} ${entry.lastName}`,
         Department: entry.department,
@@ -127,36 +147,51 @@ toggleBreaks(entry: any) {
         Organization: entry.organization,
         'Punch In': punchIn,
         'Punch Out': punchOut,
-        'Work Hours': entry.workHours || '-',
         'Updated Deduction (mins)': entry.updatedDeduction
           ? `${
               (parseInt(entry.updatedDeduction.replace(/\D/g, ''), 10) || 0) * 2
             } mins`
           : '0',
+        'Work Hours': entry.workHours || '-',
+        'Short Time (hr)': shortTimeHr,
         Status: entry.status,
-        'Overtime Hours': overtimeHours,
+        'Overtime (hr)': overtimeHr,
         'Site Location': entry.locationName || '-',
       };
     });
-
-    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportData);
+  
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
     worksheet['!cols'] = [
-      { wch: 15 }, // Date
-      { wch: 15 }, // Employee ID
-      { wch: 25 }, // Name
-      { wch: 20 }, // Punch In
-      { wch: 20 }, // Punch Out
-      { wch: 15 }, // Status
-      { wch: 18 }  // Overtime
+      { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 25 }, { wch: 20 },
+      { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+      { wch: 18 }, { wch: 15 }, { wch: 18 }, { wch: 20 }
     ];
-
-    const workbook: XLSX.WorkBook = {
-      Sheets: { 'Attendance': worksheet },
-      SheetNames: ['Attendance']
+  
+    const range = XLSX.utils.decode_range(worksheet['!ref']!);
+    for (let R = range.s.r + 1; R <= range.e.r; R++) {
+      const dayCellRef = XLSX.utils.encode_cell({ r: R, c: 1 });
+      if (worksheet[dayCellRef]?.v === 'Sunday') {
+        for (let C = 0; C < worksheet['!cols']!.length; C++) {
+          const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+          if (worksheet[cellRef]) {
+            worksheet[cellRef].s = {
+              fill: { fgColor: { rgb: 'FFFF00' } },
+              font: { bold: true }
+            };
+          }
+        }
+      }
+    }
+  
+    const workbook: any = {
+      Sheets: { Attendance: worksheet },
+      SheetNames: ['Attendance'],
     };
-
+  
     XLSX.writeFile(workbook, `Attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
   }
+  
+
 
   onAbsentToggle() {
     const fetch$ = this.showAbsentOnly
@@ -177,98 +212,81 @@ toggleBreaks(entry: any) {
 
   // FETCH DATA
   onDateFilter() {
-    const fetch$ = this.showAbsentOnly
-      ? this.attendanceService.getAbsentData(this.startDate, this.endDate)  // <-- call absent API
-      : this.attendanceService.getAttendanceData(this.startDate, this.endDate); // normal
-
-    fetch$.subscribe({
-      next: (resp: any) => {
-        const data = (resp as any).data ?? resp;
-
-        this.rawData = data.filter(
-          (entry: any) => (entry.designation || '').toLowerCase() !== 'test_admin'
-        );
-
-        this.applyFilters();
-      },
-      error: (err: any) => console.error('Failed to fetch attendance data:', err),
-    });
-  }  
+    this.attendanceService.getAttendanceData(this.startDate, this.endDate)
+      .subscribe({
+        next: (resp: any) => {
+          const data = (resp as any).data ?? resp;
+          this.rawData = data.filter(
+            (entry: any) => (entry.designation || '').toLowerCase() !== 'test_admin'
+          );
+          this.applyFilters();
+        },
+        error: (err: any) => console.error('Failed to fetch attendance data:', err),
+      });
+  }    
 
   // APPLY FILTERS
   applyFilters() {
     this.filteredData = [...this.rawData.filter((entry) => {
       const fullName = `${entry.firstName} ${entry.lastName}`.toLowerCase();
-      return (
+      const matchesFilters =
         (!this.employeeName || fullName.includes(this.employeeName.toLowerCase())) &&
         (!this.department || entry.department === this.department) &&
         (!this.organization || entry.organization === this.organization) &&
-        (!this.locationName || entry.locationName === this.locationName)
-      );
+        (!this.locationName || entry.locationName === this.locationName);
+  
+      // Filter based on active tab
+      if (this.activeTab === 'present') {
+        return matchesFilters && entry.status && entry.status.toLowerCase() !== 'absent';
+      } else if (this.activeTab === 'absent') {
+        return matchesFilters && (!entry.status || entry.status.toLowerCase() === 'absent');
+      } else {
+        return matchesFilters; // 'all' tab
+      }
     })];
-
-    // Update available filters
-    this.departments = Array.from(new Set(this.rawData.map(e => e.department).filter(d => !!d)));
-    this.organizations = Array.from(new Set(this.rawData.map(e => e.organization).filter(o => !!o)));
-    this.locations = Array.from(new Set(this.rawData.map(e => e.locationName).filter(l => !!l)));
-
-    // Calculate summary counts
+  
+    this.departments = Array.from(new Set(this.rawData.map(e => e.department).filter(Boolean)));
+    this.organizations = Array.from(new Set(this.rawData.map(e => e.organization).filter(Boolean)));
+    this.locations = Array.from(new Set(this.rawData.map(e => e.locationName).filter(Boolean)));
+  
     this.calculateCounts(this.filteredData);
-
     this.currentPage = 1;
   }
+  
+  switchTab(tab: 'present' | 'absent' | 'all') {
+    this.activeTab = tab;
+    this.applyFilters();
+  }
+  
 
   // CALCULATE COUNTS INCLUDING ABSENTEES
   calculateCounts(data: any[]) {
     const counts = { onTime: 0, shortTime: 0, overTime: 0, absent: 0, present: 0 };
-  
-    if (this.showAbsentOnly) {
-      // When showing absent data only, count all records as absent
-      counts.absent = data.length;
-      counts.onTime = 0;
-      counts.shortTime = 0;
-      counts.overTime = 0;
-      counts.present = 0;
-    } else {
-      const empStatusMap = new Map<string, string>();
-  
-      // Aggregate latest status per employee, ignoring test_admin
-      data.forEach(entry => {
-        if (!entry.employeeId) return;
-  
-        const designation = (entry.designation || '').toLowerCase();
-        if (designation === 'test_admin') return; // skip test_admin
-  
-        if (entry.status) {
-          empStatusMap.set(entry.employeeId, entry.status.toLowerCase());
-        }
-      });
-  
-      // Count attendance categories
-      empStatusMap.forEach(status => {
-        switch (status) {
-          case 'on time':
-            counts.onTime++;
-            break;
-          case 'short time':
-            counts.shortTime++;
-            break;
-          case 'overtime':
-            counts.overTime++;
-            break;
-          case 'present':
-            counts.present++;
-            break;
-        }
-      });
-  
-      // Absent = allEmployeeIds minus employees who have any attendance
-      counts.absent = this.allEmployeeIds.filter(id => !empStatusMap.has(id)).length;
-    }
-  
+
+    data.forEach(entry => {
+      const status = (entry.status || '').toLowerCase();
+      switch (status) {
+        case 'on time':
+          counts.onTime++;
+          break;
+        case 'short time':
+          counts.shortTime++;
+          break;
+        case 'overtime':
+          counts.overTime++;
+          break;
+        case 'present':
+          counts.present++;
+          break;
+        case 'absent':
+          counts.absent++;
+          break;
+      }
+    });
+
     this.totalEmployees = this.allEmployeeIds.length;
     this.initialCounts = { ...counts };
-  }  
+  }
 
   canExpand(entry: any): boolean {
     return !!entry.breaks && Object.keys(entry.breaks).length > 0;

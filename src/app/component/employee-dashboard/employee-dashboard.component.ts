@@ -68,35 +68,47 @@ export class MainEmployeeDashboardComponent implements OnInit {
   }
 
   exportToExcel(): void {
-    // Map the data for Excel (no Short Hours column)
     const exportData = this.attendanceData.map(entry => {
-      // Punch In comparison with arrow
+      // Punch In display
       let punchInDisplay = entry.punchIn || '-';
       if (entry.punchInUpdated) {
-        punchInDisplay = `${entry.punchInUpdated} `;
+        punchInDisplay = `${entry.punchInUpdated}`;
       }
   
-      // Punch Out comparison with arrow
+      // Punch Out display
       let punchOutDisplay = entry.punchOut || '-';
       if (entry.punchOutUpdated) {
-        punchOutDisplay = `${entry.punchOutUpdated} `;
+        punchOutDisplay = `${entry.punchOutUpdated}`;
       }
   
-      // Overtime / Short Time columns
-      let overtimeHours = '';
+      // Convert Updated Deduction (min)
+      let updatedDeductionDisplay = '0';
+      if (entry.updatedDeduction) {
+        const minutes = parseInt(entry.updatedDeduction.replace(/\D/g, ''), 10) || 0;
+        updatedDeductionDisplay = `${minutes * 2} mins`;
+      }
   
-      if (entry.status === 'Overtime') {
-        overtimeHours = entry.statusValue || '';
-      } 
+      // Convert Overtime / Short Time minutes to hours
+      let overtimeHr = '';
+      let shortTimeHr = '';
+  
+      if (entry.status?.toLowerCase() === 'overtime' && entry.statusValue) {
+        const minutes = parseFloat(entry.statusValue.replace(/\D/g, '')) || 0;
+        overtimeHr = (minutes / 60).toFixed(2);
+      } else if (entry.status?.toLowerCase() === 'short time' && entry.statusValue) {
+        const minutes = parseFloat(entry.statusValue.replace(/\D/g, '')) || 0;
+        shortTimeHr = (minutes / 60).toFixed(2);
+      }
   
       return {
         Date: entry.date,
         'Punch In': punchInDisplay,
         'Punch Out': punchOutDisplay,
-        'Updated Deduction (min)':entry.updatedDeduction,
+        'Updated Deduction (mins)': updatedDeductionDisplay,
+        'Work Hours': entry.workHours || '-',
+        'Short Time (hr)': shortTimeHr,
+        'Overtime (hr)': overtimeHr,
         Status: entry.status,
-        'Work Hours':entry.workHours,
-        'Overtime Hours': overtimeHours,
         'Site Location': entry.locationName
       };
     });
@@ -109,8 +121,12 @@ export class MainEmployeeDashboardComponent implements OnInit {
       { wch: 15 }, // Date
       { wch: 20 }, // Punch In
       { wch: 20 }, // Punch Out
+      { wch: 25 }, // Updated Deduction (mins)
+      { wch: 18 }, // Work Hours
+      { wch: 18 }, // Short Time (hr)
+      { wch: 18 }, // Overtime (hr)
       { wch: 15 }, // Status
-      { wch: 18 }  // Overtime
+      { wch: 20 }  // Site Location
     ];
   
     // Create workbook and add worksheet
@@ -121,7 +137,7 @@ export class MainEmployeeDashboardComponent implements OnInit {
   
     // Save Excel file
     XLSX.writeFile(workbook, `Attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
-  }
+  }  
 
 
   toggleExpand(i: number) {

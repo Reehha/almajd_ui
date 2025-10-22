@@ -18,7 +18,7 @@
           <!-- Location Name -->
           <input [(ngModel)]="newLocation.locationName" placeholder="Location Name" type="text"
             (focus)="onDriverLocationFocus($event)" (input)="onDriverLocationInput($event)"
-            (keydown)="onDriverLocationKeydown($event)" (keypress)="allowOnlyNumbers($event)" (blur)="onAddBlur('name')" />
+            (keydown)="onDriverLocationKeydown($event)" (blur)="onAddBlur('name')" />
 
 <!-- Travel Time (disabled if driver location checked) -->
 <input type="number" [(ngModel)]="newLocation.travelTime" placeholder="Travel Time (min)" [disabled]="isDriverLocation"
